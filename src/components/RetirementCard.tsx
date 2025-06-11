@@ -3,6 +3,8 @@ import { PiggyBank, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const RetirementCard = () => {
+  const readinessScore = 78; // Percentage
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -29,7 +31,25 @@ const RetirementCard = () => {
             </div>
           </div>
           
-          <div className="border-t pt-2">
+          <div className="border-t pt-3 space-y-3">
+            <div>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium">Retirement Readiness</span>
+                <span className="text-sm font-bold text-green-600">{readinessScore}%</span>
+              </div>
+              <div className="w-full bg-muted rounded-full h-3">
+                <div 
+                  className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300"
+                  style={{ width: `${readinessScore}%` }}
+                ></div>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {readinessScore >= 80 ? "Excellent progress" : 
+                 readinessScore >= 60 ? "Good progress" : 
+                 "Needs attention"}
+              </p>
+            </div>
+            
             <div className="flex items-center space-x-1 text-green-600">
               <TrendingUp className="h-4 w-4" />
               <span className="text-sm font-medium">On track for 65</span>

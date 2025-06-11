@@ -11,6 +11,7 @@ import GoalsSection from "@/components/GoalsSection";
 import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
 import FinancialVault from "@/components/FinancialVault";
+import ReportsSection from "@/components/ReportsSection";
 
 const Index = () => {
   return (
@@ -40,6 +41,11 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
+          </div>
+          
+          {/* Fourth Row - Reports */}
+          <div className="grid grid-cols-1 gap-6">
+            <ReportsSection />
           </div>
           
           {/* Bottom Row - Recent Guidance and Financial Vault */}

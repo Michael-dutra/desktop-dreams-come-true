@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target } from "lucide-react";
+import { Target, Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 const GoalsSection = () => {
   const goals = [
@@ -20,11 +21,15 @@ const GoalsSection = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-lg flex items-center space-x-2">
           <Target className="h-5 w-5" />
           <span>Goals</span>
         </CardTitle>
+        <Button size="sm" className="flex items-center space-x-2">
+          <Plus className="h-4 w-4" />
+          <span>Add Goal</span>
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

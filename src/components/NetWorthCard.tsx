@@ -1,8 +1,23 @@
 
 import { TrendingUp, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const NetWorthCard = () => {
+  const projectionData = [
+    { year: "2024", netWorth: 287500 },
+    { year: "2025", netWorth: 325000 },
+    { year: "2026", netWorth: 368000 },
+    { year: "2027", netWorth: 416000 },
+    { year: "2028", netWorth: 470000 },
+    { year: "2029", netWorth: 530000 },
+  ];
+
+  const chartConfig = {
+    netWorth: { label: "Net Worth", color: "#10b981" },
+  };
+
   return (
     <Card>
       <CardHeader className="pb-3">
@@ -32,6 +47,27 @@ const NetWorthCard = () => {
               <p className="text-sm text-muted-foreground">Total Liabilities</p>
               <p className="text-lg font-semibold text-red-600">$447,500</p>
             </div>
+          </div>
+          
+          <div className="border-t pt-3">
+            <h4 className="text-sm font-medium mb-2">5-Year Projection</h4>
+            <ChartContainer config={chartConfig} className="h-32">
+              <LineChart data={projectionData}>
+                <XAxis dataKey="year" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Line 
+                  type="monotone" 
+                  dataKey="netWorth" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  dot={{ fill: "#10b981", strokeWidth: 2, r: 3 }}
+                />
+              </LineChart>
+            </ChartContainer>
+            <p className="text-xs text-muted-foreground mt-1">
+              Projected to reach $530K by 2029
+            </p>
           </div>
         </div>
       </CardContent>

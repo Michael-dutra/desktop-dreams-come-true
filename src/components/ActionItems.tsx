@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CheckSquare, Calendar, Upload, Calculator, User } from "lucide-react";
+import { CheckSquare, Calendar, Upload, Calculator, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const ActionItems = () => {
@@ -33,11 +33,15 @@ const ActionItems = () => {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
         <CardTitle className="text-lg flex items-center space-x-2">
           <Calendar className="h-5 w-5" />
           <span>Action Items</span>
         </CardTitle>
+        <Button size="sm" className="flex items-center space-x-2">
+          <Plus className="h-4 w-4" />
+          <span>Add Item</span>
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
