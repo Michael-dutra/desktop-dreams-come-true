@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { TrendingUp } from "lucide-react";
@@ -30,62 +29,55 @@ const MonthlyCashFlow = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="summary" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="summary">Summary</TabsTrigger>
-            <TabsTrigger value="trend">Trend</TabsTrigger>
-          </TabsList>
-          <TabsContent value="summary" className="mt-4">
-            <div className="space-y-4">
-              <div>
-                <p className="text-2xl font-bold text-green-600">$15,000</p>
-              </div>
-              
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Total Income</span>
-                  <span className="text-sm font-medium">$22,500</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-sm text-muted-foreground">Debt Payments</span>
-                  <span className="text-sm font-medium text-red-600">$7,500</span>
-                </div>
-              </div>
-              
-              <div className="border-t pt-2">
-                <div className="flex justify-between">
-                  <span className="text-sm font-medium">Net Cash Flow</span>
-                  <span className="text-sm font-semibold text-green-600">$7,500</span>
-                </div>
-              </div>
+        <div className="space-y-4">
+          {/* Summary */}
+          <div>
+            <p className="text-2xl font-bold text-green-600">$15,000</p>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Total Income</span>
+              <span className="text-sm font-medium">$22,500</span>
             </div>
-          </TabsContent>
-          <TabsContent value="trend" className="mt-4">
-            <ChartContainer config={chartConfig} className="h-48">
-              <AreaChart data={monthlyData}>
-                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
-                <ChartTooltip content={<ChartTooltipContent />} />
-                <Area 
-                  type="monotone" 
-                  dataKey="income" 
-                  stackId="1" 
-                  stroke="#10b981" 
-                  fill="#10b981" 
-                  fillOpacity={0.6}
-                />
-                <Area 
-                  type="monotone" 
-                  dataKey="expenses" 
-                  stackId="2" 
-                  stroke="#ef4444" 
-                  fill="#ef4444" 
-                  fillOpacity={0.6}
-                />
-              </AreaChart>
-            </ChartContainer>
-          </TabsContent>
-        </Tabs>
+            <div className="flex justify-between">
+              <span className="text-sm text-muted-foreground">Debt Payments</span>
+              <span className="text-sm font-medium text-red-600">$7,500</span>
+            </div>
+          </div>
+          
+          <div className="border-t pt-2">
+            <div className="flex justify-between">
+              <span className="text-sm font-medium">Net Cash Flow</span>
+              <span className="text-sm font-semibold text-green-600">$7,500</span>
+            </div>
+          </div>
+          
+          {/* Chart */}
+          <ChartContainer config={chartConfig} className="h-48">
+            <AreaChart data={monthlyData}>
+              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+              <YAxis tick={{ fontSize: 10 }} />
+              <ChartTooltip content={<ChartTooltipContent />} />
+              <Area 
+                type="monotone" 
+                dataKey="income" 
+                stackId="1" 
+                stroke="#10b981" 
+                fill="#10b981" 
+                fillOpacity={0.6}
+              />
+              <Area 
+                type="monotone" 
+                dataKey="expenses" 
+                stackId="2" 
+                stroke="#ef4444" 
+                fill="#ef4444" 
+                fillOpacity={0.6}
+              />
+            </AreaChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );

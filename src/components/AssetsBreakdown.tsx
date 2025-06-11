@@ -1,6 +1,5 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 
@@ -25,45 +24,40 @@ const AssetsBreakdown = () => {
         <CardTitle className="text-lg">Assets</CardTitle>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="breakdown" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="breakdown">Breakdown</TabsTrigger>
-            <TabsTrigger value="chart">Chart</TabsTrigger>
-          </TabsList>
-          <TabsContent value="breakdown" className="mt-4">
-            <div className="space-y-3">
-              {assets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-sm font-medium">{asset.name}</span>
-                  </div>
-                  <span className="text-sm font-semibold">{asset.amount}</span>
+        <div className="space-y-4">
+          {/* Breakdown List */}
+          <div className="space-y-3">
+            {assets.map((asset, index) => (
+              <div key={index} className="flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
+                  <span className="text-sm font-medium">{asset.name}</span>
                 </div>
-              ))}
-            </div>
-          </TabsContent>
-          <TabsContent value="chart" className="mt-4">
-            <ChartContainer config={chartConfig} className="h-48">
-              <PieChart>
-                <Pie
-                  data={assets}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={30}
-                  outerRadius={70}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {assets.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
-          </TabsContent>
-        </Tabs>
+                <span className="text-sm font-semibold">{asset.amount}</span>
+              </div>
+            ))}
+          </div>
+          
+          {/* Chart */}
+          <ChartContainer config={chartConfig} className="h-48">
+            <PieChart>
+              <Pie
+                data={assets}
+                cx="50%"
+                cy="50%"
+                innerRadius={30}
+                outerRadius={70}
+                paddingAngle={2}
+                dataKey="value"
+              >
+                {assets.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <ChartTooltip content={<ChartTooltipContent />} />
+            </PieChart>
+          </ChartContainer>
+        </div>
       </CardContent>
     </Card>
   );
