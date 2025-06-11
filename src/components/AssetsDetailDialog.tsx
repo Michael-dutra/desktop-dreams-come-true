@@ -26,14 +26,17 @@ interface AssetsDetailDialogProps {
 }
 
 export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
-  // Individual FV calculation controls for each asset
-  const [projectionYears, setProjectionYears] = useState([10]);
+  // Individual projection years for each asset
+  const [realEstateYears, setRealEstateYears] = useState([10]);
+  const [rrspYears, setRrspYears] = useState([10]);
+  const [tfsaYears, setTfsaYears] = useState([10]);
+  const [nonRegYears, setNonRegYears] = useState([10]);
+
+  // Individual growth rates
   const [realEstateRate, setRealEstateRate] = useState([4.2]);
   const [rrspRate, setRrspRate] = useState([7.0]);
   const [tfsaRate, setTfsaRate] = useState([6.5]);
   const [nonRegRate, setNonRegRate] = useState([8.0]);
-  const [includeContributions, setIncludeContributions] = useState(true);
-  const [contributionPeriod, setContributionPeriod] = useState("annual");
 
   // Editable state tracking
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -60,6 +63,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     availableRoom: 18500,
     ytdGrowth: 8.2,
     annualContribution: 6000,
+    monthlyContribution: 500,
   });
 
   const [tfsaDetails, setTfsaDetails] = useState({
@@ -68,6 +72,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     availableRoom: 8500,
     ytdGrowth: 6.1,
     annualContribution: 5000,
+    monthlyContribution: 417,
     totalRoom: 88000,
     taxFreeGrowth: 3000,
   });
@@ -76,33 +81,22 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     totalValue: 25000,
     unrealizedGains: 3200,
     annualContribution: 2000,
+    monthlyContribution: 167,
     dividendIncome: 850,
     capitalGains: 2350,
   });
 
-  // Helper function to get display contribution values
-  const getContributionValue = (annualAmount: number) => {
-    return contributionPeriod === "monthly" ? Math.round(annualAmount / 12) : annualAmount;
-  };
-
-  const getContributionLabel = (baseLabel: string) => {
-    return contributionPeriod === "monthly" ? `Monthly ${baseLabel}` : `Annual ${baseLabel}`;
-  };
-
   // FV calculations
   const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
-    if (!includeContributions) {
-      return currentValue * Math.pow(1 + rate / 100, years);
-    }
     const fvCurrentValue = currentValue * Math.pow(1 + rate / 100, years);
     const fvContributions = annualContribution * (Math.pow(1 + rate / 100, years) - 1) / (rate / 100);
     return fvCurrentValue + fvContributions;
   };
 
-  const realEstateFV = calculateFV(realEstateDetails.currentFMV, realEstateRate[0], projectionYears[0]);
-  const rrspFV = calculateFV(rrspDetails.currentValue, rrspRate[0], projectionYears[0], includeContributions ? rrspDetails.annualContribution : 0);
-  const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], projectionYears[0], includeContributions ? tfsaDetails.annualContribution : 0);
-  const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], projectionYears[0], includeContributions ? nonRegisteredDetails.annualContribution : 0);
+  const realEstateFV = calculateFV(realEstateDetails.currentFMV, realEstateRate[0], realEstateYears[0]);
+  const rrspFV = calculateFV(rrspDetails.currentValue, rrspRate[0], rrspYears[0], rrspDetails.annualContribution);
+  const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
+  const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
 
   const chartConfig = {
     value: { label: "Value", color: "#3b82f6" },
@@ -112,9 +106,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   // Edit handlers
   const startEdit = (fieldId: string, currentValue: number | string) => {
     setEditingField(fieldId);
-    const displayValue = fieldId.includes('Contribution') || fieldId.includes('dividendIncome') ? 
-      getContributionValue(Number(currentValue)) : currentValue;
-    setTempValue(displayValue.toString());
+    setTempValue(currentValue.toString());
   };
 
   const cancelEdit = () => {
@@ -127,11 +119,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     if (isNaN(numericValue)) {
       cancelEdit();
       return;
-    }
-
-    // Convert monthly values back to annual for storage
-    if ((fieldId.includes('Contribution') || fieldId.includes('dividendIncome')) && contributionPeriod === "monthly") {
-      numericValue = numericValue * 12;
     }
 
     const [category, field] = fieldId.split('.');
@@ -162,8 +149,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     label, 
     isEditable = true, 
     prefix = "$",
-    isAutoCalculated = false,
-    isContribution = false
+    isAutoCalculated = false
   }: { 
     fieldId: string; 
     value: number; 
@@ -171,15 +157,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     isEditable?: boolean;
     prefix?: string;
     isAutoCalculated?: boolean;
-    isContribution?: boolean;
   }) => {
     const isEditing = editingField === fieldId;
-    const displayValue = isContribution ? getContributionValue(value) : value;
-    const displayLabel = isContribution ? getContributionLabel(label) : label;
     
     return (
       <div className="relative">
-        <p className="text-sm text-muted-foreground">{displayLabel}</p>
+        <p className="text-sm text-muted-foreground">{label}</p>
         {isEditing ? (
           <div className="flex items-center gap-2">
             <Input
@@ -199,7 +182,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
         ) : (
           <div className="flex items-center justify-between">
             <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-              {prefix}{displayValue.toLocaleString()}
+              {prefix}{value.toLocaleString()}
             </p>
             {isEditable && !isAutoCalculated && (
               <Button 
@@ -224,7 +207,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           <DialogTitle className="text-3xl font-bold">Assets Portfolio Details & Future Value Projections</DialogTitle>
         </DialogHeader>
 
-        {/* Portfolio Summary & Key Metrics - Moved to top */}
+        {/* Portfolio Summary & Key Metrics */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
@@ -256,42 +239,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 </p>
               </div>
             </div>
-
-            {/* Global contribution settings */}
-            <div className="mt-6 pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
-                    <Switch
-                      checked={includeContributions}
-                      onCheckedChange={setIncludeContributions}
-                    />
-                    <label className="text-sm font-medium">
-                      Include {contributionPeriod === "monthly" ? "Monthly" : "Annual"} Savings
-                    </label>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium">Contribution Display</label>
-                    <ToggleGroup type="single" value={contributionPeriod} onValueChange={setContributionPeriod}>
-                      <ToggleGroupItem value="annual">Annual</ToggleGroupItem>
-                      <ToggleGroupItem value="monthly">Monthly</ToggleGroupItem>
-                    </ToggleGroup>
-                  </div>
-                </div>
-                
-                <div className="space-y-2">
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {projectionYears[0]}</label>
-                  <Slider
-                    value={projectionYears}
-                    onValueChange={setProjectionYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-32"
-                  />
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
@@ -320,6 +267,17 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     className="w-full"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Projection Years: {realEstateYears[0]}</label>
+                  <Slider
+                    value={realEstateYears}
+                    onValueChange={setRealEstateYears}
+                    max={30}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -331,7 +289,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="future-value-re" 
                   value={Math.round(realEstateFV)} 
-                  label={`Future Value (${projectionYears[0]} years)`} 
+                  label={`Future Value (${realEstateYears[0]} years)`} 
                   isAutoCalculated={true}
                   isEditable={false}
                 />
@@ -405,6 +363,17 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     className="w-full"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Projection Years: {rrspYears[0]}</label>
+                  <Slider
+                    value={rrspYears}
+                    onValueChange={setRrspYears}
+                    max={30}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -416,7 +385,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="future-value-rrsp" 
                   value={Math.round(rrspFV)} 
-                  label={`Future Value (${projectionYears[0]} years)`} 
+                  label={`Future Value (${rrspYears[0]} years)`} 
                   isAutoCalculated={true}
                   isEditable={false}
                 />
@@ -441,8 +410,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="rrsp.annualContribution" 
                   value={rrspDetails.annualContribution} 
-                  label="Contribution" 
-                  isContribution={true}
+                  label="Annual Contribution" 
+                />
+                <EditableField 
+                  fieldId="rrsp.monthlyContribution" 
+                  value={rrspDetails.monthlyContribution} 
+                  label="Monthly Contribution" 
                 />
               </div>
               
@@ -477,6 +450,17 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     className="w-full"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Projection Years: {tfsaYears[0]}</label>
+                  <Slider
+                    value={tfsaYears}
+                    onValueChange={setTfsaYears}
+                    max={30}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -488,7 +472,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="future-value-tfsa" 
                   value={Math.round(tfsaFV)} 
-                  label={`Future Value (${projectionYears[0]} years)`} 
+                  label={`Future Value (${tfsaYears[0]} years)`} 
                   isAutoCalculated={true}
                   isEditable={false}
                 />
@@ -523,8 +507,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="tfsa.annualContribution" 
                   value={tfsaDetails.annualContribution} 
-                  label="Contribution" 
-                  isContribution={true}
+                  label="Annual Contribution" 
+                />
+                <EditableField 
+                  fieldId="tfsa.monthlyContribution" 
+                  value={tfsaDetails.monthlyContribution} 
+                  label="Monthly Contribution" 
                 />
               </div>
               
@@ -559,6 +547,17 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     className="w-full"
                   />
                 </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Projection Years: {nonRegYears[0]}</label>
+                  <Slider
+                    value={nonRegYears}
+                    onValueChange={setNonRegYears}
+                    max={30}
+                    min={1}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -570,7 +569,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="future-value-nonreg" 
                   value={Math.round(nonRegFV)} 
-                  label={`Future Value (${projectionYears[0]} years)`} 
+                  label={`Future Value (${nonRegYears[0]} years)`} 
                   isAutoCalculated={true}
                   isEditable={false}
                 />
@@ -592,7 +591,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="nonReg.dividendIncome" 
                   value={nonRegisteredDetails.dividendIncome} 
                   label="Dividend Income" 
-                  isContribution={true}
                 />
                 <EditableField 
                   fieldId="nonReg.capitalGains" 
@@ -602,8 +600,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="nonReg.annualContribution" 
                   value={nonRegisteredDetails.annualContribution} 
-                  label="Contribution" 
-                  isContribution={true}
+                  label="Annual Contribution" 
+                />
+                <EditableField 
+                  fieldId="nonReg.monthlyContribution" 
+                  value={nonRegisteredDetails.monthlyContribution} 
+                  label="Monthly Contribution" 
                 />
               </div>
               
