@@ -104,35 +104,69 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   const creditMonthsSaved = creditCurrentPayoff - creditNewPayoff;
   const creditInterestSaved = (creditCurrentPayoff * creditCardDetails.minimumPayment) - (creditNewPayoff * creditNewPayment);
 
-  // Generate payoff data for charts
-  const generatePayoffData = (balance: number, payment: number, rate: number, maxMonths = 60) => {
+  // Generate combined payoff data for charts
+  const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
     const data = [];
     let currentBalance = balance;
-    const monthlyRate = rate / 100 / 12;
+    let optimizedBalance = balance;
+    const currentMonthlyRate = currentRate / 100 / 12;
+    const newMonthlyRate = newRate / 100 / 12;
     
-    for (let month = 0; month <= Math.min(maxMonths, Math.ceil(calculateDebtFreeDate(balance, payment, rate))); month++) {
+    const maxPayoffMonths = Math.max(
+      Math.ceil(calculateDebtFreeDate(balance, currentPayment, currentRate)),
+      Math.ceil(calculateDebtFreeDate(balance, newPayment, newRate))
+    );
+    
+    for (let month = 0; month <= Math.min(maxMonths, maxPayoffMonths); month++) {
       data.push({
         month,
-        balance: Math.max(0, currentBalance)
+        current: Math.max(0, currentBalance),
+        optimized: Math.max(0, optimizedBalance)
       });
       
+      // Calculate current strategy
       if (currentBalance > 0) {
-        const interestPayment = currentBalance * monthlyRate;
-        const principalPayment = Math.min(payment - interestPayment, currentBalance);
-        currentBalance -= principalPayment;
+        const currentInterestPayment = currentBalance * currentMonthlyRate;
+        const currentPrincipalPayment = Math.min(currentPayment - currentInterestPayment, currentBalance);
+        currentBalance -= currentPrincipalPayment;
+      }
+      
+      // Calculate optimized strategy
+      if (optimizedBalance > 0) {
+        const optimizedInterestPayment = optimizedBalance * newMonthlyRate;
+        const optimizedPrincipalPayment = Math.min(newPayment - optimizedInterestPayment, optimizedBalance);
+        optimizedBalance -= optimizedPrincipalPayment;
       }
     }
     return data;
   };
 
-  const mortgageCurrentData = generatePayoffData(mortgageDetails.currentBalance, mortgageDetails.monthlyPayment, mortgageDetails.interestRate, 240);
-  const mortgageNewData = generatePayoffData(mortgageDetails.currentBalance, mortgageNewPayment, mortgageNewRate[0], 240);
+  const mortgageChartData = generateCombinedPayoffData(
+    mortgageDetails.currentBalance, 
+    mortgageDetails.monthlyPayment, 
+    mortgageDetails.interestRate,
+    mortgageNewPayment,
+    mortgageNewRate[0],
+    240
+  );
 
-  const carCurrentData = generatePayoffData(carLoanDetails.currentBalance, carLoanDetails.monthlyPayment, carLoanDetails.interestRate, 60);
-  const carNewData = generatePayoffData(carLoanDetails.currentBalance, carNewPayment, carNewRate[0], 60);
+  const carChartData = generateCombinedPayoffData(
+    carLoanDetails.currentBalance,
+    carLoanDetails.monthlyPayment,
+    carLoanDetails.interestRate,
+    carNewPayment,
+    carNewRate[0],
+    60
+  );
 
-  const creditCurrentData = generatePayoffData(creditCardDetails.totalBalance, creditCardDetails.minimumPayment, creditCardDetails.averageRate, 60);
-  const creditNewData = generatePayoffData(creditCardDetails.totalBalance, creditNewPayment, creditNewRate[0], 60);
+  const creditChartData = generateCombinedPayoffData(
+    creditCardDetails.totalBalance,
+    creditCardDetails.minimumPayment,
+    creditCardDetails.averageRate,
+    creditNewPayment,
+    creditNewRate[0],
+    60
+  );
 
   const chartConfig = {
     current: { label: "Current Strategy", color: "#ef4444" },
@@ -237,7 +271,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                   <h4 className="font-semibold mb-3">Mortgage Payoff Chart</h4>
                   <ChartContainer config={chartConfig} className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
-                      <LineChart>
+                      <LineChart data={mortgageChartData}>
                         <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                         <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                         <ChartTooltip 
@@ -245,16 +279,14 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                           formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                         />
                         <Line 
-                          data={mortgageCurrentData}
-                          dataKey="balance" 
+                          dataKey="current"
                           stroke="#ef4444" 
                           strokeWidth={2}
                           name="Current Strategy"
                           dot={false}
                         />
                         <Line 
-                          data={mortgageNewData}
-                          dataKey="balance" 
+                          dataKey="optimized"
                           stroke="#10b981" 
                           strokeWidth={2}
                           name="Optimized Strategy"
@@ -320,7 +352,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 <h4 className="font-semibold mb-3">Car Loan Payoff Chart</h4>
                 <ChartContainer config={chartConfig} className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <LineChart data={carChartData}>
                       <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                       <ChartTooltip 
@@ -328,16 +360,14 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                         formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                       />
                       <Line 
-                        data={carCurrentData}
-                        dataKey="balance" 
+                        dataKey="current"
                         stroke="#ef4444" 
                         strokeWidth={2}
                         name="Current Strategy"
                         dot={false}
                       />
                       <Line 
-                        data={carNewData}
-                        dataKey="balance" 
+                        dataKey="optimized"
                         stroke="#10b981" 
                         strokeWidth={2}
                         name="Optimized Strategy"
@@ -402,7 +432,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 <h4 className="font-semibold mb-3">Credit Cards Payoff Chart</h4>
                 <ChartContainer config={chartConfig} className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart>
+                    <LineChart data={creditChartData}>
                       <XAxis dataKey="month" tick={{ fontSize: 10 }} />
                       <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                       <ChartTooltip 
@@ -410,16 +440,14 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                         formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                       />
                       <Line 
-                        data={creditCurrentData}
-                        dataKey="balance" 
+                        dataKey="current"
                         stroke="#ef4444" 
                         strokeWidth={2}
                         name="Current Strategy"
                         dot={false}
                       />
                       <Line 
-                        data={creditNewData}
-                        dataKey="balance" 
+                        dataKey="optimized"
                         stroke="#10b981" 
                         strokeWidth={2}
                         name="Optimized Strategy"
