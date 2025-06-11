@@ -2,6 +2,7 @@
 import DashboardHeader from "@/components/DashboardHeader";
 import WelcomeHeader from "@/components/WelcomeHeader";
 import LearningProgress from "@/components/LearningProgress";
+import DailyBriefing from "@/components/DailyBriefing";
 import NetWorthCard from "@/components/NetWorthCard";
 import AssetsBreakdown from "@/components/AssetsBreakdown";
 import LiabilitiesBreakdown from "@/components/LiabilitiesBreakdown";
@@ -25,8 +26,11 @@ const Index = () => {
           {/* Welcome Message */}
           <WelcomeHeader />
           
-          {/* Learning Progress - Full Width */}
-          <LearningProgress />
+          {/* Top Row - Learning Progress and Daily Briefing */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LearningProgress />
+            <DailyBriefing />
+          </div>
           
           {/* Second Row - Net Worth, Assets, Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
