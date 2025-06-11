@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -247,7 +246,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     checked={includeContributions}
                     onCheckedChange={setIncludeContributions}
                   />
-                  <label className="text-sm font-medium">Include Annual Contributions</label>
+                  <label className="text-sm font-medium">
+                    Include {contributionPeriod === "monthly" ? "Monthly" : "Annual"} Savings
+                  </label>
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Contribution Display</label>
