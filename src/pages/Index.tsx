@@ -1,8 +1,6 @@
 
 import DashboardHeader from "@/components/DashboardHeader";
 import ClientInfo from "@/components/ClientInfo";
-import LearningProgress from "@/components/LearningProgress";
-import DailyBriefing from "@/components/DailyBriefing";
 import NetWorthCard from "@/components/NetWorthCard";
 import AssetsBreakdown from "@/components/AssetsBreakdown";
 import LiabilitiesBreakdown from "@/components/LiabilitiesBreakdown";
@@ -26,38 +24,32 @@ const Index = () => {
           {/* Client Information Header */}
           <ClientInfo />
           
-          {/* Top Row - Learning Progress and Daily Briefing */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <LearningProgress />
-            <DailyBriefing />
-          </div>
-          
-          {/* Second Row - Net Worth, Assets, Liabilities */}
+          {/* First Row - Net Worth, Assets, Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <NetWorthCard />
             <AssetsBreakdown />
             <LiabilitiesBreakdown />
           </div>
           
-          {/* Third Row - Cash Flow, Insurance, Retirement */}
+          {/* Second Row - Cash Flow, Insurance, Retirement */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MonthlyCashFlow />
             <InsuranceCard />
             <RetirementCard />
           </div>
           
-          {/* Fourth Row - Goals with Charts */}
+          {/* Third Row - Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <GoalsSection />
             <InquiryBreakdownChart />
             <InquiriesPerMonthChart />
             <SourceBreakdownChart />
+            <IncomeSourceChart />
           </div>
           
-          {/* Fifth Row - Action Items */}
+          {/* Fourth Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <GoalsSection />
             <ActionItems />
-            <IncomeSourceChart />
           </div>
         </div>
       </main>
