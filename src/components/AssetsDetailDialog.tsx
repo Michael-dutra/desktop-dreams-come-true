@@ -3,9 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
-import { TrendingUp, Home, Wallet, PiggyBank, DollarSign, Calendar, AlertTriangle, Target } from "lucide-react";
+import { TrendingUp, Home, Wallet, PiggyBank, DollarSign, Calendar, AlertTriangle, Target, Edit2, Check, X } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
 interface Asset {
@@ -30,8 +32,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const [nonRegRate, setNonRegRate] = useState([8.0]);
   const [includeContributions, setIncludeContributions] = useState(true);
 
-  // Asset details with enhanced data
-  const realEstateDetails = {
+  // Editable state tracking
+  const [editingField, setEditingField] = useState<string | null>(null);
+  const [tempValue, setTempValue] = useState<string>("");
+
+  // Asset details with enhanced data - now as state for editing
+  const [realEstateDetails, setRealEstateDetails] = useState({
     purchasePrice: 480000,
     purchaseYear: 2019,
     currentFMV: 620000,
@@ -43,9 +49,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     address: "123 Maple Street, Toronto, ON",
     monthlyPayment: 1800,
     remainingYears: 18,
-  };
+  });
 
-  const rrspDetails = {
+  const [rrspDetails, setRrspDetails] = useState({
     totalContributions: 45000,
     currentValue: 52000,
     availableRoom: 18500,
@@ -53,9 +59,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     annualContribution: 6000,
     employer401k: 3600,
     taxDeferred: 12600,
-  };
+  });
 
-  const tfsaDetails = {
+  const [tfsaDetails, setTfsaDetails] = useState({
     totalContributions: 35000,
     currentValue: 38000,
     availableRoom: 8500,
@@ -63,16 +69,16 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     annualContribution: 5000,
     totalRoom: 88000,
     taxFreeGrowth: 3000,
-  };
+  });
 
-  const nonRegisteredDetails = {
+  const [nonRegisteredDetails, setNonRegisteredDetails] = useState({
     totalValue: 25000,
     ytdGrowth: 12.5,
     unrealizedGains: 3200,
     annualContribution: 2000,
     dividendIncome: 850,
     capitalGains: 2350,
-  };
+  });
 
   // FV calculations
   const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
@@ -92,6 +98,103 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const chartConfig = {
     value: { label: "Value", color: "#3b82f6" },
     futureValue: { label: "Future Value", color: "#10b981" }
+  };
+
+  // Edit handlers
+  const startEdit = (fieldId: string, currentValue: number | string) => {
+    setEditingField(fieldId);
+    setTempValue(currentValue.toString());
+  };
+
+  const cancelEdit = () => {
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  const saveEdit = (fieldId: string) => {
+    const numericValue = parseFloat(tempValue);
+    if (isNaN(numericValue)) {
+      cancelEdit();
+      return;
+    }
+
+    const [category, field] = fieldId.split('.');
+    
+    switch (category) {
+      case 'realEstate':
+        setRealEstateDetails(prev => ({ ...prev, [field]: numericValue }));
+        break;
+      case 'rrsp':
+        setRrspDetails(prev => ({ ...prev, [field]: numericValue }));
+        break;
+      case 'tfsa':
+        setTfsaDetails(prev => ({ ...prev, [field]: numericValue }));
+        break;
+      case 'nonReg':
+        setNonRegisteredDetails(prev => ({ ...prev, [field]: numericValue }));
+        break;
+    }
+    
+    setEditingField(null);
+    setTempValue("");
+  };
+
+  // Editable field component
+  const EditableField = ({ 
+    fieldId, 
+    value, 
+    label, 
+    isEditable = true, 
+    prefix = "$",
+    isAutoCalculated = false 
+  }: { 
+    fieldId: string; 
+    value: number; 
+    label: string; 
+    isEditable?: boolean;
+    prefix?: string;
+    isAutoCalculated?: boolean;
+  }) => {
+    const isEditing = editingField === fieldId;
+    
+    return (
+      <div className="relative">
+        <p className="text-sm text-muted-foreground">{label}</p>
+        {isEditing ? (
+          <div className="flex items-center gap-2">
+            <Input
+              value={tempValue}
+              onChange={(e) => setTempValue(e.target.value)}
+              className="text-lg font-semibold"
+              type="number"
+              autoFocus
+            />
+            <Button size="sm" variant="ghost" onClick={() => saveEdit(fieldId)}>
+              <Check className="w-4 h-4 text-green-600" />
+            </Button>
+            <Button size="sm" variant="ghost" onClick={cancelEdit}>
+              <X className="w-4 h-4 text-red-600" />
+            </Button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between">
+            <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
+              {prefix}{value.toLocaleString()}
+            </p>
+            {isEditable && !isAutoCalculated && (
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                onClick={() => startEdit(fieldId, value)}
+                className="opacity-50 hover:opacity-100"
+              >
+                <Edit2 className="w-3 h-3" />
+              </Button>
+            )}
+          </div>
+        )}
+      </div>
+    );
   };
 
   return (
@@ -182,7 +285,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </CardContent>
         </Card>
 
-        {/* Portfolio Summary & Key Metrics - Moved to top */}
+        {/* Portfolio Summary & Key Metrics */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
@@ -255,38 +358,54 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current FMV</p>
-                  <p className="font-semibold text-lg text-green-600">${realEstateDetails.currentFMV.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Future Value ({projectionYears[0]} years)</p>
-                  <p className="font-semibold text-lg text-blue-600">${Math.round(realEstateFV).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Purchase Price</p>
-                  <p className="font-semibold">${realEstateDetails.purchasePrice.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Projected Growth</p>
-                  <p className="font-semibold text-green-600">+${Math.round(realEstateFV - realEstateDetails.currentFMV).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Mortgage Balance</p>
-                  <p className="font-semibold text-red-600">${realEstateDetails.mortgageBalance.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Net Equity</p>
-                  <p className="font-semibold text-green-600">${realEstateDetails.equity.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Monthly Payment</p>
-                  <p className="font-semibold">${realEstateDetails.monthlyPayment.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Years Remaining</p>
-                  <p className="font-semibold">{realEstateDetails.remainingYears} years</p>
-                </div>
+                <EditableField 
+                  fieldId="realEstate.currentFMV" 
+                  value={realEstateDetails.currentFMV} 
+                  label="Current FMV" 
+                />
+                <EditableField 
+                  fieldId="future-value-re" 
+                  value={Math.round(realEstateFV)} 
+                  label={`Future Value (${projectionYears[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="realEstate.purchasePrice" 
+                  value={realEstateDetails.purchasePrice} 
+                  label="Purchase Price" 
+                />
+                <EditableField 
+                  fieldId="projected-growth-re" 
+                  value={Math.round(realEstateFV - realEstateDetails.currentFMV)} 
+                  label="Projected Growth" 
+                  prefix="+$"
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="realEstate.mortgageBalance" 
+                  value={realEstateDetails.mortgageBalance} 
+                  label="Mortgage Balance" 
+                />
+                <EditableField 
+                  fieldId="net-equity-re" 
+                  value={realEstateDetails.currentFMV - realEstateDetails.mortgageBalance} 
+                  label="Net Equity" 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="realEstate.monthlyPayment" 
+                  value={realEstateDetails.monthlyPayment} 
+                  label="Monthly Payment" 
+                />
+                <EditableField 
+                  fieldId="realEstate.remainingYears" 
+                  value={realEstateDetails.remainingYears} 
+                  label="Years Remaining" 
+                  prefix=""
+                />
               </div>
               
               <div className="pt-2">
@@ -309,38 +428,51 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Value</p>
-                  <p className="font-semibold text-lg text-green-600">${rrspDetails.currentValue.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Future Value ({projectionYears[0]} years)</p>
-                  <p className="font-semibold text-lg text-blue-600">${Math.round(rrspFV).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Contributions</p>
-                  <p className="font-semibold">${rrspDetails.totalContributions.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Projected Growth</p>
-                  <p className="font-semibold text-green-600">+${Math.round(rrspFV - rrspDetails.currentValue).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Available Room</p>
-                  <p className="font-semibold">${rrspDetails.availableRoom.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Employer Match</p>
-                  <p className="font-semibold text-green-600">${rrspDetails.employer401k.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tax Deferred</p>
-                  <p className="font-semibold text-orange-600">${rrspDetails.taxDeferred.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Annual Contribution</p>
-                  <p className="font-semibold">${rrspDetails.annualContribution.toLocaleString()}</p>
-                </div>
+                <EditableField 
+                  fieldId="rrsp.currentValue" 
+                  value={rrspDetails.currentValue} 
+                  label="Current Value" 
+                />
+                <EditableField 
+                  fieldId="future-value-rrsp" 
+                  value={Math.round(rrspFV)} 
+                  label={`Future Value (${projectionYears[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="rrsp.totalContributions" 
+                  value={rrspDetails.totalContributions} 
+                  label="Total Contributions" 
+                />
+                <EditableField 
+                  fieldId="projected-growth-rrsp" 
+                  value={Math.round(rrspFV - rrspDetails.currentValue)} 
+                  label="Projected Growth" 
+                  prefix="+$"
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="rrsp.availableRoom" 
+                  value={rrspDetails.availableRoom} 
+                  label="Available Room" 
+                />
+                <EditableField 
+                  fieldId="rrsp.employer401k" 
+                  value={rrspDetails.employer401k} 
+                  label="Employer Match" 
+                />
+                <EditableField 
+                  fieldId="rrsp.taxDeferred" 
+                  value={rrspDetails.taxDeferred} 
+                  label="Tax Deferred" 
+                />
+                <EditableField 
+                  fieldId="rrsp.annualContribution" 
+                  value={rrspDetails.annualContribution} 
+                  label="Annual Contribution" 
+                />
               </div>
               
               <div className="pt-2">
@@ -362,38 +494,51 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Value</p>
-                  <p className="font-semibold text-lg text-green-600">${tfsaDetails.currentValue.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Future Value ({projectionYears[0]} years)</p>
-                  <p className="font-semibold text-lg text-blue-600">${Math.round(tfsaFV).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Contributions</p>
-                  <p className="font-semibold">${tfsaDetails.totalContributions.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Projected Growth</p>
-                  <p className="font-semibold text-green-600">+${Math.round(tfsaFV - tfsaDetails.currentValue).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Available Room</p>
-                  <p className="font-semibold">${tfsaDetails.availableRoom.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Total Room</p>
-                  <p className="font-semibold">${tfsaDetails.totalRoom.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tax-Free Growth</p>
-                  <p className="font-semibold text-green-600">${tfsaDetails.taxFreeGrowth.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Annual Contribution</p>
-                  <p className="font-semibold">${tfsaDetails.annualContribution.toLocaleString()}</p>
-                </div>
+                <EditableField 
+                  fieldId="tfsa.currentValue" 
+                  value={tfsaDetails.currentValue} 
+                  label="Current Value" 
+                />
+                <EditableField 
+                  fieldId="future-value-tfsa" 
+                  value={Math.round(tfsaFV)} 
+                  label={`Future Value (${projectionYears[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="tfsa.totalContributions" 
+                  value={tfsaDetails.totalContributions} 
+                  label="Total Contributions" 
+                />
+                <EditableField 
+                  fieldId="projected-growth-tfsa" 
+                  value={Math.round(tfsaFV - tfsaDetails.currentValue)} 
+                  label="Projected Growth" 
+                  prefix="+$"
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="tfsa.availableRoom" 
+                  value={tfsaDetails.availableRoom} 
+                  label="Available Room" 
+                />
+                <EditableField 
+                  fieldId="tfsa.totalRoom" 
+                  value={tfsaDetails.totalRoom} 
+                  label="Total Room" 
+                />
+                <EditableField 
+                  fieldId="tfsa.taxFreeGrowth" 
+                  value={tfsaDetails.taxFreeGrowth} 
+                  label="Tax-Free Growth" 
+                />
+                <EditableField 
+                  fieldId="tfsa.annualContribution" 
+                  value={tfsaDetails.annualContribution} 
+                  label="Annual Contribution" 
+                />
               </div>
               
               <div className="pt-2">
@@ -415,38 +560,54 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-muted-foreground">Current Value</p>
-                  <p className="font-semibold text-lg text-green-600">${nonRegisteredDetails.totalValue.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Future Value ({projectionYears[0]} years)</p>
-                  <p className="font-semibold text-lg text-blue-600">${Math.round(nonRegFV).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Unrealized Gains</p>
-                  <p className="font-semibold text-green-600">+${nonRegisteredDetails.unrealizedGains.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Projected Growth</p>
-                  <p className="font-semibold text-green-600">+${Math.round(nonRegFV - nonRegisteredDetails.totalValue).toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Dividend Income</p>
-                  <p className="font-semibold text-purple-600">${nonRegisteredDetails.dividendIncome.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Capital Gains</p>
-                  <p className="font-semibold text-blue-600">${nonRegisteredDetails.capitalGains.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">YTD Growth</p>
-                  <p className="font-semibold text-green-600">+{nonRegisteredDetails.ytdGrowth}%</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Annual Contribution</p>
-                  <p className="font-semibold">${nonRegisteredDetails.annualContribution.toLocaleString()}</p>
-                </div>
+                <EditableField 
+                  fieldId="nonReg.totalValue" 
+                  value={nonRegisteredDetails.totalValue} 
+                  label="Current Value" 
+                />
+                <EditableField 
+                  fieldId="future-value-nonreg" 
+                  value={Math.round(nonRegFV)} 
+                  label={`Future Value (${projectionYears[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="nonReg.unrealizedGains" 
+                  value={nonRegisteredDetails.unrealizedGains} 
+                  label="Unrealized Gains" 
+                  prefix="+$"
+                />
+                <EditableField 
+                  fieldId="projected-growth-nonreg" 
+                  value={Math.round(nonRegFV - nonRegisteredDetails.totalValue)} 
+                  label="Projected Growth" 
+                  prefix="+$"
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="nonReg.dividendIncome" 
+                  value={nonRegisteredDetails.dividendIncome} 
+                  label="Dividend Income" 
+                />
+                <EditableField 
+                  fieldId="nonReg.capitalGains" 
+                  value={nonRegisteredDetails.capitalGains} 
+                  label="Capital Gains" 
+                />
+                <EditableField 
+                  fieldId="nonReg.ytdGrowth" 
+                  value={nonRegisteredDetails.ytdGrowth} 
+                  label="YTD Growth" 
+                  prefix=""
+                  isEditable={false}
+                />
+                <EditableField 
+                  fieldId="nonReg.annualContribution" 
+                  value={nonRegisteredDetails.annualContribution} 
+                  label="Annual Contribution" 
+                />
               </div>
               
               <div className="pt-2">
