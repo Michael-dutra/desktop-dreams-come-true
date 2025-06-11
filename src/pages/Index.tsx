@@ -19,41 +19,32 @@ const Index = () => {
       <DashboardHeader />
       
       <main className="p-6">
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left Column - Charts */}
-          <div className="col-span-2 space-y-6">
+        <div className="space-y-6">
+          {/* Top Row - 4 sections across */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCards />
+            <LearningProgress />
+            <NetWorthCard />
             <InquiryBreakdownChart />
           </div>
           
-          {/* Learning Progress - Takes up 1 column */}
-          <div className="col-span-2">
-            <LearningProgress />
+          {/* Second Row - 3 sections across */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <AssetsBreakdown />
+            <LiabilitiesBreakdown />
+            <MonthlyCashFlow />
           </div>
           
-          {/* Main Financial Overview - Takes up 6 columns */}
-          <div className="col-span-6 space-y-6">
-            {/* Top Row */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <NetWorthCard />
-              <AssetsBreakdown />
-              <LiabilitiesBreakdown />
-            </div>
-            
-            {/* Middle Row */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <MonthlyCashFlow />
-              <GoalsSection />
-            </div>
-            
-            {/* Bottom Row */}
-            <ActionItems />
-          </div>
-          
-          {/* Right Column - More Charts */}
-          <div className="col-span-2 space-y-6">
+          {/* Third Row - 3 sections across */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <GoalsSection />
             <InquiriesPerMonthChart />
             <SourceBreakdownChart />
+          </div>
+          
+          {/* Bottom Row - 2 sections across */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <ActionItems />
             <IncomeSourceChart />
           </div>
         </div>
