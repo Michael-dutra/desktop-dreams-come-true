@@ -7,10 +7,6 @@ import LiabilitiesBreakdown from "@/components/LiabilitiesBreakdown";
 import MonthlyCashFlow from "@/components/MonthlyCashFlow";
 import InsuranceCard from "@/components/InsuranceCard";
 import RetirementCard from "@/components/RetirementCard";
-import InquiryBreakdownChart from "@/components/InquiryBreakdownChart";
-import InquiriesPerMonthChart from "@/components/InquiriesPerMonthChart";
-import SourceBreakdownChart from "@/components/SourceBreakdownChart";
-import IncomeSourceChart from "@/components/IncomeSourceChart";
 import GoalsSection from "@/components/GoalsSection";
 import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
@@ -40,15 +36,7 @@ const Index = () => {
             <RetirementCard />
           </div>
           
-          {/* Third Row - Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <InquiryBreakdownChart />
-            <InquiriesPerMonthChart />
-            <SourceBreakdownChart />
-            <IncomeSourceChart />
-          </div>
-          
-          {/* Fourth Row - Goals and Action Items */}
+          {/* Third Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
