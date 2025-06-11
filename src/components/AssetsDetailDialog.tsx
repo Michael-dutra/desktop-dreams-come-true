@@ -550,7 +550,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="nonReg.dividendIncome" 
                   value={nonRegisteredDetails.dividendIncome} 
-                  label="Dividend Income" 
+                  label="Annual Dividend Income" 
                 />
                 <EditableField 
                   fieldId="nonReg.capitalGains" 
