@@ -2,8 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
+import { LiabilitiesDetailDialog } from "./LiabilitiesDetailDialog";
+import { useState } from "react";
 
 const LiabilitiesBreakdown = () => {
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+
   const liabilities = [
     { name: "Mortgage", amount: "$420,000", value: 420000, color: "#ef4444" },
     { name: "Car Loan", amount: "$18,000", value: 18000, color: "#f97316" },
@@ -17,44 +23,61 @@ const LiabilitiesBreakdown = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Liabilities</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Breakdown List */}
-          <div className="space-y-3">
-            {liabilities.map((liability, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: liability.color }}></div>
-                  <span className="text-sm font-medium">{liability.name}</span>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-lg">Liabilities</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowDetailDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            View Details
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Breakdown List */}
+            <div className="space-y-3">
+              {liabilities.map((liability, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: liability.color }}></div>
+                    <span className="text-sm font-medium">{liability.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-red-600">{liability.amount}</span>
                 </div>
-                <span className="text-sm font-semibold text-red-600">{liability.amount}</span>
-              </div>
-            ))}
-          </div>
-          
-          <div className="border-t pt-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Monthly Payments</span>
-              <span className="text-sm font-semibold">$7,500</span>
+              ))}
             </div>
+            
+            <div className="border-t pt-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium">Monthly Payments</span>
+                <span className="text-sm font-semibold">$7,500</span>
+              </div>
+            </div>
+            
+            {/* Chart */}
+            <ChartContainer config={chartConfig} className="h-48">
+              <BarChart data={liabilities}>
+                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="value" fill="#ef4444" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ChartContainer>
           </div>
-          
-          {/* Chart */}
-          <ChartContainer config={chartConfig} className="h-48">
-            <BarChart data={liabilities}>
-              <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="value" fill="#ef4444" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ChartContainer>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <LiabilitiesDetailDialog 
+        isOpen={showDetailDialog}
+        onClose={() => setShowDetailDialog(false)}
+        liabilities={liabilities}
+      />
+    </>
   );
 };
 
