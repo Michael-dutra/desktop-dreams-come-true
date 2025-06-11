@@ -1,22 +1,11 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageSquare, Send, Paperclip, Eye } from "lucide-react";
 
 const FloatingChatBar = () => {
-  const [isVisible, setIsVisible] = useState(false);
   const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-      setIsVisible(scrollTop > 200);
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const handleSendMessage = () => {
     if (message.trim()) {
@@ -30,8 +19,6 @@ const FloatingChatBar = () => {
       handleSendMessage();
     }
   };
-
-  if (!isVisible) return null;
 
   return (
     <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-2xl px-4">
