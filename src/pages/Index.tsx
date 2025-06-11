@@ -1,6 +1,6 @@
 
 import DashboardHeader from "@/components/DashboardHeader";
-import WelcomeHeader from "@/components/WelcomeHeader";
+import ClientInfo from "@/components/ClientInfo";
 import LearningProgress from "@/components/LearningProgress";
 import DailyBriefing from "@/components/DailyBriefing";
 import NetWorthCard from "@/components/NetWorthCard";
@@ -23,8 +23,8 @@ const Index = () => {
       
       <main className="p-6">
         <div className="space-y-6">
-          {/* Welcome Message */}
-          <WelcomeHeader />
+          {/* Client Information Header */}
+          <ClientInfo />
           
           {/* Top Row - Learning Progress and Daily Briefing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
