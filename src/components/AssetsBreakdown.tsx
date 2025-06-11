@@ -2,8 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { useState } from "react";
+import { AssetsDetailDialog } from "./AssetsDetailDialog";
 
 const AssetsBreakdown = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+
   const assets = [
     { name: "Real Estate", amount: "$620,000", value: 620000, color: "#3b82f6" },
     { name: "RRSP", amount: "$52,000", value: 52000, color: "#10b981" },
@@ -19,47 +23,55 @@ const AssetsBreakdown = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg">Assets</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Breakdown List */}
-          <div className="space-y-3">
-            {assets.map((asset, index) => (
-              <div key={index} className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                  <span className="text-sm font-medium">{asset.name}</span>
+    <>
+      <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setIsDialogOpen(true)}>
+        <CardHeader>
+          <CardTitle className="text-lg">Assets</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Breakdown List */}
+            <div className="space-y-3">
+              {assets.map((asset, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
+                    <span className="text-sm font-medium">{asset.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold">{asset.amount}</span>
                 </div>
-                <span className="text-sm font-semibold">{asset.amount}</span>
-              </div>
-            ))}
+              ))}
+            </div>
+            
+            {/* Chart */}
+            <ChartContainer config={chartConfig} className="h-48">
+              <PieChart>
+                <Pie
+                  data={assets}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={30}
+                  outerRadius={70}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {assets.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <ChartTooltip content={<ChartTooltipContent />} />
+              </PieChart>
+            </ChartContainer>
           </div>
-          
-          {/* Chart */}
-          <ChartContainer config={chartConfig} className="h-48">
-            <PieChart>
-              <Pie
-                data={assets}
-                cx="50%"
-                cy="50%"
-                innerRadius={30}
-                outerRadius={70}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {assets.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <ChartTooltip content={<ChartTooltipContent />} />
-            </PieChart>
-          </ChartContainer>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <AssetsDetailDialog 
+        isOpen={isDialogOpen} 
+        onClose={() => setIsDialogOpen(false)} 
+        assets={assets}
+      />
+    </>
   );
 };
 
