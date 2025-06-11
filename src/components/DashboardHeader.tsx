@@ -1,7 +1,8 @@
 
-import { Bell, Settings, User } from "lucide-react";
+import { Bell, Settings, User, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Link } from "react-router-dom";
 
 const DashboardHeader = () => {
   return (
@@ -12,6 +13,11 @@ const DashboardHeader = () => {
         </div>
         
         <div className="flex items-center space-x-4">
+          <Link to="/chat">
+            <Button variant="ghost" size="icon">
+              <MessageSquare className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon">
             <Bell className="h-5 w-5" />
           </Button>
