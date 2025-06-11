@@ -56,8 +56,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     availableRoom: 18500,
     ytdGrowth: 8.2,
     annualContribution: 6000,
-    employer401k: 3600,
-    taxDeferred: 12600,
   });
 
   const [tfsaDetails, setTfsaDetails] = useState({
@@ -72,7 +70,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
   const [nonRegisteredDetails, setNonRegisteredDetails] = useState({
     totalValue: 25000,
-    ytdGrowth: 12.5,
     unrealizedGains: 3200,
     annualContribution: 2000,
     dividendIncome: 850,
@@ -433,16 +430,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   label="Available Room" 
                 />
                 <EditableField 
-                  fieldId="rrsp.employer401k" 
-                  value={rrspDetails.employer401k} 
-                  label="Employer Match" 
-                />
-                <EditableField 
-                  fieldId="rrsp.taxDeferred" 
-                  value={rrspDetails.taxDeferred} 
-                  label="Tax Deferred" 
-                />
-                <EditableField 
                   fieldId="rrsp.annualContribution" 
                   value={rrspDetails.annualContribution} 
                   label="Annual Contribution" 
@@ -569,13 +556,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="nonReg.capitalGains" 
                   value={nonRegisteredDetails.capitalGains} 
                   label="Capital Gains" 
-                />
-                <EditableField 
-                  fieldId="nonReg.ytdGrowth" 
-                  value={nonRegisteredDetails.ytdGrowth} 
-                  label="YTD Growth" 
-                  prefix=""
-                  isEditable={false}
                 />
                 <EditableField 
                   fieldId="nonReg.annualContribution" 
