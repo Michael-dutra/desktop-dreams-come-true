@@ -26,7 +26,7 @@ interface AssetsDetailDialogProps {
 }
 
 export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
-  // FV calculation controls
+  // Individual FV calculation controls for each asset
   const [projectionYears, setProjectionYears] = useState([10]);
   const [realEstateRate, setRealEstateRate] = useState([4.2]);
   const [rrspRate, setRrspRate] = useState([7.0]);
@@ -224,97 +224,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           <DialogTitle className="text-3xl font-bold">Assets Portfolio Details & Future Value Projections</DialogTitle>
         </DialogHeader>
 
-        {/* FV Controls */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">Future Value Assumptions</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {projectionYears[0]}</label>
-                  <Slider
-                    value={projectionYears}
-                    onValueChange={setProjectionYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-                <div className="flex items-center space-x-2">
-                  <Switch
-                    checked={includeContributions}
-                    onCheckedChange={setIncludeContributions}
-                  />
-                  <label className="text-sm font-medium">
-                    Include {contributionPeriod === "monthly" ? "Monthly" : "Annual"} Savings
-                  </label>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Contribution Display</label>
-                  <ToggleGroup type="single" value={contributionPeriod} onValueChange={setContributionPeriod}>
-                    <ToggleGroupItem value="annual">Annual</ToggleGroupItem>
-                    <ToggleGroupItem value="monthly">Monthly</ToggleGroupItem>
-                  </ToggleGroup>
-                </div>
-              </div>
-              
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Real Estate Rate: {realEstateRate[0]}%</label>
-                  <Slider
-                    value={realEstateRate}
-                    onValueChange={setRealEstateRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">RRSP Rate: {rrspRate[0]}%</label>
-                  <Slider
-                    value={rrspRate}
-                    onValueChange={setRrspRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">TFSA Rate: {tfsaRate[0]}%</label>
-                  <Slider
-                    value={tfsaRate}
-                    onValueChange={setTfsaRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Non-Registered Rate: {nonRegRate[0]}%</label>
-                  <Slider
-                    value={nonRegRate}
-                    onValueChange={setNonRegRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Portfolio Summary & Key Metrics */}
+        {/* Portfolio Summary & Key Metrics - Moved to top */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
@@ -346,6 +256,42 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 </p>
               </div>
             </div>
+
+            {/* Global contribution settings */}
+            <div className="mt-6 pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      checked={includeContributions}
+                      onCheckedChange={setIncludeContributions}
+                    />
+                    <label className="text-sm font-medium">
+                      Include {contributionPeriod === "monthly" ? "Monthly" : "Annual"} Savings
+                    </label>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-medium">Contribution Display</label>
+                    <ToggleGroup type="single" value={contributionPeriod} onValueChange={setContributionPeriod}>
+                      <ToggleGroupItem value="annual">Annual</ToggleGroupItem>
+                      <ToggleGroupItem value="monthly">Monthly</ToggleGroupItem>
+                    </ToggleGroup>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium mb-2 block">Projection Years: {projectionYears[0]}</label>
+                  <Slider
+                    value={projectionYears}
+                    onValueChange={setProjectionYears}
+                    max={30}
+                    min={1}
+                    step={1}
+                    className="w-32"
+                  />
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
 
@@ -361,6 +307,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Real Estate Controls */}
+              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Growth Rate: {realEstateRate[0]}%</label>
+                  <Slider
+                    value={realEstateRate}
+                    onValueChange={setRealEstateRate}
+                    max={15}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <EditableField 
                   fieldId="realEstate.currentFMV" 
@@ -431,6 +392,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* RRSP Controls */}
+              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Growth Rate: {rrspRate[0]}%</label>
+                  <Slider
+                    value={rrspRate}
+                    onValueChange={setRrspRate}
+                    max={15}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <EditableField 
                   fieldId="rrsp.currentValue" 
@@ -488,6 +464,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* TFSA Controls */}
+              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Growth Rate: {tfsaRate[0]}%</label>
+                  <Slider
+                    value={tfsaRate}
+                    onValueChange={setTfsaRate}
+                    max={15}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <EditableField 
                   fieldId="tfsa.currentValue" 
@@ -555,6 +546,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Non-Registered Controls */}
+              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Growth Rate: {nonRegRate[0]}%</label>
+                  <Slider
+                    value={nonRegRate}
+                    onValueChange={setNonRegRate}
+                    max={15}
+                    min={0}
+                    step={0.1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <EditableField 
                   fieldId="nonReg.totalValue" 
