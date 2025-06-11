@@ -7,12 +7,12 @@ import LiabilitiesBreakdown from "@/components/LiabilitiesBreakdown";
 import MonthlyCashFlow from "@/components/MonthlyCashFlow";
 import InsuranceCard from "@/components/InsuranceCard";
 import RetirementCard from "@/components/RetirementCard";
-import GoalsSection from "@/components/GoalsSection";
-import ActionItems from "@/components/ActionItems";
 import InquiryBreakdownChart from "@/components/InquiryBreakdownChart";
 import InquiriesPerMonthChart from "@/components/InquiriesPerMonthChart";
 import SourceBreakdownChart from "@/components/SourceBreakdownChart";
 import IncomeSourceChart from "@/components/IncomeSourceChart";
+import GoalsSection from "@/components/GoalsSection";
+import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
 import FinancialVault from "@/components/FinancialVault";
 
@@ -25,12 +25,6 @@ const Index = () => {
         <div className="space-y-6">
           {/* Client Information Header */}
           <ClientInfo />
-          
-          {/* Recent Guidance and Financial Vault */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <RecentGuidance />
-            <FinancialVault />
-          </div>
           
           {/* First Row - Net Worth, Assets, Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -58,6 +52,12 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
+          </div>
+          
+          {/* Bottom Row - Recent Guidance and Financial Vault */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RecentGuidance />
+            <FinancialVault />
           </div>
         </div>
       </main>
