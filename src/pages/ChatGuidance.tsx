@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,7 +11,7 @@ const ChatGuidance = () => {
   const quickQuestions = [
     {
       question: "What steps can I take to improve my credit score?",
-      isPopular: true,
+      isPopular: false,
     },
     {
       question: "What are the key differences between a TFSA and an RRSP?",
@@ -77,11 +76,6 @@ const ChatGuidance = () => {
               >
                 <CardContent className="p-6">
                   <div className="space-y-3">
-                    {item.isPopular && (
-                      <span className="inline-block px-3 py-1 text-xs font-medium bg-purple-100 text-purple-700 rounded-full">
-                        Popular
-                      </span>
-                    )}
                     <p className="text-foreground font-medium leading-relaxed text-left">
                       {item.question}
                     </p>
