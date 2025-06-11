@@ -53,8 +53,17 @@ const NetWorthCard = () => {
             <h4 className="text-sm font-medium mb-2 text-white">5-Year Projection</h4>
             <ChartContainer config={chartConfig} className="h-32">
               <LineChart data={projectionData}>
-                <XAxis dataKey="year" tick={{ fontSize: 10, fill: 'white' }} />
-                <YAxis tick={{ fontSize: 10, fill: 'white' }} />
+                <XAxis 
+                  dataKey="year" 
+                  tick={{ fontSize: 10, fill: 'white' }}
+                  axisLine={{ stroke: 'white' }}
+                  tickLine={{ stroke: 'white' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 10, fill: 'white' }}
+                  axisLine={{ stroke: 'white' }}
+                  tickLine={{ stroke: 'white' }}
+                />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Line 
                   type="monotone" 
