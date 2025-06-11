@@ -4,6 +4,8 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
+import { Button } from "@/components/ui/button";
+import { Eye } from "lucide-react";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -24,9 +26,18 @@ const AssetsBreakdown = () => {
 
   return (
     <>
-      <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => setIsDialogOpen(true)}>
-        <CardHeader>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-lg">Assets</CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setIsDialogOpen(true)}
+            className="flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            View Details
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">

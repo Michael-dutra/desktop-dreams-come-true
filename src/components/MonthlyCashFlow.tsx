@@ -2,9 +2,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { TrendingUp } from "lucide-react";
+import { TrendingUp, Eye } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
+import { CashFlowDetailDialog } from "./CashFlowDetailDialog";
 
 const MonthlyCashFlow = () => {
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+
   const monthlyData = [
     { month: "Jan", income: 22500, expenses: 15000, netFlow: 7500 },
     { month: "Feb", income: 22500, expenses: 15200, netFlow: 7300 },
@@ -21,65 +26,81 @@ const MonthlyCashFlow = () => {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center space-x-2">
-          <TrendingUp className="h-5 w-5" />
-          <span>Monthly Cash Flow</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          {/* Summary */}
-          <div>
-            <p className="text-2xl font-bold text-green-600">$15,000</p>
-          </div>
-          
-          <div className="space-y-2">
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Total Income</span>
-              <span className="text-sm font-medium">$22,500</span>
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between pb-3">
+          <CardTitle className="text-lg flex items-center space-x-2">
+            <TrendingUp className="h-5 w-5" />
+            <span>Monthly Cash Flow</span>
+          </CardTitle>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowDetailDialog(true)}
+            className="flex items-center gap-2"
+          >
+            <Eye className="w-4 h-4" />
+            View Details
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {/* Summary */}
+            <div>
+              <p className="text-2xl font-bold text-green-600">$15,000</p>
             </div>
-            <div className="flex justify-between">
-              <span className="text-sm text-muted-foreground">Debt Payments</span>
-              <span className="text-sm font-medium text-red-600">$7,500</span>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Total Income</span>
+                <span className="text-sm font-medium">$22,500</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-sm text-muted-foreground">Debt Payments</span>
+                <span className="text-sm font-medium text-red-600">$7,500</span>
+              </div>
             </div>
-          </div>
-          
-          <div className="border-t pt-2">
-            <div className="flex justify-between">
-              <span className="text-sm font-medium">Net Cash Flow</span>
-              <span className="text-sm font-semibold text-green-600">$7,500</span>
+            
+            <div className="border-t pt-2">
+              <div className="flex justify-between">
+                <span className="text-sm font-medium">Net Cash Flow</span>
+                <span className="text-sm font-semibold text-green-600">$7,500</span>
+              </div>
             </div>
+            
+            {/* Chart */}
+            <ChartContainer config={chartConfig} className="h-48">
+              <AreaChart data={monthlyData}>
+                <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Area 
+                  type="monotone" 
+                  dataKey="income" 
+                  stackId="1" 
+                  stroke="#10b981" 
+                  fill="#10b981" 
+                  fillOpacity={0.6}
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="expenses" 
+                  stackId="2" 
+                  stroke="#ef4444" 
+                  fill="#ef4444" 
+                  fillOpacity={0.6}
+                />
+              </AreaChart>
+            </ChartContainer>
           </div>
-          
-          {/* Chart */}
-          <ChartContainer config={chartConfig} className="h-48">
-            <AreaChart data={monthlyData}>
-              <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-              <YAxis tick={{ fontSize: 10 }} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Area 
-                type="monotone" 
-                dataKey="income" 
-                stackId="1" 
-                stroke="#10b981" 
-                fill="#10b981" 
-                fillOpacity={0.6}
-              />
-              <Area 
-                type="monotone" 
-                dataKey="expenses" 
-                stackId="2" 
-                stroke="#ef4444" 
-                fill="#ef4444" 
-                fillOpacity={0.6}
-              />
-            </AreaChart>
-          </ChartContainer>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      <CashFlowDetailDialog 
+        isOpen={showDetailDialog}
+        onClose={() => setShowDetailDialog(false)}
+      />
+    </>
   );
 };
 
