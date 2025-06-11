@@ -12,6 +12,7 @@ import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
 import FinancialVault from "@/components/FinancialVault";
 import ReportsSection from "@/components/ReportsSection";
+import FloatingChatBar from "@/components/FloatingChatBar";
 
 const Index = () => {
   return (
@@ -43,18 +44,20 @@ const Index = () => {
             <ActionItems />
           </div>
           
-          {/* Fourth Row - Reports */}
-          <div className="grid grid-cols-1 gap-6">
-            <ReportsSection />
-          </div>
-          
-          {/* Bottom Row - Recent Guidance and Financial Vault */}
+          {/* Fourth Row - Recent Guidance and Financial Vault */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <RecentGuidance />
             <FinancialVault />
           </div>
+          
+          {/* Bottom Row - Reports */}
+          <div className="grid grid-cols-1 gap-6">
+            <ReportsSection />
+          </div>
         </div>
       </main>
+      
+      <FloatingChatBar />
     </div>
   );
 };
