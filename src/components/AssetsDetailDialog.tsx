@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 interface Asset {
   name: string;
@@ -41,6 +41,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   // Editable state tracking
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>("");
+
+  // Animation states for future values
+  const [animatedRealEstate, setAnimatedRealEstate] = useState(0);
+  const [animatedRrsp, setAnimatedRrsp] = useState(0);
+  const [animatedTfsa, setAnimatedTfsa] = useState(0);
+  const [animatedNonReg, setAnimatedNonReg] = useState(0);
 
   // Asset details with enhanced data - now as state for editing
   const [realEstateDetails, setRealEstateDetails] = useState({
@@ -83,6 +89,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     annualContribution: 2000,
     monthlyContribution: 167,
     dividendIncome: 850,
+    annualInterestIncome: 450,
     capitalGains: 2350,
   });
 
@@ -97,6 +104,39 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const rrspFV = calculateFV(rrspDetails.currentValue, rrspRate[0], rrspYears[0], rrspDetails.annualContribution);
   const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
   const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
+
+  // Animation effect for future values
+  useEffect(() => {
+    const animateValue = (startValue: number, endValue: number, setValue: (value: number) => void) => {
+      const duration = 1500; // 1.5 seconds
+      const startTime = Date.now();
+      
+      const animate = () => {
+        const elapsed = Date.now() - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        // Easing function for smooth animation
+        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
+        const currentValue = startValue + (endValue - startValue) * easeOutQuart;
+        
+        setValue(Math.round(currentValue));
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+      
+      requestAnimationFrame(animate);
+    };
+
+    if (isOpen) {
+      // Start animations with a slight delay between each
+      setTimeout(() => animateValue(realEstateDetails.currentFMV, realEstateFV, setAnimatedRealEstate), 100);
+      setTimeout(() => animateValue(rrspDetails.currentValue, rrspFV, setAnimatedRrsp), 300);
+      setTimeout(() => animateValue(tfsaDetails.currentValue, tfsaFV, setAnimatedTfsa), 500);
+      setTimeout(() => animateValue(nonRegisteredDetails.totalValue, nonRegFV, setAnimatedNonReg), 700);
+    }
+  }, [isOpen, realEstateFV, rrspFV, tfsaFV, nonRegFV, realEstateDetails.currentFMV, rrspDetails.currentValue, tfsaDetails.currentValue, nonRegisteredDetails.totalValue]);
 
   const chartConfig = {
     value: { label: "Value", color: "#3b82f6" },
@@ -200,6 +240,48 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
+  // Animated Future Value component
+  const AnimatedFutureValue = ({ 
+    currentValue, 
+    animatedValue, 
+    targetValue, 
+    label, 
+    years 
+  }: { 
+    currentValue: number;
+    animatedValue: number;
+    targetValue: number;
+    label: string;
+    years: number;
+  }) => {
+    return (
+      <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border-2 border-dashed border-blue-300">
+        <div className="text-center space-y-2">
+          <p className="text-sm font-medium text-muted-foreground">{label} ({years} years)</p>
+          <div className="space-y-1">
+            <p className="text-lg font-bold text-blue-600 animate-pulse">
+              ${animatedValue.toLocaleString()}
+            </p>
+            <div className="flex items-center justify-center gap-2 text-sm">
+              <span className="text-muted-foreground">Growth:</span>
+              <span className="font-semibold text-green-600">
+                +${Math.round(targetValue - currentValue).toLocaleString()}
+              </span>
+            </div>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-2">
+            <div 
+              className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-1000 ease-out"
+              style={{ 
+                width: `${Math.min((animatedValue / targetValue) * 100, 100)}%` 
+              }}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
@@ -238,6 +320,48 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   {(((realEstateFV + rrspFV + tfsaFV + nonRegFV) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue) - 1) * 100).toFixed(1)}%
                 </p>
               </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Animated Future Value Projections */}
+        <Card className="mb-6">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <TrendingUp className="w-6 h-6" />
+              Animated Future Value Projections
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <AnimatedFutureValue
+                currentValue={realEstateDetails.currentFMV}
+                animatedValue={animatedRealEstate}
+                targetValue={realEstateFV}
+                label="Real Estate"
+                years={realEstateYears[0]}
+              />
+              <AnimatedFutureValue
+                currentValue={rrspDetails.currentValue}
+                animatedValue={animatedRrsp}
+                targetValue={rrspFV}
+                label="RRSP"
+                years={rrspYears[0]}
+              />
+              <AnimatedFutureValue
+                currentValue={tfsaDetails.currentValue}
+                animatedValue={animatedTfsa}
+                targetValue={tfsaFV}
+                label="TFSA"
+                years={tfsaYears[0]}
+              />
+              <AnimatedFutureValue
+                currentValue={nonRegisteredDetails.totalValue}
+                animatedValue={animatedNonReg}
+                targetValue={nonRegFV}
+                label="Non-Registered"
+                years={nonRegYears[0]}
+              />
             </div>
           </CardContent>
         </Card>
@@ -590,7 +714,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="nonReg.dividendIncome" 
                   value={nonRegisteredDetails.dividendIncome} 
-                  label="Dividend Income" 
+                  label="Annual Dividend Income" 
+                />
+                <EditableField 
+                  fieldId="nonReg.annualInterestIncome" 
+                  value={nonRegisteredDetails.annualInterestIncome} 
+                  label="Annual Interest Income" 
                 />
                 <EditableField 
                   fieldId="nonReg.capitalGains" 
@@ -637,7 +766,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     <SelectContent>
                       <SelectItem value="real-estate">Real Estate</SelectItem>
                       <SelectItem value="rrsp">RRSP</SelectItem>
+                      <SelectItem value="tfsa">TFSA</SelectItem>
                       <SelectItem value="non-registered">Non-Registered</SelectItem>
+                      <SelectItem value="db">DB (Defined Benefit)</SelectItem>
+                      <SelectItem value="dc">DC (Defined Contribution)</SelectItem>
+                      <SelectItem value="ipp">IPP (Individual Pension Plan)</SelectItem>
+                      <SelectItem value="lira">LIRA (Locked-in Retirement Account)</SelectItem>
+                      <SelectItem value="lif">LIF (Life Income Fund)</SelectItem>
                       <SelectItem value="pension">Pension</SelectItem>
                       <SelectItem value="chequing">Chequing Account</SelectItem>
                     </SelectContent>
