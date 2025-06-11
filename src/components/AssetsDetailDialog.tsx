@@ -42,12 +42,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState<string>("");
 
-  // Animation states for future values
-  const [animatedRealEstate, setAnimatedRealEstate] = useState(0);
-  const [animatedRrsp, setAnimatedRrsp] = useState(0);
-  const [animatedTfsa, setAnimatedTfsa] = useState(0);
-  const [animatedNonReg, setAnimatedNonReg] = useState(0);
-
   // Asset details with enhanced data - now as state for editing
   const [realEstateDetails, setRealEstateDetails] = useState({
     purchasePrice: 480000,
@@ -105,42 +99,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
   const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
 
-  // Animation effect for future values
-  useEffect(() => {
-    const animateValue = (startValue: number, endValue: number, setValue: (value: number) => void) => {
-      const duration = 1500; // 1.5 seconds
-      const startTime = Date.now();
-      
-      const animate = () => {
-        const elapsed = Date.now() - startTime;
-        const progress = Math.min(elapsed / duration, 1);
-        
-        // Easing function for smooth animation
-        const easeOutQuart = 1 - Math.pow(1 - progress, 4);
-        const currentValue = startValue + (endValue - startValue) * easeOutQuart;
-        
-        setValue(Math.round(currentValue));
-        
-        if (progress < 1) {
-          requestAnimationFrame(animate);
-        }
-      };
-      
-      requestAnimationFrame(animate);
-    };
-
-    if (isOpen) {
-      // Start animations with a slight delay between each
-      setTimeout(() => animateValue(realEstateDetails.currentFMV, realEstateFV, setAnimatedRealEstate), 100);
-      setTimeout(() => animateValue(rrspDetails.currentValue, rrspFV, setAnimatedRrsp), 300);
-      setTimeout(() => animateValue(tfsaDetails.currentValue, tfsaFV, setAnimatedTfsa), 500);
-      setTimeout(() => animateValue(nonRegisteredDetails.totalValue, nonRegFV, setAnimatedNonReg), 700);
-    }
-  }, [isOpen, realEstateFV, rrspFV, tfsaFV, nonRegFV, realEstateDetails.currentFMV, rrspDetails.currentValue, tfsaDetails.currentValue, nonRegisteredDetails.totalValue]);
-
   const chartConfig = {
-    value: { label: "Value", color: "#3b82f6" },
-    futureValue: { label: "Future Value", color: "#10b981" }
+    current: { label: "Current Value", color: "#3b82f6" },
+    future: { label: "Future Value", color: "#10b981" }
   };
 
   // Edit handlers
@@ -240,44 +201,68 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Animated Future Value component
-  const AnimatedFutureValue = ({ 
+  // Growth Visualization Chart Component
+  const GrowthChart = ({ 
     currentValue, 
-    animatedValue, 
-    targetValue, 
-    label, 
-    years 
+    futureValue, 
+    years, 
+    rate,
+    color = "#10b981"
   }: { 
     currentValue: number;
-    animatedValue: number;
-    targetValue: number;
-    label: string;
+    futureValue: number;
     years: number;
+    rate: number;
+    color?: string;
   }) => {
+    const data = [
+      { 
+        name: "Current", 
+        value: currentValue,
+        fill: "#64748b"
+      },
+      { 
+        name: `${years}Y Future`, 
+        value: futureValue,
+        fill: color
+      }
+    ];
+
     return (
-      <div className="bg-gradient-to-r from-blue-50 to-green-50 p-4 rounded-lg border-2 border-dashed border-blue-300">
-        <div className="text-center space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">{label} ({years} years)</p>
-          <div className="space-y-1">
-            <p className="text-lg font-bold text-blue-600 animate-pulse">
-              ${animatedValue.toLocaleString()}
-            </p>
-            <div className="flex items-center justify-center gap-2 text-sm">
-              <span className="text-muted-foreground">Growth:</span>
-              <span className="font-semibold text-green-600">
-                +${Math.round(targetValue - currentValue).toLocaleString()}
-              </span>
-            </div>
-          </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-1000 ease-out"
-              style={{ 
-                width: `${Math.min((animatedValue / targetValue) * 100, 100)}%` 
+      <div className="h-32 w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+            <XAxis 
+              dataKey="name" 
+              axisLine={false}
+              tickLine={false}
+              tick={{ fontSize: 12, fill: '#64748b' }}
+            />
+            <YAxis hide />
+            <ChartTooltip 
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  const data = payload[0];
+                  return (
+                    <div className="bg-background border rounded-lg p-2 shadow-md">
+                      <p className="font-medium">{data.payload.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        ${data.value?.toLocaleString()}
+                      </p>
+                      {data.payload.name.includes('Future') && (
+                        <p className="text-xs text-green-600">
+                          +{((futureValue / currentValue - 1) * 100).toFixed(1)}% growth
+                        </p>
+                      )}
+                    </div>
+                  );
+                }
+                return null;
               }}
             />
-          </div>
-        </div>
+            <Bar dataKey="value" radius={[4, 4, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
       </div>
     );
   };
@@ -324,48 +309,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </CardContent>
         </Card>
 
-        {/* Animated Future Value Projections */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <TrendingUp className="w-6 h-6" />
-              Animated Future Value Projections
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <AnimatedFutureValue
-                currentValue={realEstateDetails.currentFMV}
-                animatedValue={animatedRealEstate}
-                targetValue={realEstateFV}
-                label="Real Estate"
-                years={realEstateYears[0]}
-              />
-              <AnimatedFutureValue
-                currentValue={rrspDetails.currentValue}
-                animatedValue={animatedRrsp}
-                targetValue={rrspFV}
-                label="RRSP"
-                years={rrspYears[0]}
-              />
-              <AnimatedFutureValue
-                currentValue={tfsaDetails.currentValue}
-                animatedValue={animatedTfsa}
-                targetValue={tfsaFV}
-                label="TFSA"
-                years={tfsaYears[0]}
-              />
-              <AnimatedFutureValue
-                currentValue={nonRegisteredDetails.totalValue}
-                animatedValue={animatedNonReg}
-                targetValue={nonRegFV}
-                label="Non-Registered"
-                years={nonRegYears[0]}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Assets Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
@@ -378,6 +321,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Growth Visualization */}
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Current vs Future Value</p>
+                  <span className="text-xs text-muted-foreground">{realEstateRate[0]}% for {realEstateYears[0]} years</span>
+                </div>
+                <GrowthChart 
+                  currentValue={realEstateDetails.currentFMV}
+                  futureValue={realEstateFV}
+                  years={realEstateYears[0]}
+                  rate={realEstateRate[0]}
+                  color="#f59e0b"
+                />
+              </div>
+
               {/* Real Estate Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
@@ -474,6 +432,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Growth Visualization */}
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Current vs Future Value</p>
+                  <span className="text-xs text-muted-foreground">{rrspRate[0]}% for {rrspYears[0]} years</span>
+                </div>
+                <GrowthChart 
+                  currentValue={rrspDetails.currentValue}
+                  futureValue={rrspFV}
+                  years={rrspYears[0]}
+                  rate={rrspRate[0]}
+                  color="#8b5cf6"
+                />
+              </div>
+
               {/* RRSP Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
@@ -561,6 +534,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Growth Visualization */}
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Current vs Future Value</p>
+                  <span className="text-xs text-muted-foreground">{tfsaRate[0]}% for {tfsaYears[0]} years</span>
+                </div>
+                <GrowthChart 
+                  currentValue={tfsaDetails.currentValue}
+                  futureValue={tfsaFV}
+                  years={tfsaYears[0]}
+                  rate={tfsaRate[0]}
+                  color="#06b6d4"
+                />
+              </div>
+
               {/* TFSA Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
@@ -658,6 +646,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
+              {/* Growth Visualization */}
+              <div className="bg-muted/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-sm font-medium">Current vs Future Value</p>
+                  <span className="text-xs text-muted-foreground">{nonRegRate[0]}% for {nonRegYears[0]} years</span>
+                </div>
+                <GrowthChart 
+                  currentValue={nonRegisteredDetails.totalValue}
+                  futureValue={nonRegFV}
+                  years={nonRegYears[0]}
+                  rate={nonRegRate[0]}
+                  color="#ef4444"
+                />
+              </div>
+
               {/* Non-Registered Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
