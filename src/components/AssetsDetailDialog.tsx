@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -7,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { useState } from "react";
 
 interface Asset {
@@ -30,6 +32,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const [tfsaRate, setTfsaRate] = useState([6.5]);
   const [nonRegRate, setNonRegRate] = useState([8.0]);
   const [includeContributions, setIncludeContributions] = useState(true);
+  const [contributionPeriod, setContributionPeriod] = useState("annual");
 
   // Editable state tracking
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -76,6 +79,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     capitalGains: 2350,
   });
 
+  // Helper function to get display contribution values
+  const getContributionValue = (annualAmount: number) => {
+    return contributionPeriod === "monthly" ? Math.round(annualAmount / 12) : annualAmount;
+  };
+
+  const getContributionLabel = (baseLabel: string) => {
+    return contributionPeriod === "monthly" ? `Monthly ${baseLabel}` : `Annual ${baseLabel}`;
+  };
+
   // FV calculations
   const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
     if (!includeContributions) {
@@ -99,7 +111,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   // Edit handlers
   const startEdit = (fieldId: string, currentValue: number | string) => {
     setEditingField(fieldId);
-    setTempValue(currentValue.toString());
+    const displayValue = fieldId.includes('Contribution') || fieldId.includes('dividendIncome') ? 
+      getContributionValue(Number(currentValue)) : currentValue;
+    setTempValue(displayValue.toString());
   };
 
   const cancelEdit = () => {
@@ -108,10 +122,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   };
 
   const saveEdit = (fieldId: string) => {
-    const numericValue = parseFloat(tempValue);
+    let numericValue = parseFloat(tempValue);
     if (isNaN(numericValue)) {
       cancelEdit();
       return;
+    }
+
+    // Convert monthly values back to annual for storage
+    if ((fieldId.includes('Contribution') || fieldId.includes('dividendIncome')) && contributionPeriod === "monthly") {
+      numericValue = numericValue * 12;
     }
 
     const [category, field] = fieldId.split('.');
@@ -142,7 +161,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     label, 
     isEditable = true, 
     prefix = "$",
-    isAutoCalculated = false 
+    isAutoCalculated = false,
+    isContribution = false
   }: { 
     fieldId: string; 
     value: number; 
@@ -150,12 +170,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     isEditable?: boolean;
     prefix?: string;
     isAutoCalculated?: boolean;
+    isContribution?: boolean;
   }) => {
     const isEditing = editingField === fieldId;
+    const displayValue = isContribution ? getContributionValue(value) : value;
+    const displayLabel = isContribution ? getContributionLabel(label) : label;
     
     return (
       <div className="relative">
-        <p className="text-sm text-muted-foreground">{label}</p>
+        <p className="text-sm text-muted-foreground">{displayLabel}</p>
         {isEditing ? (
           <div className="flex items-center gap-2">
             <Input
@@ -175,7 +198,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
         ) : (
           <div className="flex items-center justify-between">
             <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-              {prefix}{value.toLocaleString()}
+              {prefix}{displayValue.toLocaleString()}
             </p>
             {isEditable && !isAutoCalculated && (
               <Button 
@@ -225,6 +248,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     onCheckedChange={setIncludeContributions}
                   />
                   <label className="text-sm font-medium">Include Annual Contributions</label>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Contribution Display</label>
+                  <ToggleGroup type="single" value={contributionPeriod} onValueChange={setContributionPeriod}>
+                    <ToggleGroupItem value="annual">Annual</ToggleGroupItem>
+                    <ToggleGroupItem value="monthly">Monthly</ToggleGroupItem>
+                  </ToggleGroup>
                 </div>
               </div>
               
@@ -432,7 +462,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="rrsp.annualContribution" 
                   value={rrspDetails.annualContribution} 
-                  label="Annual Contribution" 
+                  label="Contribution" 
+                  isContribution={true}
                 />
               </div>
               
@@ -498,7 +529,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="tfsa.annualContribution" 
                   value={tfsaDetails.annualContribution} 
-                  label="Annual Contribution" 
+                  label="Contribution" 
+                  isContribution={true}
                 />
               </div>
               
@@ -550,7 +582,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="nonReg.dividendIncome" 
                   value={nonRegisteredDetails.dividendIncome} 
-                  label="Annual Dividend Income" 
+                  label="Dividend Income" 
+                  isContribution={true}
                 />
                 <EditableField 
                   fieldId="nonReg.capitalGains" 
@@ -560,7 +593,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <EditableField 
                   fieldId="nonReg.annualContribution" 
                   value={nonRegisteredDetails.annualContribution} 
-                  label="Annual Contribution" 
+                  label="Contribution" 
+                  isContribution={true}
                 />
               </div>
               
