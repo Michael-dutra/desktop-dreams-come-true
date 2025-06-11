@@ -63,8 +63,19 @@ const NetWorthCard = () => {
                   tick={{ fontSize: 10, fill: 'white' }}
                   axisLine={{ stroke: 'white' }}
                   tickLine={{ stroke: 'white' }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
-                <ChartTooltip content={<ChartTooltipContent />} />
+                <ChartTooltip 
+                  content={<ChartTooltipContent 
+                    formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
+                    labelStyle={{ color: 'white' }}
+                    contentStyle={{ 
+                      backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                      border: '1px solid white',
+                      color: 'white'
+                    }}
+                  />} 
+                />
                 <Line 
                   type="monotone" 
                   dataKey="netWorth" 
