@@ -13,6 +13,8 @@ import InquiryBreakdownChart from "@/components/InquiryBreakdownChart";
 import InquiriesPerMonthChart from "@/components/InquiriesPerMonthChart";
 import SourceBreakdownChart from "@/components/SourceBreakdownChart";
 import IncomeSourceChart from "@/components/IncomeSourceChart";
+import RecentGuidance from "@/components/RecentGuidance";
+import FinancialVault from "@/components/FinancialVault";
 
 const Index = () => {
   return (
@@ -23,6 +25,12 @@ const Index = () => {
         <div className="space-y-6">
           {/* Client Information Header */}
           <ClientInfo />
+          
+          {/* Recent Guidance and Financial Vault */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <RecentGuidance />
+            <FinancialVault />
+          </div>
           
           {/* First Row - Net Worth, Assets, Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
