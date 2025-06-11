@@ -1,13 +1,15 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
-import { TrendingUp, Home, Wallet, PiggyBank, DollarSign, Calendar, AlertTriangle, Target, Edit2, Check, X } from "lucide-react";
+import { TrendingUp, Home, Wallet, PiggyBank, DollarSign, Calendar, AlertTriangle, Target, Edit2, Check, X, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useState } from "react";
 
 interface Asset {
@@ -604,6 +606,40 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   <TrendingUp className="w-4 h-4 text-green-600" />
                   <span className="text-sm">Rate: <span className="font-semibold">{nonRegRate[0]}%</span> annually</span>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Add Asset Card */}
+          <Card className="border-dashed border-2 border-muted-foreground/30">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
+                <Plus className="w-6 h-6" />
+                Add Asset
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3">
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Asset Type</label>
+                  <Select>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select an asset type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="real-estate">Real Estate</SelectItem>
+                      <SelectItem value="rrsp">RRSP</SelectItem>
+                      <SelectItem value="non-registered">Non-Registered</SelectItem>
+                      <SelectItem value="pension">Pension</SelectItem>
+                      <SelectItem value="chequing">Chequing Account</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <Button className="w-full" variant="outline">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add New Asset
+                </Button>
               </div>
             </CardContent>
           </Card>
