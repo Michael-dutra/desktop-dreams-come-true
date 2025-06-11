@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -291,7 +290,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Current Value</p>
                 <p className="font-bold text-2xl text-green-600">
@@ -315,31 +314,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 <p className="font-bold text-2xl text-orange-600">
                   {(((realEstateFV + rrspFV + tfsaFV + nonRegFV) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue) - 1) * 100).toFixed(1)}%
                 </p>
-              </div>
-            </div>
-
-            {/* Additional Insights */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
-              <div className="flex items-center space-x-3 p-3 rounded-lg bg-blue-50">
-                <Target className="w-5 h-5 text-blue-600" />
-                <div>
-                  <p className="text-sm font-medium">Asset Diversification</p>
-                  <p className="text-xs text-muted-foreground">84% Real Estate, 16% Liquid Assets</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 rounded-lg bg-green-50">
-                <Calendar className="w-5 h-5 text-green-600" />
-                <div>
-                  <p className="text-sm font-medium">Tax Efficiency</p>
-                  <p className="text-xs text-muted-foreground">${(rrspDetails.taxDeferred + tfsaDetails.taxFreeGrowth).toLocaleString()} tax optimized</p>
-                </div>
-              </div>
-              <div className="flex items-center space-x-3 p-3 rounded-lg bg-orange-50">
-                <AlertTriangle className="w-5 h-5 text-orange-600" />
-                <div>
-                  <p className="text-sm font-medium">Contribution Room</p>
-                  <p className="text-xs text-muted-foreground">${(rrspDetails.availableRoom + tfsaDetails.availableRoom).toLocaleString()} available</p>
-                </div>
               </div>
             </div>
           </CardContent>
