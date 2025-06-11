@@ -1,7 +1,6 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Home, CreditCard, Car, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
@@ -169,8 +168,8 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   );
 
   const chartConfig = {
-    current: { label: "Current Strategy", color: "#ef4444" },
-    optimized: { label: "Optimized Strategy", color: "#10b981" }
+    current: { label: "Current", color: "#ef4444" },
+    optimized: { label: "Optimized", color: "#10b981" }
   };
 
   return (
@@ -278,18 +277,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                           content={<ChartTooltipContent />}
                           formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                         />
+                        <ChartLegend 
+                          content={<ChartLegendContent />}
+                          verticalAlign="top"
+                          height={36}
+                        />
                         <Line 
                           dataKey="current"
                           stroke="#ef4444" 
                           strokeWidth={2}
-                          name="Current Strategy"
+                          name="Current"
                           dot={false}
                         />
                         <Line 
                           dataKey="optimized"
                           stroke="#10b981" 
                           strokeWidth={2}
-                          name="Optimized Strategy"
+                          name="Optimized"
                           dot={false}
                         />
                       </LineChart>
@@ -359,18 +363,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                         content={<ChartTooltipContent />}
                         formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                       />
+                      <ChartLegend 
+                        content={<ChartLegendContent />}
+                        verticalAlign="top"
+                        height={36}
+                      />
                       <Line 
                         dataKey="current"
                         stroke="#ef4444" 
                         strokeWidth={2}
-                        name="Current Strategy"
+                        name="Current"
                         dot={false}
                       />
                       <Line 
                         dataKey="optimized"
                         stroke="#10b981" 
                         strokeWidth={2}
-                        name="Optimized Strategy"
+                        name="Optimized"
                         dot={false}
                       />
                     </LineChart>
@@ -439,18 +448,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                         content={<ChartTooltipContent />}
                         formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
                       />
+                      <ChartLegend 
+                        content={<ChartLegendContent />}
+                        verticalAlign="top"
+                        height={36}
+                      />
                       <Line 
                         dataKey="current"
                         stroke="#ef4444" 
                         strokeWidth={2}
-                        name="Current Strategy"
+                        name="Current"
                         dot={false}
                       />
                       <Line 
                         dataKey="optimized"
                         stroke="#10b981" 
                         strokeWidth={2}
-                        name="Optimized Strategy"
+                        name="Optimized"
                         dot={false}
                       />
                     </LineChart>
