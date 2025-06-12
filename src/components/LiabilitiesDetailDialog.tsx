@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -199,29 +198,31 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 {/* Current Mortgage Details */}
                 <div className="space-y-3 p-4 rounded-lg bg-gray-50">
                   <h4 className="font-semibold mb-3">Current Mortgage Details</h4>
-                  <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label htmlFor="mortgageAmount">Current Mortgage Amount</Label>
+                      <Label htmlFor="mortgageAmount" className="text-xs">Amount</Label>
                       <Input
                         id="mortgageAmount"
                         type="number"
                         value={mortgageAmount}
                         onChange={(e) => setMortgageAmount(Number(e.target.value))}
+                        className="h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="mortgagePayment">Mortgage Payment</Label>
+                      <Label htmlFor="mortgagePayment" className="text-xs">Payment</Label>
                       <Input
                         id="mortgagePayment"
                         type="number"
                         value={mortgagePayment}
                         onChange={(e) => setMortgagePayment(Number(e.target.value))}
+                        className="h-8 text-sm"
                       />
                     </div>
                     <div>
-                      <Label htmlFor="mortgageFrequency">Frequency</Label>
+                      <Label htmlFor="mortgageFrequency" className="text-xs">Frequency</Label>
                       <Select value={mortgageFrequency} onValueChange={setMortgageFrequency}>
-                        <SelectTrigger>
+                        <SelectTrigger className="h-8 text-sm">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -232,13 +233,14 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                       </Select>
                     </div>
                     <div>
-                      <Label htmlFor="mortgageRate">Interest Rate (%)</Label>
+                      <Label htmlFor="mortgageRate" className="text-xs">Rate (%)</Label>
                       <Input
                         id="mortgageRate"
                         type="number"
                         step="0.1"
                         value={mortgageRate}
                         onChange={(e) => setMortgageRate(Number(e.target.value))}
+                        className="h-8 text-sm"
                       />
                     </div>
                   </div>
@@ -320,33 +322,36 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardContent className="space-y-4">
               {/* Editable Fields */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="carBalance">Balance</Label>
+                    <Label htmlFor="carBalance" className="text-xs">Balance</Label>
                     <Input
                       id="carBalance"
                       type="number"
                       value={carBalance}
                       onChange={(e) => setCarBalance(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="carRate">Interest Rate (%)</Label>
+                    <Label htmlFor="carRate" className="text-xs">Rate (%)</Label>
                     <Input
                       id="carRate"
                       type="number"
                       step="0.1"
                       value={carRate}
                       onChange={(e) => setCarRate(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="carPayment">Monthly Payment</Label>
+                  <div className="col-span-2">
+                    <Label htmlFor="carPayment" className="text-xs">Monthly Payment</Label>
                     <Input
                       id="carPayment"
                       type="number"
                       value={carPayment}
                       onChange={(e) => setCarPayment(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
@@ -427,33 +432,36 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardContent className="space-y-4">
               {/* Editable Fields */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="creditBalance">Balance</Label>
+                    <Label htmlFor="creditBalance" className="text-xs">Balance</Label>
                     <Input
                       id="creditBalance"
                       type="number"
                       value={creditBalance}
                       onChange={(e) => setCreditBalance(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="creditRate">Interest Rate (%)</Label>
+                    <Label htmlFor="creditRate" className="text-xs">Rate (%)</Label>
                     <Input
                       id="creditRate"
                       type="number"
                       step="0.1"
                       value={creditRate}
                       onChange={(e) => setCreditRate(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="creditPayment">Monthly Payment</Label>
+                  <div className="col-span-2">
+                    <Label htmlFor="creditPayment" className="text-xs">Monthly Payment</Label>
                     <Input
                       id="creditPayment"
                       type="number"
                       value={creditPayment}
                       onChange={(e) => setCreditPayment(Number(e.target.value))}
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
