@@ -1,3 +1,4 @@
+
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -30,13 +31,15 @@ const BusinessCard = () => {
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center space-x-2">
-              <Building2 className="h-5 w-5" />
+              <div className="p-2 bg-indigo-100 rounded-lg">
+                <Building2 className="h-5 w-5 text-indigo-600" />
+              </div>
               <span>Business</span>
             </CardTitle>
             <Button 
               variant="outline" 
               size="sm" 
-              className="flex items-center space-x-2"
+              className="flex items-center space-x-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50"
               onClick={() => setShowDetailDialog(true)}
             >
               <Eye className="h-4 w-4" />

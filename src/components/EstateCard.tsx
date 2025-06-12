@@ -1,3 +1,4 @@
+
 import { Crown, FileText, Shield, AlertTriangle, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,18 +11,18 @@ const EstateCard = () => {
   return (
     <>
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-amber-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-orange-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-xl flex items-center space-x-3">
-            <div className="p-2 bg-amber-100 rounded-lg">
-              <Crown className="h-6 w-6 text-amber-600" />
+            <div className="p-2 bg-orange-100 rounded-lg">
+              <Crown className="h-6 w-6 text-orange-700" />
             </div>
             <span>Estate</span>
           </CardTitle>
           <Button 
             variant="outline" 
             size="sm"
-            className="flex items-center gap-2 hover:bg-amber-50"
+            className="flex items-center gap-2 border-orange-700 text-orange-700 hover:bg-orange-50"
             onClick={() => setShowDetailDialog(true)}
           >
             <Eye className="w-4 h-4" />
