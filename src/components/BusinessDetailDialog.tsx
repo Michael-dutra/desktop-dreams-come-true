@@ -1,11 +1,13 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
@@ -14,35 +16,137 @@ interface BusinessDetailDialogProps {
   onClose: () => void;
 }
 
+interface RevenueStream {
+  id: string;
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface FinancialData {
+  year: string;
+  valuation: number;
+  revenue: number;
+  profit: number;
+  expenses: number;
+}
+
+interface BusinessInsurance {
+  id: string;
+  type: "General Liability" | "Professional Liability" | "Term Life" | "Universal Life" | "Whole Life" | "Key Person Insurance" | "Business Interruption" | "Cyber Liability" | "Commercial Auto" | "Workers Compensation" | "Directors & Officers";
+  coverage: string;
+  status: "Active" | "Pending" | "Expired";
+  premium: string;
+  policyNumber?: string;
+  insuredAmount?: number;
+}
+
 const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
-  const businessGrowthData = [
-    { year: "2020", valuation: 150000, revenue: 280000, profit: 45000 },
-    { year: "2021", valuation: 180000, revenue: 320000, profit: 58000 },
-    { year: "2022", valuation: 220000, revenue: 385000, profit: 72000 },
-    { year: "2023", valuation: 275000, revenue: 450000, profit: 89000 },
-    { year: "2024", valuation: 325000, revenue: 485000, profit: 105000 },
-  ];
+  // Revenue Streams State
+  const [revenueStreams, setRevenueStreams] = useState<RevenueStream[]>([
+    { id: "1", name: "Core Services", value: 285000, color: "#8b5cf6" },
+    { id: "2", name: "Consulting", value: 125000, color: "#06b6d4" },
+    { id: "3", name: "Products", value: 75000, color: "#10b981" },
+  ]);
 
-  const revenueStreams = [
-    { name: "Core Services", value: 285000, color: "#8b5cf6" },
-    { name: "Consulting", value: 125000, color: "#06b6d4" },
-    { name: "Products", value: 75000, color: "#10b981" },
-  ];
+  const [isEditingRevenue, setIsEditingRevenue] = useState(false);
+  const [newRevenueName, setNewRevenueName] = useState("");
+  const [newRevenueValue, setNewRevenueValue] = useState(0);
+
+  // Financial Data State
+  const [financialData, setFinancialData] = useState<FinancialData[]>([
+    { year: "2020", valuation: 150000, revenue: 280000, profit: 45000, expenses: 235000 },
+    { year: "2021", valuation: 180000, revenue: 320000, profit: 58000, expenses: 262000 },
+    { year: "2022", valuation: 220000, revenue: 385000, profit: 72000, expenses: 313000 },
+    { year: "2023", valuation: 275000, revenue: 450000, profit: 89000, expenses: 361000 },
+    { year: "2024", valuation: 325000, revenue: 485000, profit: 105000, expenses: 380000 },
+  ]);
+
+  const [isEditingFinancials, setIsEditingFinancials] = useState(false);
+
+  // Insurance State
+  const [businessInsurances, setBusinessInsurances] = useState<BusinessInsurance[]>([
+    { id: "1", type: "General Liability", coverage: "$2M", status: "Active", premium: "$3,200", policyNumber: "GL-2024-001", insuredAmount: 2000000 },
+    { id: "2", type: "Professional Liability", coverage: "$1M", status: "Active", premium: "$2,800", policyNumber: "PL-2024-002", insuredAmount: 1000000 },
+    { id: "3", type: "Key Person Insurance", coverage: "$500K", status: "Active", premium: "$4,500", policyNumber: "KP-2024-003", insuredAmount: 500000 },
+    { id: "4", type: "Business Interruption", coverage: "$750K", status: "Active", premium: "$1,900", policyNumber: "BI-2024-004", insuredAmount: 750000 },
+  ]);
+
+  const [isAddingInsurance, setIsAddingInsurance] = useState(false);
+  const [newInsurance, setNewInsurance] = useState({
+    type: "" as BusinessInsurance["type"],
+    coverage: "",
+    premium: "",
+    policyNumber: "",
+    insuredAmount: 0
+  });
+
+  // Revenue Stream Functions
+  const addRevenueStream = () => {
+    if (newRevenueName && newRevenueValue > 0) {
+      const colors = ["#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#10b981"];
+      const newStream: RevenueStream = {
+        id: Date.now().toString(),
+        name: newRevenueName,
+        value: newRevenueValue,
+        color: colors[revenueStreams.length % colors.length]
+      };
+      setRevenueStreams([...revenueStreams, newStream]);
+      setNewRevenueName("");
+      setNewRevenueValue(0);
+    }
+  };
+
+  const deleteRevenueStream = (id: string) => {
+    setRevenueStreams(revenueStreams.filter(stream => stream.id !== id));
+  };
+
+  const updateRevenueStream = (id: string, field: string, value: any) => {
+    setRevenueStreams(revenueStreams.map(stream => 
+      stream.id === id ? { ...stream, [field]: value } : stream
+    ));
+  };
+
+  // Financial Data Functions
+  const updateFinancialData = (year: string, field: string, value: number) => {
+    setFinancialData(financialData.map(data => 
+      data.year === year ? { ...data, [field]: value } : data
+    ));
+  };
+
+  // Insurance Functions
+  const addInsurance = () => {
+    if (newInsurance.type && newInsurance.coverage && newInsurance.premium) {
+      const insurance: BusinessInsurance = {
+        id: Date.now().toString(),
+        ...newInsurance,
+        status: "Active"
+      };
+      setBusinessInsurances([...businessInsurances, insurance]);
+      setNewInsurance({
+        type: "" as BusinessInsurance["type"],
+        coverage: "",
+        premium: "",
+        policyNumber: "",
+        insuredAmount: 0
+      });
+      setIsAddingInsurance(false);
+    }
+  };
+
+  const deleteInsurance = (id: string) => {
+    setBusinessInsurances(businessInsurances.filter(insurance => insurance.id !== id));
+  };
+
+  const businessGrowthData = financialData;
 
   const businessMetrics = [
     { metric: "Gross Margin", value: "68%", trend: "+5%", positive: true },
     { metric: "Net Margin", value: "22%", trend: "+3%", positive: true },
     { metric: "Employee Count", value: "12", trend: "+2", positive: true },
     { metric: "Customer Retention", value: "94%", trend: "+2%", positive: true },
-  ];
-
-  const insuranceCoverage = [
-    { type: "General Liability", coverage: "$2M", status: "Active", premium: "$3,200" },
-    { type: "Professional Liability", coverage: "$1M", status: "Active", premium: "$2,800" },
-    { type: "Key Person Insurance", coverage: "$500K", status: "Active", premium: "$4,500" },
-    { type: "Business Interruption", coverage: "$750K", status: "Active", premium: "$1,900" },
   ];
 
   const successionPlan = [
@@ -56,6 +160,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     valuation: { label: "Valuation", color: "#8b5cf6" },
     revenue: { label: "Revenue", color: "#06b6d4" },
     profit: { label: "Profit", color: "#10b981" },
+    expenses: { label: "Expenses", color: "#ef4444" },
   };
 
   return (
@@ -82,9 +187,11 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Business Valuation Growth</span>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5" />
+                      <span>Business Valuation Growth</span>
+                    </div>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -107,9 +214,18 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <DollarSign className="h-5 w-5" />
-                    <span>Revenue Streams</span>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-5 w-5" />
+                      <span>Revenue Streams</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingRevenue(!isEditingRevenue)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -131,17 +247,66 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                       <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, ""]} />} />
                     </PieChart>
                   </ChartContainer>
-                  <div className="space-y-2 mt-4">
-                    {revenueStreams.map((stream) => (
-                      <div key={stream.name} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stream.color }} />
-                          <span className="text-sm">{stream.name}</span>
+                  
+                  {isEditingRevenue && (
+                    <div className="space-y-4 mt-4">
+                      {revenueStreams.map((stream) => (
+                        <div key={stream.id} className="flex items-center gap-2 p-2 border rounded">
+                          <Input
+                            value={stream.name}
+                            onChange={(e) => updateRevenueStream(stream.id, 'name', e.target.value)}
+                            className="flex-1"
+                          />
+                          <Input
+                            type="number"
+                            value={stream.value}
+                            onChange={(e) => updateRevenueStream(stream.id, 'value', Number(e.target.value))}
+                            className="w-32"
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => deleteRevenueStream(stream.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
                         </div>
-                        <span className="text-sm font-medium">${stream.value.toLocaleString()}</span>
+                      ))}
+                      
+                      <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
+                        <Input
+                          placeholder="Revenue stream name"
+                          value={newRevenueName}
+                          onChange={(e) => setNewRevenueName(e.target.value)}
+                          className="flex-1"
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Amount"
+                          value={newRevenueValue || ""}
+                          onChange={(e) => setNewRevenueValue(Number(e.target.value))}
+                          className="w-32"
+                        />
+                        <Button onClick={addRevenueStream} size="sm">
+                          <Plus className="h-4 w-4" />
+                        </Button>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  )}
+                  
+                  {!isEditingRevenue && (
+                    <div className="space-y-2 mt-4">
+                      {revenueStreams.map((stream) => (
+                        <div key={stream.name} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stream.color }} />
+                            <span className="text-sm">{stream.name}</span>
+                          </div>
+                          <span className="text-sm font-medium">${stream.value.toLocaleString()}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -169,7 +334,16 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
           <TabsContent value="financials" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Revenue & Profit Trends</CardTitle>
+                <CardTitle className="flex items-center justify-between">
+                  <span>Revenue, Profit & Expenses Trends</span>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingFinancials(!isEditingFinancials)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={chartConfig} className="h-80">
@@ -179,11 +353,64 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="revenue" fill="#06b6d4" name="Revenue" />
                     <Bar dataKey="profit" fill="#10b981" name="Profit" />
+                    <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
                   </BarChart>
                 </ChartContainer>
               </CardContent>
             </Card>
 
+            {isEditingFinancials && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Edit Financial Data</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {financialData.map((data) => (
+                      <div key={data.year} className="grid grid-cols-5 gap-4 items-center p-4 border rounded-lg">
+                        <div>
+                          <Label className="text-sm font-medium">{data.year}</Label>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Revenue</Label>
+                          <Input
+                            type="number"
+                            value={data.revenue}
+                            onChange={(e) => updateFinancialData(data.year, 'revenue', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Expenses</Label>
+                          <Input
+                            type="number"
+                            value={data.expenses}
+                            onChange={(e) => updateFinancialData(data.year, 'expenses', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Profit</Label>
+                          <Input
+                            type="number"
+                            value={data.profit}
+                            onChange={(e) => updateFinancialData(data.year, 'profit', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Valuation</Label>
+                          <Input
+                            type="number"
+                            value={data.valuation}
+                            onChange={(e) => updateFinancialData(data.year, 'valuation', Number(e.target.value))}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
@@ -250,33 +477,118 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
           <TabsContent value="insurance" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5" />
-                  <span>Business Insurance Coverage</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Shield className="h-5 w-5" />
+                    <span>Business Insurance Coverage</span>
+                  </div>
+                  <Button onClick={() => setIsAddingInsurance(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Insurance
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {insuranceCoverage.map((insurance) => (
-                    <div key={insurance.type} className="flex items-center justify-between p-4 border rounded-lg">
+                  {businessInsurances.map((insurance) => (
+                    <div key={insurance.id} className="flex items-center justify-between p-4 border rounded-lg">
                       <div>
                         <h4 className="font-medium">{insurance.type}</h4>
                         <p className="text-sm text-muted-foreground">Coverage: {insurance.coverage}</p>
+                        {insurance.policyNumber && (
+                          <p className="text-xs text-muted-foreground">Policy: {insurance.policyNumber}</p>
+                        )}
                       </div>
-                      <div className="text-right">
-                        <Badge variant="secondary" className="mb-2">
-                          {insurance.status}
-                        </Badge>
-                        <p className="text-sm text-muted-foreground">
-                          Annual Premium: {insurance.premium}
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <Badge variant="secondary" className="mb-2">
+                            {insurance.status}
+                          </Badge>
+                          <p className="text-sm text-muted-foreground">
+                            Annual Premium: {insurance.premium}
+                          </p>
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteInsurance(insurance.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                {isAddingInsurance && (
+                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium mb-4">Add New Insurance</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Insurance Type</Label>
+                        <Select 
+                          value={newInsurance.type} 
+                          onValueChange={(value: BusinessInsurance["type"]) => 
+                            setNewInsurance({...newInsurance, type: value})
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select insurance type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="General Liability">General Liability</SelectItem>
+                            <SelectItem value="Professional Liability">Professional Liability</SelectItem>
+                            <SelectItem value="Term Life">Term Life Insurance</SelectItem>
+                            <SelectItem value="Universal Life">Universal Life Insurance</SelectItem>
+                            <SelectItem value="Whole Life">Whole Life Insurance</SelectItem>
+                            <SelectItem value="Key Person Insurance">Key Person Insurance</SelectItem>
+                            <SelectItem value="Business Interruption">Business Interruption</SelectItem>
+                            <SelectItem value="Cyber Liability">Cyber Liability</SelectItem>
+                            <SelectItem value="Commercial Auto">Commercial Auto</SelectItem>
+                            <SelectItem value="Workers Compensation">Workers Compensation</SelectItem>
+                            <SelectItem value="Directors & Officers">Directors & Officers</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium">Coverage Amount</Label>
+                        <Input
+                          placeholder="$1M"
+                          value={newInsurance.coverage}
+                          onChange={(e) => setNewInsurance({...newInsurance, coverage: e.target.value})}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium">Annual Premium</Label>
+                        <Input
+                          placeholder="$3,200"
+                          value={newInsurance.premium}
+                          onChange={(e) => setNewInsurance({...newInsurance, premium: e.target.value})}
+                        />
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium">Policy Number (Optional)</Label>
+                        <Input
+                          placeholder="POL-2024-001"
+                          value={newInsurance.policyNumber}
+                          onChange={(e) => setNewInsurance({...newInsurance, policyNumber: e.target.value})}
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={addInsurance}>Add Insurance</Button>
+                      <Button variant="outline" onClick={() => setIsAddingInsurance(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
+            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -325,6 +637,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
           </TabsContent>
 
           <TabsContent value="succession" className="space-y-6">
+            
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
