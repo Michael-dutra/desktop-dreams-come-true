@@ -206,7 +206,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Growth Visualization Chart Component - Fixed to only animate lines
+  // Growth Visualization Chart Component - Fixed to prevent flickering
   const GrowthChart = ({ 
     currentValue, 
     futureValue, 
@@ -301,7 +301,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 }}
               />
               
-              {/* Current value line (flat red line) */}
+              {/* Current value line (flat red line) - NO ANIMATION */}
               <Line 
                 type="monotone" 
                 dataKey="current" 
@@ -309,11 +309,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, fill: 'hsl(var(--destructive))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                animationDuration={0}
                 isAnimationActive={false}
               />
               
-              {/* Future value projection line (growing green line) */}
+              {/* Future value projection line (growing green line) - NO ANIMATION */}
               <Line 
                 type="monotone" 
                 dataKey="future" 
@@ -321,8 +320,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, fill: '#22c55e', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                animationDuration={500}
-                animationEasing="ease-out"
+                isAnimationActive={false}
               />
             </LineChart>
           </ResponsiveContainer>

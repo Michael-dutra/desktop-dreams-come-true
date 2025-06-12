@@ -85,7 +85,7 @@ const NetWorthCard = () => {
                 />
               </LineChart>
             </ChartContainer>
-            <p className="text-xs text-blue-100 mt-1">
+            <p className="text-xs text-white mt-1">
               Projected to reach $530K by 2029
             </p>
           </div>
