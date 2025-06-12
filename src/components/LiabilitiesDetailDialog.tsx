@@ -734,25 +734,6 @@ This projection assumes consistent payment performance. Actual results may vary 
               )}
 
               <div className="flex justify-end pt-4 border-t gap-2">
-                {!isEditingWriteUp && (
-                  <>
-                    <Button
-                      variant="outline"
-                      onClick={handleCopyReport}
-                      className="mr-auto"
-                    >
-                      <Copy className="w-4 h-4 mr-2" />
-                      Copy Report
-                    </Button>
-                    <Button
-                      variant="outline"
-                      onClick={() => setIsEditingWriteUp(true)}
-                    >
-                      <Edit className="w-4 h-4 mr-2" />
-                      Edit Report
-                    </Button>
-                  </>
-                )}
                 <Button variant="outline" onClick={() => setSummaryDialogOpen(false)}>
                   Close
                 </Button>
