@@ -81,12 +81,12 @@ const BusinessCard = () => {
                   </defs>
                   <XAxis 
                     dataKey="year" 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: 'white' }}
                     axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
                     tickLine={{ stroke: '#e2e8f0' }}
                   />
                   <YAxis 
-                    tick={{ fontSize: 12 }}
+                    tick={{ fontSize: 12, fill: 'white' }}
                     axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
                     tickLine={{ stroke: '#e2e8f0' }}
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
