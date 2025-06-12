@@ -10,6 +10,7 @@ import { EditInsuranceCoverageDialog } from "./EditInsuranceCoverageDialog";
 export interface InsuranceCoverage {
   id: string;
   type: "Term Life" | "Whole Life" | "Universal Life" | "Critical Illness" | "Disability";
+  policyNumber?: string; // New field for policy number
   coverageAmount?: number; // Optional for disability
   monthlyBenefit?: number; // For disability insurance
   insuredPerson: string;
@@ -27,6 +28,7 @@ export const InsuranceCoverageTab = () => {
     {
       id: "1",
       type: "Term Life",
+      policyNumber: "TL-2020-001234",
       coverageAmount: 500000,
       insuredPerson: "John Doe",
       beneficiary: "Spouse + Children",
@@ -40,6 +42,7 @@ export const InsuranceCoverageTab = () => {
     {
       id: "2",
       type: "Critical Illness",
+      policyNumber: "CI-2021-005678",
       coverageAmount: 100000,
       insuredPerson: "John Doe",
       beneficiary: "Self",
@@ -52,6 +55,7 @@ export const InsuranceCoverageTab = () => {
     {
       id: "3",
       type: "Disability",
+      policyNumber: "DI-2019-009876",
       monthlyBenefit: 5000,
       insuredPerson: "John Doe",
       owner: "John Doe",

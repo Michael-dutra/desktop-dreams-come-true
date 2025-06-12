@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Shield, Calendar, User, Users, DollarSign } from "lucide-react";
+import { Edit, Trash2, Shield, Calendar, User, Users, DollarSign, FileText } from "lucide-react";
 import { InsuranceCoverage } from "./InsuranceCoverageTab";
 
 interface InsuranceCoverageCardProps {
@@ -68,6 +68,17 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete, onEdit }: 
       </CardHeader>
       
       <CardContent className="space-y-4">
+        {/* Policy Number */}
+        {coverage.policyNumber && (
+          <div className="flex items-center gap-2">
+            <FileText className="h-4 w-4 text-muted-foreground" />
+            <div className="flex-1">
+              <p className="text-xs text-muted-foreground">Policy Number</p>
+              <p className="text-sm font-medium font-mono">{coverage.policyNumber}</p>
+            </div>
+          </div>
+        )}
+
         {/* Coverage Amount or Monthly Benefit */}
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="flex items-center justify-center gap-2 mb-1">

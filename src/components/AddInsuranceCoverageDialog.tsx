@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ interface AddInsuranceCoverageDialogProps {
 export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsuranceCoverageDialogProps) => {
   const [formData, setFormData] = useState({
     type: "" as InsuranceCoverage["type"],
+    policyNumber: "",
     coverageAmount: 0,
     monthlyBenefit: 0,
     insuredPerson: "",
@@ -68,6 +68,7 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
 
     const coverageData: any = {
       type: formData.type,
+      policyNumber: formData.policyNumber || undefined,
       insuredPerson: formData.insuredPerson,
       owner: formData.owner,
       startDate: formData.startDate,
@@ -92,6 +93,7 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
     // Reset form
     setFormData({
       type: "" as InsuranceCoverage["type"],
+      policyNumber: "",
       coverageAmount: 0,
       monthlyBenefit: 0,
       insuredPerson: "",
@@ -133,6 +135,18 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="policyNumber">Policy Number (Optional)</Label>
+              <Input
+                id="policyNumber"
+                value={formData.policyNumber}
+                onChange={(e) => setFormData({...formData, policyNumber: e.target.value})}
+                placeholder="TL-2024-001234"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor={isDisability ? "monthlyBenefit" : "coverageAmount"}>
                 {isDisability ? "Monthly Benefit" : "Coverage Amount"}
               </Label>
@@ -145,6 +159,17 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
                   [isDisability ? "monthlyBenefit" : "coverageAmount"]: Number(e.target.value)
                 })}
                 placeholder={isDisability ? "5000" : "500000"}
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="premiumAmount">Premium Amount (Optional)</Label>
+              <Input
+                id="premiumAmount"
+                type="number"
+                value={formData.premiumAmount}
+                onChange={(e) => setFormData({...formData, premiumAmount: Number(e.target.value)})}
+                placeholder="125"
               />
             </div>
           </div>
