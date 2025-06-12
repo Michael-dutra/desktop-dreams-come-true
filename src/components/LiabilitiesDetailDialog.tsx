@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Home, CreditCard, Car, Plus } from "lucide-react";
+import { Home, CreditCard, Car, Plus, Building, GraduationCap, User } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -18,6 +18,17 @@ interface Liability {
   color: string;
 }
 
+interface LiabilityDetails {
+  id: string;
+  type: string;
+  currentBalance: number;
+  interestRate: number;
+  monthlyPayment: number;
+  paymentFrequency: string;
+  extraPayment: number;
+  newRate: number;
+}
+
 interface LiabilitiesDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
@@ -25,64 +36,81 @@ interface LiabilitiesDetailDialogProps {
 }
 
 export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: LiabilitiesDetailDialogProps) => {
-  // Individual debt strategy controls
-  const [mortgageExtraPayment, setMortgageExtraPayment] = useState([0]);
-  const [mortgageNewRate, setMortgageNewRate] = useState([4.5]);
-
-  const [carExtraPayment, setCarExtraPayment] = useState([0]);
-  const [carNewRate, setCarNewRate] = useState([6.2]);
-
-  const [creditExtraPayment, setCreditExtraPayment] = useState([0]);
-  const [creditNewRate, setCreditNewRate] = useState([19.5]);
-
-  // Editable debt details
+  // Original liability details
   const [mortgageDetails, setMortgageDetails] = useState({
+    id: "mortgage",
+    type: "Mortgage",
     currentBalance: 285000,
     interestRate: 4.5,
     monthlyPayment: 1800,
     paymentFrequency: "Monthly",
+    extraPayment: 0,
+    newRate: 4.5,
   });
 
   const [carLoanDetails, setCarLoanDetails] = useState({
+    id: "car-loan",
+    type: "Car Loan",
     currentBalance: 18000,
     interestRate: 6.2,
     monthlyPayment: 425,
     paymentFrequency: "Monthly",
+    extraPayment: 0,
+    newRate: 6.2,
   });
 
   const [creditCardDetails, setCreditCardDetails] = useState({
-    balance: 4500,
+    id: "credit-card",
+    type: "Credit Card",
+    currentBalance: 4500,
     interestRate: 18.9,
     monthlyPayment: 225,
+    paymentFrequency: "Monthly",
+    extraPayment: 0,
+    newRate: 18.9,
   });
 
-  // Debt-free date calculation
+  // New liabilities state
+  const [customLiabilities, setCustomLiabilities] = useState<LiabilityDetails[]>([]);
+  const [newLiabilityType, setNewLiabilityType] = useState("");
+
+  // Add new liability functionality
+  const handleAddLiability = () => {
+    if (!newLiabilityType) return;
+
+    const newId = `custom-${Date.now()}`;
+    const newLiability: LiabilityDetails = {
+      id: newId,
+      type: newLiabilityType,
+      currentBalance: 10000,
+      interestRate: 5.0,
+      monthlyPayment: 200,
+      paymentFrequency: "Monthly",
+      extraPayment: 0,
+      newRate: 5.0,
+    };
+
+    setCustomLiabilities([...customLiabilities, newLiability]);
+    setNewLiabilityType("");
+  };
+
+  const updateCustomLiability = (id: string, updates: Partial<LiabilityDetails>) => {
+    setCustomLiabilities(customLiabilities.map(liability => 
+      liability.id === id ? { ...liability, ...updates } : liability
+    ));
+  };
+
+  const removeCustomLiability = (id: string) => {
+    setCustomLiabilities(customLiabilities.filter(liability => liability.id !== id));
+  };
+
+  // Calculation functions
   const calculateDebtFreeDate = (balance: number, payment: number, rate: number) => {
     const monthlyRate = rate / 100 / 12;
     if (monthlyRate === 0) return balance / payment;
     return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
   };
 
-  // Calculate individual debt scenarios
-  const mortgageNewPayment = mortgageDetails.monthlyPayment + mortgageExtraPayment[0];
-  const mortgageCurrentPayoff = calculateDebtFreeDate(mortgageDetails.currentBalance, mortgageDetails.monthlyPayment, mortgageDetails.interestRate);
-  const mortgageNewPayoff = calculateDebtFreeDate(mortgageDetails.currentBalance, mortgageNewPayment, mortgageNewRate[0]);
-  const mortgageMonthsSaved = mortgageCurrentPayoff - mortgageNewPayoff;
-  const mortgageInterestSaved = (mortgageCurrentPayoff * mortgageDetails.monthlyPayment) - (mortgageNewPayoff * mortgageNewPayment);
-
-  const carNewPayment = carLoanDetails.monthlyPayment + carExtraPayment[0];
-  const carCurrentPayoff = calculateDebtFreeDate(carLoanDetails.currentBalance, carLoanDetails.monthlyPayment, carLoanDetails.interestRate);
-  const carNewPayoff = calculateDebtFreeDate(carLoanDetails.currentBalance, carNewPayment, carNewRate[0]);
-  const carMonthsSaved = carCurrentPayoff - carNewPayoff;
-  const carInterestSaved = (carCurrentPayoff * carLoanDetails.monthlyPayment) - (carNewPayoff * carNewPayment);
-
-  const creditNewPayment = creditCardDetails.monthlyPayment + creditExtraPayment[0];
-  const creditCurrentPayoff = calculateDebtFreeDate(creditCardDetails.balance, creditCardDetails.monthlyPayment, creditCardDetails.interestRate);
-  const creditNewPayoff = calculateDebtFreeDate(creditCardDetails.balance, creditNewPayment, creditNewRate[0]);
-  const creditMonthsSaved = creditCurrentPayoff - creditNewPayoff;
-  const creditInterestSaved = (creditCurrentPayoff * creditCardDetails.monthlyPayment) - (creditNewPayoff * creditNewPayment);
-
-  // Generate combined payoff data for charts
   const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
     const data = [];
     let currentBalance = balance;
@@ -102,14 +130,12 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
         optimized: Math.max(0, optimizedBalance)
       });
       
-      // Calculate current strategy
       if (currentBalance > 0) {
         const currentInterestPayment = currentBalance * currentMonthlyRate;
         const currentPrincipalPayment = Math.min(currentPayment - currentInterestPayment, currentBalance);
         currentBalance -= currentPrincipalPayment;
       }
       
-      // Calculate optimized strategy
       if (optimizedBalance > 0) {
         const optimizedInterestPayment = optimizedBalance * newMonthlyRate;
         const optimizedPrincipalPayment = Math.min(newPayment - optimizedInterestPayment, optimizedBalance);
@@ -119,37 +145,269 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     return data;
   };
 
-  const mortgageChartData = generateCombinedPayoffData(
-    mortgageDetails.currentBalance, 
-    mortgageDetails.monthlyPayment, 
-    mortgageDetails.interestRate,
-    mortgageNewPayment,
-    mortgageNewRate[0],
-    240
-  );
-
-  const carChartData = generateCombinedPayoffData(
-    carLoanDetails.currentBalance,
-    carLoanDetails.monthlyPayment,
-    carLoanDetails.interestRate,
-    carNewPayment,
-    carNewRate[0],
-    60
-  );
-
-  const creditChartData = generateCombinedPayoffData(
-    creditCardDetails.balance,
-    creditCardDetails.monthlyPayment,
-    creditCardDetails.interestRate,
-    creditNewPayment,
-    creditNewRate[0],
-    60
-  );
-
-  const chartConfig = {
-    current: { label: "Current", color: "#ef4444" },
-    optimized: { label: "Optimized", color: "#10b981" }
+  const getIconForType = (type: string) => {
+    switch (type.toLowerCase()) {
+      case "mortgage":
+        return Home;
+      case "car loan":
+        return Car;
+      case "credit card":
+        return CreditCard;
+      case "personal loan":
+        return User;
+      case "line of credit":
+        return CreditCard;
+      case "student loan":
+        return GraduationCap;
+      default:
+        return Building;
+    }
   };
+
+  const renderLiabilityCard = (liability: LiabilityDetails) => {
+    const Icon = getIconForType(liability.type);
+    const newPayment = liability.monthlyPayment + liability.extraPayment;
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate);
+    const monthsSaved = currentPayoff - newPayoff;
+    const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
+    const chartData = generateCombinedPayoffData(
+      liability.currentBalance,
+      liability.monthlyPayment,
+      liability.interestRate,
+      newPayment,
+      liability.newRate,
+      60
+    );
+
+    const chartConfig = {
+      current: { label: "Current", color: "#ef4444" },
+      optimized: { label: "Optimized", color: "#10b981" }
+    };
+
+    return (
+      <Card key={liability.id}>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-xl">
+            <div className="flex items-center gap-2">
+              <Icon className="w-6 h-6" />
+              {liability.type}
+            </div>
+            {liability.id.startsWith('custom-') && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => removeCustomLiability(liability.id)}
+                className="text-red-600 border-red-300 hover:bg-red-50"
+              >
+                Remove
+              </Button>
+            )}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-3 p-4 rounded-lg bg-gray-50">
+            <h4 className="font-semibold mb-3">Current Details</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm font-medium">Balance</Label>
+                <Input
+                  type="number"
+                  value={liability.currentBalance}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, currentBalance: value}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, currentBalance: value}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, currentBalance: value}));
+                    } else {
+                      updateCustomLiability(liability.id, {currentBalance: value});
+                    }
+                  }}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Interest Rate (%)</Label>
+                <Input
+                  type="number"
+                  step="0.1"
+                  value={liability.interestRate}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, interestRate: value}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, interestRate: value}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, interestRate: value}));
+                    } else {
+                      updateCustomLiability(liability.id, {interestRate: value});
+                    }
+                  }}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Monthly Payment</Label>
+                <Input
+                  type="number"
+                  value={liability.monthlyPayment}
+                  onChange={(e) => {
+                    const value = Number(e.target.value);
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, monthlyPayment: value}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, monthlyPayment: value}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, monthlyPayment: value}));
+                    } else {
+                      updateCustomLiability(liability.id, {monthlyPayment: value});
+                    }
+                  }}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-sm font-medium">Payment Frequency</Label>
+                <Select 
+                  value={liability.paymentFrequency} 
+                  onValueChange={(value) => {
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, paymentFrequency: value}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, paymentFrequency: value}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, paymentFrequency: value}));
+                    } else {
+                      updateCustomLiability(liability.id, {paymentFrequency: value});
+                    }
+                  }}
+                >
+                  <SelectTrigger className="mt-1">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Monthly">Monthly</SelectItem>
+                    <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
+                    <SelectItem value="Weekly">Weekly</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="border-t pt-3 space-y-3">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${liability.extraPayment}</label>
+                <Slider
+                  value={[liability.extraPayment]}
+                  onValueChange={(value) => {
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, extraPayment: value[0]}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, extraPayment: value[0]}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, extraPayment: value[0]}));
+                    } else {
+                      updateCustomLiability(liability.id, {extraPayment: value[0]});
+                    }
+                  }}
+                  max={1000}
+                  min={0}
+                  step={25}
+                  className="w-full"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium mb-2 block">New Interest Rate: {liability.newRate}%</label>
+                <Slider
+                  value={[liability.newRate]}
+                  onValueChange={(value) => {
+                    if (liability.id === "mortgage") {
+                      setMortgageDetails(prev => ({...prev, newRate: value[0]}));
+                    } else if (liability.id === "car-loan") {
+                      setCarLoanDetails(prev => ({...prev, newRate: value[0]}));
+                    } else if (liability.id === "credit-card") {
+                      setCreditCardDetails(prev => ({...prev, newRate: value[0]}));
+                    } else {
+                      updateCustomLiability(liability.id, {newRate: value[0]});
+                    }
+                  }}
+                  max={25}
+                  min={1}
+                  step={0.1}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                <div className="p-3 rounded-lg bg-green-50">
+                  <p className="text-sm font-medium text-green-800">Time Saved</p>
+                  <p className="text-lg font-bold text-green-600">{Math.round(monthsSaved)} months</p>
+                </div>
+                <div className="p-3 rounded-lg bg-blue-50">
+                  <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                  <p className="text-lg font-bold text-blue-600">${Math.round(interestSaved).toLocaleString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-semibold mb-3">Payoff Chart</h4>
+            <ChartContainer config={chartConfig} className="h-48">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={chartData}>
+                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                  <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
+                  />
+                  <ChartLegend 
+                    content={<ChartLegendContent />}
+                    verticalAlign="top"
+                    height={36}
+                  />
+                  <Line 
+                    dataKey="current"
+                    stroke="#ef4444" 
+                    strokeWidth={2}
+                    name="Current"
+                    dot={false}
+                  />
+                  <Line 
+                    dataKey="optimized"
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    name="Optimized"
+                    dot={false}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
+
+  // Calculate totals
+  const allLiabilities = [mortgageDetails, carLoanDetails, creditCardDetails, ...customLiabilities];
+  const totalDebt = allLiabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
+  const totalMonthlyPayments = allLiabilities.reduce((sum, liability) => sum + liability.monthlyPayment + liability.extraPayment, 0);
+  const totalMonthsSaved = allLiabilities.reduce((sum, liability) => {
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate);
+    return sum + (currentPayoff - newPayoff);
+  }, 0) / allLiabilities.length;
+  const totalInterestSaved = allLiabilities.reduce((sum, liability) => {
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate);
+    return sum + ((currentPayoff * liability.monthlyPayment) - (newPayoff * (liability.monthlyPayment + liability.extraPayment)));
+  }, 0);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -168,25 +426,25 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Debt</p>
                 <p className="font-bold text-2xl text-red-600">
-                  ${(mortgageDetails.currentBalance + carLoanDetails.currentBalance + creditCardDetails.balance).toLocaleString()}
+                  ${totalDebt.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Monthly Payments</p>
                 <p className="font-bold text-2xl text-orange-600">
-                  ${(mortgageNewPayment + carNewPayment + creditNewPayment).toLocaleString()}
+                  ${totalMonthlyPayments.toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Time Saved</p>
                 <p className="font-bold text-2xl text-green-600">
-                  {Math.round((mortgageMonthsSaved + carMonthsSaved + creditMonthsSaved) / 3)} months
+                  {Math.round(totalMonthsSaved)} months
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Interest Saved</p>
                 <p className="font-bold text-2xl text-purple-600">
-                  ${Math.round(mortgageInterestSaved + carInterestSaved + creditInterestSaved).toLocaleString()}
+                  ${Math.round(totalInterestSaved).toLocaleString()}
                 </p>
               </div>
             </div>
@@ -195,394 +453,15 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
 
         {/* Individual Debt Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {renderLiabilityCard(mortgageDetails)}
+          {renderLiabilityCard(carLoanDetails)}
+          {renderLiabilityCard(creditCardDetails)}
           
-          {/* Mortgage Details */}
-          <Card className="lg:col-span-2">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Home className="w-6 h-6" />
-                Mortgage
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Current Mortgage Details */}
-                <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                  <h4 className="font-semibold mb-3">Current Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label className="text-sm font-medium">Current Amount</Label>
-                      <Input
-                        type="number"
-                        value={mortgageDetails.currentBalance}
-                        onChange={(e) => setMortgageDetails(prev => ({...prev, currentBalance: Number(e.target.value)}))}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Monthly Payment</Label>
-                      <Input
-                        type="number"
-                        value={mortgageDetails.monthlyPayment}
-                        onChange={(e) => setMortgageDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Interest Rate (%)</Label>
-                      <Input
-                        type="number"
-                        step="0.1"
-                        value={mortgageDetails.interestRate}
-                        onChange={(e) => setMortgageDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
-                        className="mt-1"
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Payment Frequency</Label>
-                      <Select value={mortgageDetails.paymentFrequency} onValueChange={(value) => setMortgageDetails(prev => ({...prev, paymentFrequency: value}))}>
-                        <SelectTrigger className="mt-1">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Monthly">Monthly</SelectItem>
-                          <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                          <SelectItem value="Weekly">Weekly</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                  
-                  <div className="border-t pt-3 mt-3 space-y-3">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${mortgageExtraPayment[0]}</label>
-                      <Slider
-                        value={mortgageExtraPayment}
-                        onValueChange={setMortgageExtraPayment}
-                        max={2000}
-                        min={0}
-                        step={50}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">New Interest Rate: {mortgageNewRate[0]}%</label>
-                      <Slider
-                        value={mortgageNewRate}
-                        onValueChange={setMortgageNewRate}
-                        max={8}
-                        min={2}
-                        step={0.1}
-                        className="w-full"
-                      />
-                    </div>
-
-                    {/* Results */}
-                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                      <div className="p-3 rounded-lg bg-green-50">
-                        <p className="text-sm font-medium text-green-800">Time Saved</p>
-                        <p className="text-lg font-bold text-green-600">{Math.round(mortgageMonthsSaved)} months</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-blue-50">
-                        <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                        <p className="text-lg font-bold text-blue-600">${Math.round(mortgageInterestSaved).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payoff Chart */}
-                <div>
-                  <h4 className="font-semibold mb-3">Payoff Chart</h4>
-                  <ChartContainer config={chartConfig} className="h-64">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <LineChart data={mortgageChartData}>
-                        <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                        <ChartTooltip 
-                          content={<ChartTooltipContent />}
-                          formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
-                        />
-                        <ChartLegend 
-                          content={<ChartLegendContent />}
-                          verticalAlign="top"
-                          height={36}
-                        />
-                        <Line 
-                          dataKey="current"
-                          stroke="#ef4444" 
-                          strokeWidth={2}
-                          name="Current"
-                          dot={false}
-                        />
-                        <Line 
-                          dataKey="optimized"
-                          stroke="#10b981" 
-                          strokeWidth={2}
-                          name="Optimized"
-                          dot={false}
-                        />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Car Loan Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Car className="w-6 h-6" />
-                Car Loan
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Current Details */}
-              <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <h4 className="font-semibold mb-3">Current Details</h4>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label className="text-sm font-medium">Balance</Label>
-                    <Input
-                      type="number"
-                      value={carLoanDetails.currentBalance}
-                      onChange={(e) => setCarLoanDetails(prev => ({...prev, currentBalance: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Interest Rate (%)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={carLoanDetails.interestRate}
-                      onChange={(e) => setCarLoanDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Payment</Label>
-                    <Input
-                      type="number"
-                      value={carLoanDetails.monthlyPayment}
-                      onChange={(e) => setCarLoanDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Payment Frequency</Label>
-                    <Select value={carLoanDetails.paymentFrequency} onValueChange={(value) => setCarLoanDetails(prev => ({...prev, paymentFrequency: value}))}>
-                      <SelectTrigger className="mt-1">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Monthly">Monthly</SelectItem>
-                        <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                        <SelectItem value="Weekly">Weekly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="border-t pt-3 space-y-3">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${carExtraPayment[0]}</label>
-                    <Slider
-                      value={carExtraPayment}
-                      onValueChange={setCarExtraPayment}
-                      max={500}
-                      min={0}
-                      step={25}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">New Interest Rate: {carNewRate[0]}%</label>
-                    <Slider
-                      value={carNewRate}
-                      onValueChange={setCarNewRate}
-                      max={12}
-                      min={2}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Results */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="p-3 rounded-lg bg-green-50">
-                      <p className="text-sm font-medium text-green-800">Time Saved</p>
-                      <p className="text-lg font-bold text-green-600">{Math.round(carMonthsSaved)} months</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-blue-50">
-                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                      <p className="text-lg font-bold text-blue-600">${Math.round(carInterestSaved).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payoff Chart */}
-              <div>
-                <h4 className="font-semibold mb-3">Payoff Chart</h4>
-                <ChartContainer config={chartConfig} className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={carChartData}>
-                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                      <ChartTooltip 
-                        content={<ChartTooltipContent />}
-                        formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
-                      />
-                      <ChartLegend 
-                        content={<ChartLegendContent />}
-                        verticalAlign="top"
-                        height={36}
-                      />
-                      <Line 
-                        dataKey="current"
-                        stroke="#ef4444" 
-                        strokeWidth={2}
-                        name="Current"
-                        dot={false}
-                      />
-                      <Line 
-                        dataKey="optimized"
-                        stroke="#10b981" 
-                        strokeWidth={2}
-                        name="Optimized"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Credit Card Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <CreditCard className="w-6 h-6" />
-                Credit Card
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Current Details */}
-              <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <h4 className="font-semibold mb-3">Current Details</h4>
-                <div className="grid grid-cols-1 gap-3 max-w-xs">
-                  <div>
-                    <Label className="text-sm font-medium">Balance</Label>
-                    <Input
-                      type="number"
-                      value={creditCardDetails.balance}
-                      onChange={(e) => setCreditCardDetails(prev => ({...prev, balance: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Interest Rate (%)</Label>
-                    <Input
-                      type="number"
-                      step="0.1"
-                      value={creditCardDetails.interestRate}
-                      onChange={(e) => setCreditCardDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                  <div>
-                    <Label className="text-sm font-medium">Monthly Payment</Label>
-                    <Input
-                      type="number"
-                      value={creditCardDetails.monthlyPayment}
-                      onChange={(e) => setCreditCardDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
-                      className="mt-1"
-                    />
-                  </div>
-                </div>
-
-                <div className="border-t pt-3 space-y-3">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${creditExtraPayment[0]}</label>
-                    <Slider
-                      value={creditExtraPayment}
-                      onValueChange={setCreditExtraPayment}
-                      max={1000}
-                      min={0}
-                      step={25}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">New Rate: {creditNewRate[0]}%</label>
-                    <Slider
-                      value={creditNewRate}
-                      onValueChange={setCreditNewRate}
-                      max={25}
-                      min={10}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Results */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="p-3 rounded-lg bg-green-50">
-                      <p className="text-sm font-medium text-green-800">Time Saved</p>
-                      <p className="text-lg font-bold text-green-600">{Math.round(creditMonthsSaved)} months</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-blue-50">
-                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                      <p className="text-lg font-bold text-blue-600">${Math.round(creditInterestSaved).toLocaleString()}</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Payoff Chart */}
-              <div>
-                <h4 className="font-semibold mb-3">Payoff Chart</h4>
-                <ChartContainer config={chartConfig} className="h-48">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={creditChartData}>
-                      <XAxis dataKey="month" tick={{ fontSize: 10 }} />
-                      <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
-                      <ChartTooltip 
-                        content={<ChartTooltipContent />}
-                        formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
-                      />
-                      <ChartLegend 
-                        content={<ChartLegendContent />}
-                        verticalAlign="top"
-                        height={36}
-                      />
-                      <Line 
-                        dataKey="current"
-                        stroke="#ef4444" 
-                        strokeWidth={2}
-                        name="Current"
-                        dot={false}
-                      />
-                      <Line 
-                        dataKey="optimized"
-                        stroke="#10b981" 
-                        strokeWidth={2}
-                        name="Optimized"
-                        dot={false}
-                      />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Custom Liabilities */}
+          {customLiabilities.map(liability => renderLiabilityCard(liability))}
 
           {/* Add Liability Card */}
-          <Card className="lg:col-span-2 border-dashed border-2 border-muted-foreground/30">
+          <Card className="border-dashed border-2 border-muted-foreground/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
                 <Plus className="w-6 h-6" />
@@ -593,22 +472,26 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Liability Type</label>
-                  <Select>
+                  <Select value={newLiabilityType} onValueChange={setNewLiabilityType}>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select" />
+                      <SelectValue placeholder="Select liability type" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="mortgage">Mortgage</SelectItem>
-                      <SelectItem value="car-loan">Car Loan</SelectItem>
-                      <SelectItem value="credit-card">Credit Card</SelectItem>
-                      <SelectItem value="personal-loan">Personal Loan</SelectItem>
-                      <SelectItem value="line-of-credit">Line of Credit</SelectItem>
-                      <SelectItem value="student-loan">Student Loan</SelectItem>
+                      <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                      <SelectItem value="Line of Credit">Line of Credit</SelectItem>
+                      <SelectItem value="Student Loan">Student Loan</SelectItem>
+                      <SelectItem value="Business Loan">Business Loan</SelectItem>
+                      <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 
-                <Button className="w-full" variant="outline">
+                <Button 
+                  className="w-full" 
+                  variant="outline"
+                  onClick={handleAddLiability}
+                  disabled={!newLiabilityType}
+                >
                   <Plus className="w-4 h-4 mr-2" />
                   Add Liability
                 </Button>
