@@ -45,14 +45,13 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   const [creditRate, setCreditRate] = useState(18.9);
   const [creditPayment, setCreditPayment] = useState(135);
 
-  // Debt-free date calculation
+  // debt-free date calculation and chart data generation functions
   const calculateDebtFreeDate = (balance: number, payment: number, rate: number) => {
     const monthlyRate = rate / 100 / 12;
     if (monthlyRate === 0) return balance / payment;
     return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
   };
 
-  // Calculate individual debt scenarios
   const mortgageNewPayment = mortgagePayment + mortgageExtraPayment[0];
   const mortgageCurrentPayoff = calculateDebtFreeDate(mortgageAmount, mortgagePayment, mortgageRate);
   const mortgageNewPayoff = calculateDebtFreeDate(mortgageAmount, mortgageNewPayment, mortgageRate);
@@ -71,7 +70,6 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   const creditMonthsSaved = creditCurrentPayoff - creditNewPayoff;
   const creditInterestSaved = (creditCurrentPayoff * creditPayment) - (creditNewPayoff * creditNewPayment);
 
-  // Generate combined payoff data for charts
   const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
     const data = [];
     let currentBalance = balance;
@@ -91,14 +89,12 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
         optimized: Math.max(0, optimizedBalance)
       });
       
-      // Calculate current strategy
       if (currentBalance > 0) {
         const currentInterestPayment = currentBalance * currentMonthlyRate;
         const currentPrincipalPayment = Math.min(currentPayment - currentInterestPayment, currentBalance);
         currentBalance -= currentPrincipalPayment;
       }
       
-      // Calculate optimized strategy
       if (optimizedBalance > 0) {
         const optimizedInterestPayment = optimizedBalance * newMonthlyRate;
         const optimizedPrincipalPayment = Math.min(newPayment - optimizedInterestPayment, optimizedBalance);
@@ -344,8 +340,8 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                       className="h-8 text-sm"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="carPayment" className="text-xs">Monthly Payment</Label>
+                  <div className="col-span-1">
+                    <Label htmlFor="carPayment" className="text-xs">Payment</Label>
                     <Input
                       id="carPayment"
                       type="number"
@@ -454,8 +450,8 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                       className="h-8 text-sm"
                     />
                   </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="creditPayment" className="text-xs">Monthly Payment</Label>
+                  <div className="col-span-1">
+                    <Label htmlFor="creditPayment" className="text-xs">Payment</Label>
                     <Input
                       id="creditPayment"
                       type="number"

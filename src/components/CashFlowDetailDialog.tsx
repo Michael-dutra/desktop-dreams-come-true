@@ -1,8 +1,9 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, AlertTriangle, Plus, Trash2, Edit, Lightbulb, Save } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, AlertTriangle, Plus, Trash2, Edit, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,18 +43,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
   const [newIncomeAmount, setNewIncomeAmount] = useState("");
   const [newExpenseCategory, setNewExpenseCategory] = useState("");
   const [newExpenseAmount, setNewExpenseAmount] = useState("");
-
-  const assetsGuidance = [
-    "Consider diversifying your investment portfolio by adding international ETFs to reduce geographical risk concentration.",
-    "Your emergency fund could benefit from being moved to a high-yield savings account to earn better returns while maintaining liquidity.",
-    "Review your real estate allocation - with current market conditions, you might want to consider REITs for broader exposure."
-  ];
-
-  const liabilitiesGuidance = [
-    "With interest rates potentially declining, consider refinancing your mortgage to lock in a lower rate and reduce monthly payments.",
-    "Prioritize paying off high-interest credit card debt first using the avalanche method to minimize total interest paid.",
-    "Consider consolidating multiple debts into a single loan with a lower interest rate to simplify payments and reduce costs."
-  ];
 
   const updateIncomePercentages = (data: typeof incomeSourcesData) => {
     const total = data.reduce((sum, item) => sum + item.amount, 0);
@@ -201,44 +190,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
               </CardContent>
             </Card>
           </div>
-
-          {/* Assets AI Guidance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Assets AI Guidance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {assetsGuidance.map((guidance, index) => (
-                  <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">{guidance}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Liabilities AI Guidance */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Lightbulb className="h-5 w-5" />
-                Liabilities AI Guidance
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {liabilitiesGuidance.map((guidance, index) => (
-                  <div key={index} className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="text-sm text-orange-800">{guidance}</p>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Income Sources */}
           <Card>
