@@ -1,11 +1,13 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area, AreaChart } from "recharts";
 import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock } from "lucide-react";
 
 interface RetirementDetailDialogProps {
@@ -24,6 +26,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const yearsToRetirement = retirementAge[0] - currentAge;
   const lifeExpectancy = 90;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
+
+  // Asset allocation (from current total)
+  const currentRRSP = 52000;
+  const currentTFSA = 38000;
+  const currentNonReg = 25000; // From AssetsBreakdown data
 
   // Calculations
   const projectedCPP = 15000; // Annual at 65
@@ -79,6 +86,67 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   // Retirement readiness ratio
   const readinessRatio = Math.min(1, totalProjectedIncome / annualIncomeNeed);
 
+  // 30-year asset breakdown data
+  const thirtyYearAssetData = Array.from({ length: 30 }, (_, i) => {
+    const age = retirementAge[0] + i;
+    const isRetired = age >= retirementAge[0];
+    
+    // Growth phase (before retirement)
+    if (!isRetired) {
+      const yearsFromNow = age - currentAge;
+      const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                        (monthlyContribution[0] * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                        (monthlyContribution[0] * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                          (monthlyContribution[0] * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      
+      return {
+        age,
+        year: age - currentAge,
+        rrsp: rrspGrowth / 1000,
+        tfsa: tfsaGrowth / 1000,
+        nonReg: nonRegGrowth / 1000,
+        totalAssets: (rrspGrowth + tfsaGrowth + nonRegGrowth) / 1000,
+        withdrawal: 0,
+        netAssets: (rrspGrowth + tfsaGrowth + nonRegGrowth) / 1000,
+        phase: 'Growth'
+      };
+    }
+    
+    // Withdrawal phase (after retirement)
+    const yearsIntoRetirement = age - retirementAge[0];
+    const withdrawalRate = rrfWithdrawalRates[Math.min(age, 90)] || 0.2;
+    
+    // Calculate remaining assets after withdrawals
+    const remainingRRSP = Math.max(0, 
+      (currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.6) * 
+      Math.pow(1 - withdrawalRate, yearsIntoRetirement)
+    );
+    const remainingTFSA = Math.max(0,
+      (currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.4) * 
+      Math.pow(1 - 0.04, yearsIntoRetirement) // 4% withdrawal from TFSA
+    );
+    const remainingNonReg = Math.max(0,
+      (currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.2) * 
+      Math.pow(1 - 0.04, yearsIntoRetirement)
+    );
+    
+    const totalWithdrawal = (remainingRRSP + remainingTFSA + remainingNonReg) * 0.04;
+    
+    return {
+      age,
+      year: age - currentAge,
+      rrsp: remainingRRSP / 1000,
+      tfsa: remainingTFSA / 1000,
+      nonReg: remainingNonReg / 1000,
+      totalAssets: (remainingRRSP + remainingTFSA + remainingNonReg) / 1000,
+      withdrawal: totalWithdrawal / 1000,
+      netAssets: (remainingRRSP + remainingTFSA + remainingNonReg - totalWithdrawal) / 1000,
+      phase: 'Withdrawal'
+    };
+  });
+
   // Chart data
   const incomeProjectionData = Array.from({ length: 25 }, (_, i) => {
     const age = retirementAge[0] + i;
@@ -92,16 +160,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     };
   });
 
-  const savingsProjectionData = Array.from({ length: yearsToRetirement + 1 }, (_, i) => {
-    const year = currentAge + i;
-    const currentValue = currentSavings * Math.pow(1 + investmentReturn, i);
-    const contributionValue = i > 0 ? monthlyContribution[0] * 12 * (Math.pow(1 + investmentReturn, i) - 1) / investmentReturn : 0;
-    return {
-      age: year,
-      savings: (currentValue + contributionValue) / 1000
-    };
-  });
-
   const incomeSourcesData = [
     { source: "CPP", amount: adjustedCPP, color: "#3b82f6" },
     { source: "OAS", amount: adjustedOAS, color: "#10b981" },
@@ -112,7 +170,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const chartConfig = {
     cpp: { label: "CPP", color: "#3b82f6" },
     oas: { label: "OAS", color: "#10b981" },
-    rrsp: { label: "RRSP/RRIF", color: "#f59e0b" },
+    rrsp: { label: "RRSP", color: "#f59e0b" },
+    tfsa: { label: "TFSA", color: "#8b5cf6" },
+    nonReg: { label: "Non-Registered", color: "#06b6d4" },
+    totalAssets: { label: "Total Assets", color: "#10b981" },
+    withdrawal: { label: "Annual Withdrawal", color: "#ef4444" },
     total: { label: "Total Income", color: "#8b5cf6" },
     savings: { label: "Projected Savings", color: "#06b6d4" }
   };
@@ -256,7 +318,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
           <Tabs defaultValue="projections" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4">
-              <TabsTrigger value="projections">Income Projections</TabsTrigger>
+              <TabsTrigger value="projections">Asset Breakdown</TabsTrigger>
               <TabsTrigger value="government">CPP/OAS Analysis</TabsTrigger>
               <TabsTrigger value="rrif">RRIF Schedule</TabsTrigger>
               <TabsTrigger value="requirements">Savings Requirements</TabsTrigger>
@@ -311,17 +373,96 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Savings Growth Projection</CardTitle>
+                  <CardTitle className="text-lg">30-Year Asset & Withdrawal Breakdown</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Detailed projection showing asset growth, withdrawal amounts, and remaining balances over 30 years
+                  </p>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-64">
-                    <LineChart data={savingsProjectionData}>
-                      <XAxis dataKey="age" />
-                      <YAxis />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="savings" stroke="#06b6d4" strokeWidth={3} />
-                    </LineChart>
-                  </ChartContainer>
+                  <ScrollArea className="h-96 w-full">
+                    <ChartContainer config={chartConfig} className="h-80 w-full min-w-[800px]">
+                      <ComposedChart data={thirtyYearAssetData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <XAxis dataKey="age" />
+                        <YAxis />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value, name) => [
+                              `$${Number(value).toFixed(0)}K`, 
+                              name === 'rrsp' ? 'RRSP' : 
+                              name === 'tfsa' ? 'TFSA' : 
+                              name === 'nonReg' ? 'Non-Registered' : 
+                              name === 'totalAssets' ? 'Total Assets' :
+                              name === 'withdrawal' ? 'Annual Withdrawal' : name
+                            ]}
+                          />} 
+                        />
+                        {/* Asset areas */}
+                        <Area 
+                          type="monotone" 
+                          dataKey="rrsp" 
+                          stackId="assets"
+                          stroke="#f59e0b" 
+                          fill="#f59e0b" 
+                          fillOpacity={0.6}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="tfsa" 
+                          stackId="assets"
+                          stroke="#8b5cf6" 
+                          fill="#8b5cf6" 
+                          fillOpacity={0.6}
+                        />
+                        <Area 
+                          type="monotone" 
+                          dataKey="nonReg" 
+                          stackId="assets"
+                          stroke="#06b6d4" 
+                          fill="#06b6d4" 
+                          fillOpacity={0.6}
+                        />
+                        {/* Total assets line */}
+                        <Line 
+                          type="monotone" 
+                          dataKey="totalAssets" 
+                          stroke="#10b981" 
+                          strokeWidth={3}
+                          dot={false}
+                        />
+                        {/* Withdrawal bars */}
+                        <Bar 
+                          dataKey="withdrawal" 
+                          fill="#ef4444" 
+                          fillOpacity={0.8}
+                          name="Annual Withdrawal"
+                        />
+                      </ComposedChart>
+                    </ChartContainer>
+                  </ScrollArea>
+                  
+                  {/* Legend */}
+                  <div className="mt-4 grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-amber-500 rounded"></div>
+                      <span>RRSP</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-purple-500 rounded"></div>
+                      <span>TFSA</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-cyan-500 rounded"></div>
+                      <span>Non-Registered</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-green-500 rounded"></div>
+                      <span>Total Assets</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-red-500 rounded"></div>
+                      <span>Annual Withdrawal</span>
+                    </div>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>
