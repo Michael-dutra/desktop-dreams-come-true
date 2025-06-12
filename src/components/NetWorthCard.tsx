@@ -74,11 +74,11 @@ const NetWorthCard = () => {
                 <ChartTooltip 
                   content={<ChartTooltipContent 
                     formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
-                    labelStyle={{ color: 'white' }}
+                    labelStyle={{ color: 'black' }}
                     contentStyle={{ 
-                      backgroundColor: 'rgba(0, 0, 0, 0.8)', 
-                      border: '1px solid white',
-                      color: 'white'
+                      backgroundColor: 'white', 
+                      border: '1px solid #ccc',
+                      color: 'black'
                     }}
                   />} 
                 />
