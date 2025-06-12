@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,14 +17,12 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
   const [incomeMultiplier, setIncomeMultiplier] = useState([10]);
   const [yearsOfCoverage, setYearsOfCoverage] = useState([20]);
 
-  // Life Insurance Needs Analysis Data
-  const lifeInsuranceNeeds = {
-    incomeReplacement: 650000, // $65k * 10 years
+  // Base Life Insurance Needs Analysis Data
+  const baseLifeInsuranceNeeds = {
     debts: 445500, // Mortgage + Car + Credit Cards
     educationFunds: 120000, // Children's education
     estateTaxes: 50000,
-    finalExpenses: 25000,
-    total: 1290500
+    finalExpenses: 25000
   };
 
   const currentCoverage = {
@@ -34,8 +31,25 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     disability: 0
   };
 
+  const calculateDynamicNeeds = () => {
+    const annualIncome = 65000;
+    const dynamicIncomeReplacement = annualIncome * incomeMultiplier[0];
+    const dynamicTotal = dynamicIncomeReplacement + baseLifeInsuranceNeeds.debts + baseLifeInsuranceNeeds.educationFunds + baseLifeInsuranceNeeds.estateTaxes + baseLifeInsuranceNeeds.finalExpenses;
+    return {
+      incomeReplacement: dynamicIncomeReplacement,
+      debts: baseLifeInsuranceNeeds.debts,
+      educationFunds: baseLifeInsuranceNeeds.educationFunds,
+      estateTaxes: baseLifeInsuranceNeeds.estateTaxes,
+      finalExpenses: baseLifeInsuranceNeeds.finalExpenses,
+      total: dynamicTotal,
+      gap: dynamicTotal - currentCoverage.life
+    };
+  };
+
+  const dynamicNeeds = calculateDynamicNeeds();
+
   const recommendedCoverage = {
-    life: lifeInsuranceNeeds.total,
+    life: dynamicNeeds.total,
     criticalIllness: 200000,
     disability: 39000 // 60% of $65k annual income
   };
@@ -46,12 +60,13 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     disability: recommendedCoverage.disability - currentCoverage.disability
   };
 
+  // Dynamic chart data based on current calculations
   const lifeInsuranceBreakdown = [
-    { category: "Income Replacement", amount: lifeInsuranceNeeds.incomeReplacement, color: "#3b82f6" },
-    { category: "Outstanding Debts", amount: lifeInsuranceNeeds.debts, color: "#ef4444" },
-    { category: "Education Funds", amount: lifeInsuranceNeeds.educationFunds, color: "#10b981" },
-    { category: "Estate Taxes", amount: lifeInsuranceNeeds.estateTaxes, color: "#f59e0b" },
-    { category: "Final Expenses", amount: lifeInsuranceNeeds.finalExpenses, color: "#8b5cf6" }
+    { category: "Income Replacement", amount: dynamicNeeds.incomeReplacement, color: "#3b82f6" },
+    { category: "Outstanding Debts", amount: dynamicNeeds.debts, color: "#ef4444" },
+    { category: "Education Funds", amount: dynamicNeeds.educationFunds, color: "#10b981" },
+    { category: "Estate Taxes", amount: dynamicNeeds.estateTaxes, color: "#f59e0b" },
+    { category: "Final Expenses", amount: dynamicNeeds.finalExpenses, color: "#8b5cf6" }
   ];
 
   const coverageComparison = [
@@ -92,19 +107,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
       maximumFractionDigits: 0,
     }).format(amount);
   };
-
-  const calculateDynamicNeeds = () => {
-    const annualIncome = 65000;
-    const dynamicIncomeReplacement = annualIncome * incomeMultiplier[0];
-    const dynamicTotal = dynamicIncomeReplacement + lifeInsuranceNeeds.debts + lifeInsuranceNeeds.educationFunds + lifeInsuranceNeeds.estateTaxes + lifeInsuranceNeeds.finalExpenses;
-    return {
-      incomeReplacement: dynamicIncomeReplacement,
-      total: dynamicTotal,
-      gap: dynamicTotal - currentCoverage.life
-    };
-  };
-
-  const dynamicNeeds = calculateDynamicNeeds();
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -220,7 +222,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                     </div>
                   </div>
 
-                  {/* Life Insurance Needs Breakdown Chart */}
+                  {/* Life Insurance Needs Breakdown Chart - Now Dynamic */}
                   <div>
                     <h4 className="font-semibold mb-3">Insurance Needs Breakdown</h4>
                     <ChartContainer config={chartConfig} className="h-64">
@@ -236,6 +238,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
               </Card>
             </TabsContent>
 
+            
             <TabsContent value="ci-disability" className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
