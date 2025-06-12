@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -227,40 +228,62 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Strategy Controls */}
+                {/* Current Mortgage Details */}
                 <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${mortgageExtraPayment[0]}</label>
-                    <Slider
-                      value={mortgageExtraPayment}
-                      onValueChange={setMortgageExtraPayment}
-                      max={2000}
-                      min={0}
-                      step={50}
-                      className="w-full"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">New Interest Rate: {mortgageNewRate[0]}%</label>
-                    <Slider
-                      value={mortgageNewRate}
-                      onValueChange={setMortgageNewRate}
-                      max={8}
-                      min={2}
-                      step={0.1}
-                      className="w-full"
-                    />
-                  </div>
-
-                  {/* Results */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="p-3 rounded-lg bg-green-50">
-                      <p className="text-sm font-medium text-green-800">Time Saved</p>
-                      <p className="text-lg font-bold text-green-600">{Math.round(mortgageMonthsSaved)} months</p>
+                  <h4 className="font-semibold mb-3">Current Mortgage Details</h4>
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Current Mortgage Amount:</span>
+                      <span className="font-medium">${mortgageDetails.currentBalance.toLocaleString()}</span>
                     </div>
-                    <div className="p-3 rounded-lg bg-blue-50">
-                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                      <p className="text-lg font-bold text-blue-600">${Math.round(mortgageInterestSaved).toLocaleString()}</p>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Mortgage Payment:</span>
+                      <span className="font-medium">${mortgageDetails.monthlyPayment.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Frequency:</span>
+                      <span className="font-medium">Monthly</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Interest Rate:</span>
+                      <span className="font-medium">{mortgageDetails.interestRate}%</span>
+                    </div>
+                  </div>
+                  
+                  <div className="border-t pt-3 mt-3">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${mortgageExtraPayment[0]}</label>
+                      <Slider
+                        value={mortgageExtraPayment}
+                        onValueChange={setMortgageExtraPayment}
+                        max={2000}
+                        min={0}
+                        step={50}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">New Interest Rate: {mortgageNewRate[0]}%</label>
+                      <Slider
+                        value={mortgageNewRate}
+                        onValueChange={setMortgageNewRate}
+                        max={8}
+                        min={2}
+                        step={0.1}
+                        className="w-full"
+                      />
+                    </div>
+
+                    {/* Results */}
+                    <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                      <div className="p-3 rounded-lg bg-green-50">
+                        <p className="text-sm font-medium text-green-800">Time Saved</p>
+                        <p className="text-lg font-bold text-green-600">{Math.round(mortgageMonthsSaved)} months</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-blue-50">
+                        <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                        <p className="text-lg font-bold text-blue-600">${Math.round(mortgageInterestSaved).toLocaleString()}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -506,7 +529,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                   <label className="text-sm font-medium mb-2 block">Liability Type</label>
                   <Select>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a liability type" />
+                      <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="mortgage">Mortgage</SelectItem>
@@ -521,7 +544,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 
                 <Button className="w-full" variant="outline">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add New Liability
+                  Add Liability
                 </Button>
               </div>
             </CardContent>
