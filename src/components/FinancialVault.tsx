@@ -42,15 +42,9 @@ const FinancialVault = () => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <Vault className="h-5 w-5" />
-            <span>Financial Vault</span>
-          </div>
-          <Button variant="outline" size="sm">
-            <Upload className="h-4 w-4 mr-2" />
-            Upload Document
-          </Button>
+        <CardTitle className="text-lg flex items-center">
+          <Vault className="h-5 w-5 mr-2" />
+          <span>Financial Vault</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
