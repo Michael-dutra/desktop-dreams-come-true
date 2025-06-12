@@ -37,6 +37,17 @@ interface LiabilitiesDetailDialogProps {
 
 export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: LiabilitiesDetailDialogProps) => {
   const { toast } = useToast();
+  // Summary dialog state
+  const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
+  const [selectedLiabilitySummary, setSelectedLiabilitySummary] = useState<{
+    liability: LiabilityDetails;
+    currentPayoff: number;
+    newPayoff: number;
+    monthsSaved: number;
+    interestSaved: number;
+    newPayment: number;
+  } | null>(null);
+
   // Original liability details
   const [mortgageDetails, setMortgageDetails] = useState({
     id: "mortgage",
@@ -185,28 +196,15 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     const monthsSaved = currentPayoff - newPayoff;
     const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
 
-    const summary = `${liability.type} Summary:
-    
-Current Balance: $${liability.currentBalance.toLocaleString()}
-Interest Rate: ${liability.interestRate}%
-Monthly Payment: $${liability.monthlyPayment.toLocaleString()}
-${liability.extraPayment > 0 ? `Extra Payment: $${liability.extraPayment.toLocaleString()}` : ''}
-${liability.newRate !== liability.interestRate ? `New Rate: ${liability.newRate}%` : ''}
-
-Payoff Timeline:
-• Current: ${Math.round(currentPayoff)} months
-• Optimized: ${Math.round(newPayoff)} months
-• Time Saved: ${Math.round(monthsSaved)} months
-
-Financial Impact:
-• Interest Saved: $${Math.round(interestSaved).toLocaleString()}
-• Total Payment: $${Math.round(newPayoff * newPayment).toLocaleString()}`;
-
-    toast({
-      title: `${liability.type} Summary`,
-      description: summary,
-      duration: 10000,
+    setSelectedLiabilitySummary({
+      liability,
+      currentPayoff,
+      newPayoff,
+      monthsSaved,
+      interestSaved,
+      newPayment
     });
+    setSummaryDialogOpen(true);
   };
 
   const renderLiabilityCard = (liability: LiabilityDetails) => {
@@ -501,86 +499,171 @@ Financial Impact:
   }, 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold">Liabilities</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-3xl font-bold">Liabilities</DialogTitle>
+          </DialogHeader>
 
-        {/* Debt Summary */}
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">Debt Summary</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Debt</p>
-                <p className="font-bold text-2xl text-red-600">
-                  ${totalDebt.toLocaleString()}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Monthly Payments</p>
-                <p className="font-bold text-2xl text-orange-600">
-                  ${totalMonthlyPayments.toLocaleString()}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Time Saved</p>
-                <p className="font-bold text-2xl text-green-600">
-                  {Math.round(totalMonthsSaved)} months
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Interest Saved</p>
-                <p className="font-bold text-2xl text-purple-600">
-                  ${Math.round(totalInterestSaved).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Individual Debt Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {renderLiabilityCard(mortgageDetails)}
-          {renderLiabilityCard(carLoanDetails)}
-          {renderLiabilityCard(creditCardDetails)}
-          
-          {/* Custom Liabilities */}
-          {customLiabilities.map(liability => renderLiabilityCard(liability))}
-
-          {/* Add Liability Card */}
-          <Card className="border-dashed border-2 border-muted-foreground/30">
+          {/* Debt Summary */}
+          <Card className="mb-6">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
-                <Plus className="w-6 h-6" />
-                Add Liability
-              </CardTitle>
+              <CardTitle className="text-xl">Debt Summary</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Liability Type</label>
-                  <Select value="" onValueChange={handleLiabilityTypeSelect}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select liability type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Personal Loan">Personal Loan</SelectItem>
-                      <SelectItem value="Line of Credit">Line of Credit</SelectItem>
-                      <SelectItem value="Student Loan">Student Loan</SelectItem>
-                      <SelectItem value="Business Loan">Business Loan</SelectItem>
-                      <SelectItem value="Other">Other</SelectItem>
-                    </SelectContent>
-                  </Select>
+            <CardContent>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Total Debt</p>
+                  <p className="font-bold text-2xl text-red-600">
+                    ${totalDebt.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Monthly Payments</p>
+                  <p className="font-bold text-2xl text-orange-600">
+                    ${totalMonthlyPayments.toLocaleString()}
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Total Time Saved</p>
+                  <p className="font-bold text-2xl text-green-600">
+                    {Math.round(totalMonthsSaved)} months
+                  </p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground">Total Interest Saved</p>
+                  <p className="font-bold text-2xl text-purple-600">
+                    ${Math.round(totalInterestSaved).toLocaleString()}
+                  </p>
                 </div>
               </div>
             </CardContent>
           </Card>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          {/* Individual Debt Cards */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {renderLiabilityCard(mortgageDetails)}
+            {renderLiabilityCard(carLoanDetails)}
+            {renderLiabilityCard(creditCardDetails)}
+            
+            {/* Custom Liabilities */}
+            {customLiabilities.map(liability => renderLiabilityCard(liability))}
+
+            {/* Add Liability Card */}
+            <Card className="border-dashed border-2 border-muted-foreground/30">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
+                  <Plus className="w-6 h-6" />
+                  Add Liability
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Liability Type</label>
+                    <Select value="" onValueChange={handleLiabilityTypeSelect}>
+                      <SelectTrigger className="w-full">
+                        <SelectValue placeholder="Select liability type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Personal Loan">Personal Loan</SelectItem>
+                        <SelectItem value="Line of Credit">Line of Credit</SelectItem>
+                        <SelectItem value="Student Loan">Student Loan</SelectItem>
+                        <SelectItem value="Business Loan">Business Loan</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Liability Summary Dialog */}
+      <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">
+              {selectedLiabilitySummary?.liability.type} Summary
+            </DialogTitle>
+          </DialogHeader>
+          
+          {selectedLiabilitySummary && (
+            <div className="space-y-6">
+              {/* Current Details */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Current Details</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-gray-50">
+                    <p className="text-sm font-medium text-gray-600">Balance</p>
+                    <p className="text-lg font-bold">${selectedLiabilitySummary.liability.currentBalance.toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50">
+                    <p className="text-sm font-medium text-gray-600">Interest Rate</p>
+                    <p className="text-lg font-bold">{selectedLiabilitySummary.liability.interestRate}%</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gray-50">
+                    <p className="text-sm font-medium text-gray-600">Monthly Payment</p>
+                    <p className="text-lg font-bold">${selectedLiabilitySummary.liability.monthlyPayment.toLocaleString()}</p>
+                  </div>
+                  {selectedLiabilitySummary.liability.extraPayment > 0 && (
+                    <div className="p-3 rounded-lg bg-gray-50">
+                      <p className="text-sm font-medium text-gray-600">Extra Payment</p>
+                      <p className="text-lg font-bold">${selectedLiabilitySummary.liability.extraPayment.toLocaleString()}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Payoff Timeline */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Payoff Timeline</h3>
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="p-3 rounded-lg bg-red-50">
+                    <p className="text-sm font-medium text-red-800">Current</p>
+                    <p className="text-lg font-bold text-red-600">{Math.round(selectedLiabilitySummary.currentPayoff)} months</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-green-50">
+                    <p className="text-sm font-medium text-green-800">Optimized</p>
+                    <p className="text-lg font-bold text-green-600">{Math.round(selectedLiabilitySummary.newPayoff)} months</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-blue-50">
+                    <p className="text-sm font-medium text-blue-800">Time Saved</p>
+                    <p className="text-lg font-bold text-blue-600">{Math.round(selectedLiabilitySummary.monthsSaved)} months</p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Financial Impact */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold">Financial Impact</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-3 rounded-lg bg-purple-50">
+                    <p className="text-sm font-medium text-purple-800">Interest Saved</p>
+                    <p className="text-lg font-bold text-purple-600">${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-50">
+                    <p className="text-sm font-medium text-orange-800">Total Payment</p>
+                    <p className="text-lg font-bold text-orange-600">${Math.round(selectedLiabilitySummary.newPayoff * selectedLiabilitySummary.newPayment).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+
+              {selectedLiabilitySummary.liability.newRate !== selectedLiabilitySummary.liability.interestRate && (
+                <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
+                  <p className="text-sm font-medium text-yellow-800">Rate Change</p>
+                  <p className="text-lg font-bold text-yellow-600">
+                    {selectedLiabilitySummary.liability.interestRate}% → {selectedLiabilitySummary.liability.newRate}%
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
