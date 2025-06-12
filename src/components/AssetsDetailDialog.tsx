@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -101,6 +102,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const [editableReport, setEditableReport] = useState("");
   const [isEditingReport, setIsEditingReport] = useState(false);
   const [copySuccess, setCopySuccess] = useState(false);
+
+  // Calculate future values
+  const realEstateFV = realEstateDetails.currentFMV * Math.pow(1 + realEstateRate[0] / 100, realEstateYears[0]);
+  const rrspFV = rrspDetails.currentValue * Math.pow(1 + rrspRate[0] / 100, rrspYears[0]) + 
+                 (rrspDetails.annualContribution * ((Math.pow(1 + rrspRate[0] / 100, rrspYears[0]) - 1) / (rrspRate[0] / 100)));
+  const tfsaFV = tfsaDetails.currentValue * Math.pow(1 + tfsaRate[0] / 100, tfsaYears[0]) + 
+                 (tfsaDetails.annualContribution * ((Math.pow(1 + tfsaRate[0] / 100, tfsaYears[0]) - 1) / (tfsaRate[0] / 100)));
+  const nonRegFV = nonRegisteredDetails.totalValue * Math.pow(1 + nonRegRate[0] / 100, nonRegYears[0]) + 
+                   (nonRegisteredDetails.annualContribution * ((Math.pow(1 + nonRegRate[0] / 100, nonRegYears[0]) - 1) / (nonRegRate[0] / 100)));
 
   const generateAssetReport = (assetName: string, assetType: string) => {
     switch (assetType) {
