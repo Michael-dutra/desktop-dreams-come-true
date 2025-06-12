@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -23,6 +22,17 @@ interface AssetsDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
   assets: Asset[];
+}
+
+interface DynamicAsset {
+  id: string;
+  name: string;
+  type: string;
+  currentValue: number;
+  years: number[];
+  rate: number[];
+  annualContribution: number;
+  color: string;
 }
 
 // Stable data generation function
@@ -98,6 +108,38 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     monthlyContribution: 167,
   });
 
+  // New state for dynamic assets
+  const [dynamicAssets, setDynamicAssets] = useState<DynamicAsset[]>([]);
+
+  const addDynamicAsset = (type: string, sourceAsset?: Asset) => {
+    const colors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#d946ef", "#f43f5e"];
+    const usedColors = [...assets.map(a => a.color), ...dynamicAssets.map(a => a.color)];
+    const availableColor = colors.find(color => !usedColors.includes(color)) || colors[0];
+
+    const newAsset: DynamicAsset = {
+      id: Date.now().toString(),
+      name: sourceAsset ? `${sourceAsset.name} (Copy)` : type,
+      type: type,
+      currentValue: sourceAsset ? sourceAsset.value : 10000,
+      years: [10],
+      rate: [6.0],
+      annualContribution: 1000,
+      color: availableColor
+    };
+
+    setDynamicAssets(prev => [...prev, newAsset]);
+  };
+
+  const removeDynamicAsset = (id: string) => {
+    setDynamicAssets(prev => prev.filter(asset => asset.id !== id));
+  };
+
+  const updateDynamicAsset = (id: string, updates: Partial<DynamicAsset>) => {
+    setDynamicAssets(prev => prev.map(asset => 
+      asset.id === id ? { ...asset, ...updates } : asset
+    ));
+  };
+
   // FV calculations
   const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
     const fvCurrentValue = currentValue * Math.pow(1 + rate / 100, years);
@@ -126,6 +168,104 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const nonRegChartData = useMemo(() => {
     return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
   }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
+
+  // Dynamic Asset Card Component
+  const DynamicAssetCard = ({ asset }: { asset: DynamicAsset }) => {
+    const futureValue = calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution);
+    const chartData = useMemo(() => {
+      return generateStableChartData(asset.currentValue, futureValue, asset.years[0], asset.rate[0]);
+    }, [asset.currentValue, futureValue, asset.years[0], asset.rate[0]]);
+
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between text-xl">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full" style={{ backgroundColor: asset.color }}></div>
+              <span>{asset.name}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => removeDynamicAsset(asset.id)}
+              className="text-red-600 hover:text-red-700"
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Growth Visualization */}
+          <GrowthChart 
+            data={chartData}
+            currentValue={asset.currentValue}
+            futureValue={futureValue}
+            years={asset.years[0]}
+            color={asset.color}
+          />
+
+          {/* Controls */}
+          <div className="bg-muted/30 p-4 rounded-lg space-y-3">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Growth Rate: {asset.rate[0]}%</label>
+              <Slider
+                value={asset.rate}
+                onValueChange={(value) => updateDynamicAsset(asset.id, { rate: value })}
+                max={15}
+                min={0}
+                step={0.1}
+                className="w-full"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium mb-2 block">Projection Years: {asset.years[0]}</label>
+              <Slider
+                value={asset.years}
+                onValueChange={(value) => updateDynamicAsset(asset.id, { years: value })}
+                max={30}
+                min={1}
+                step={1}
+                className="w-full"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-muted-foreground">Current Value</p>
+              <Input
+                type="number"
+                value={asset.currentValue}
+                onChange={(e) => updateDynamicAsset(asset.id, { currentValue: Number(e.target.value) })}
+                className="text-lg font-semibold"
+              />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Future Value ({asset.years[0]} years)</p>
+              <p className="text-lg font-semibold text-blue-600">
+                ${Math.round(futureValue).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Annual Contribution</p>
+              <Input
+                type="number"
+                value={asset.annualContribution}
+                onChange={(e) => updateDynamicAsset(asset.id, { annualContribution: Number(e.target.value) })}
+                className="text-lg font-semibold"
+              />
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Projected Growth</p>
+              <p className="text-lg font-semibold text-green-600">
+                +${Math.round(futureValue - asset.currentValue).toLocaleString()}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  };
 
   const chartConfig = {
     current: { label: "Current Value", color: "#3b82f6" },
@@ -395,25 +535,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Current Value</p>
                 <p className="font-bold text-2xl text-green-600">
-                  ${(realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue).toLocaleString()}
+                  ${(realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Future Value</p>
                 <p className="font-bold text-2xl text-blue-600">
-                  ${Math.round(realEstateFV + rrspFV + tfsaFV + nonRegFV).toLocaleString()}
+                  ${Math.round(realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Projected Growth</p>
                 <p className="font-bold text-2xl text-purple-600">
-                  +${Math.round((realEstateFV + rrspFV + tfsaFV + nonRegFV) - (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue)).toLocaleString()}
+                  +${Math.round((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) - (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0))).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Growth Rate</p>
                 <p className="font-bold text-2xl text-orange-600">
-                  {(((realEstateFV + rrspFV + tfsaFV + nonRegFV) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue) - 1) * 100).toFixed(1)}%
+                  {(((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)) - 1) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -424,11 +564,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
           {/* Real Estate */}
-          <Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Real Estate", { name: "Real Estate", value: realEstateDetails.currentFMV, amount: `$${realEstateDetails.currentFMV.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Home className="w-6 h-6" />
                 Real Estate
+                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -514,11 +655,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </Card>
 
           {/* RRSP */}
-          <Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("RRSP", { name: "RRSP", value: rrspDetails.currentValue, amount: `$${rrspDetails.currentValue.toLocaleString()}`, color: "#10b981" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <PiggyBank className="w-6 h-6" />
                 RRSP
+                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -608,11 +750,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </Card>
 
           {/* TFSA */}
-          <Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("TFSA", { name: "TFSA", value: tfsaDetails.currentValue, amount: `$${tfsaDetails.currentValue.toLocaleString()}`, color: "#8b5cf6" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Wallet className="w-6 h-6" />
                 TFSA
+                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -702,11 +845,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </Card>
 
           {/* Non-Registered */}
-          <Card>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Non-Registered", { name: "Non-Registered", value: nonRegisteredDetails.totalValue, amount: `$${nonRegisteredDetails.totalValue.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <DollarSign className="w-6 h-6" />
                 Non-Registered
+                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -795,6 +939,11 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
 
+          {/* Dynamic Asset Cards */}
+          {dynamicAssets.map((asset) => (
+            <DynamicAssetCard key={asset.id} asset={asset} />
+          ))}
+
           {/* Add Asset Card */}
           <Card className="border-dashed border-2 border-muted-foreground/30">
             <CardHeader>
@@ -807,30 +956,26 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Asset Type</label>
-                  <Select>
+                  <Select onValueChange={(value) => addDynamicAsset(value)}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="real-estate">Real Estate</SelectItem>
-                      <SelectItem value="rrsp">RRSP</SelectItem>
-                      <SelectItem value="tfsa">TFSA</SelectItem>
-                      <SelectItem value="non-registered">Non-Registered</SelectItem>
-                      <SelectItem value="db">DB (Defined Benefit)</SelectItem>
-                      <SelectItem value="dc">DC (Defined Contribution)</SelectItem>
-                      <SelectItem value="ipp">IPP (Individual Pension Plan)</SelectItem>
-                      <SelectItem value="lira">LIRA (Locked-in Retirement Account)</SelectItem>
-                      <SelectItem value="lif">LIF (Life Income Fund)</SelectItem>
-                      <SelectItem value="pension">Pension</SelectItem>
-                      <SelectItem value="chequing">Chequing Account</SelectItem>
+                      <SelectItem value="Real Estate">Real Estate</SelectItem>
+                      <SelectItem value="RRSP">RRSP</SelectItem>
+                      <SelectItem value="RRIF">RRIF</SelectItem>
+                      <SelectItem value="TFSA">TFSA</SelectItem>
+                      <SelectItem value="Non-Registered">Non-Registered</SelectItem>
+                      <SelectItem value="DB">DB (Defined Benefit)</SelectItem>
+                      <SelectItem value="DC">DC (Defined Contribution)</SelectItem>
+                      <SelectItem value="IPP">IPP (Individual Pension Plan)</SelectItem>
+                      <SelectItem value="LIRA">LIRA (Locked-in Retirement Account)</SelectItem>
+                      <SelectItem value="LIF">LIF (Life Income Fund)</SelectItem>
+                      <SelectItem value="Pension">Pension</SelectItem>
+                      <SelectItem value="Chequing">Chequing Account</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <Button className="w-full" variant="outline">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Asset
-                </Button>
               </div>
             </CardContent>
           </Card>
