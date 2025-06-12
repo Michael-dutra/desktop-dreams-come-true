@@ -8,7 +8,6 @@ import { useState } from "react";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  const readinessScore = 78; // Percentage
   
   // Retirement calculations
   const retirementAge = 65;
