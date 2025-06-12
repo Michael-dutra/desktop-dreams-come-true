@@ -34,7 +34,7 @@ const NetWorthCard = () => {
             <p className="text-3xl font-bold text-white">$287,500</p>
             <div className="flex items-center space-x-1 text-green-300">
               <TrendingUp className="h-4 w-4" />
-              <span className="text-sm font-medium">+$32,500 this month</span>
+              <span className="text-sm font-medium text-white">+$32,500 this month</span>
             </div>
           </div>
           
