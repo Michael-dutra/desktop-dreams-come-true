@@ -5,13 +5,15 @@ import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { InsuranceCoverageCard } from "./InsuranceCoverageCard";
 import { AddInsuranceCoverageDialog } from "./AddInsuranceCoverageDialog";
+import { EditInsuranceCoverageDialog } from "./EditInsuranceCoverageDialog";
 
 export interface InsuranceCoverage {
   id: string;
   type: "Term Life" | "Whole Life" | "Universal Life" | "Critical Illness" | "Disability";
-  coverageAmount: number;
+  coverageAmount?: number; // Optional for disability
+  monthlyBenefit?: number; // For disability insurance
   insuredPerson: string;
-  beneficiary: string;
+  beneficiary?: string; // Optional for disability
   owner: string;
   startDate: string;
   expiryDate?: string;
@@ -30,7 +32,7 @@ export const InsuranceCoverageTab = () => {
       owner: "Corporation",
       startDate: "2020-01-01",
       expiryDate: "2040-01-01",
-      features: "Convertible to whole life, low-cost",
+      features: "Convertible to whole life, guaranteed renewable",
       premiumFrequency: "Monthly"
     },
     {
@@ -41,12 +43,23 @@ export const InsuranceCoverageTab = () => {
       beneficiary: "Self",
       owner: "John Doe",
       startDate: "2021-03-15",
-      features: "Covers 25 critical conditions",
+      features: "Covers 25 critical conditions, return of premium option",
       premiumFrequency: "Annual"
+    },
+    {
+      id: "3",
+      type: "Disability",
+      monthlyBenefit: 5000,
+      insuredPerson: "John Doe",
+      owner: "John Doe",
+      startDate: "2019-06-01",
+      features: "Own occupation coverage, 90-day elimination period",
+      premiumFrequency: "Monthly"
     }
   ]);
 
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [editingCoverage, setEditingCoverage] = useState<InsuranceCoverage | null>(null);
 
   const handleAddCoverage = (newCoverage: Omit<InsuranceCoverage, "id">) => {
     const coverage: InsuranceCoverage = {
@@ -66,6 +79,10 @@ export const InsuranceCoverageTab = () => {
     setCoverages(coverages.filter(coverage => coverage.id !== id));
   };
 
+  const handleEditCoverage = (coverage: InsuranceCoverage) => {
+    setEditingCoverage(coverage);
+  };
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -75,7 +92,12 @@ export const InsuranceCoverageTab = () => {
     }).format(amount);
   };
 
-  const totalCoverage = coverages.reduce((sum, coverage) => sum + coverage.coverageAmount, 0);
+  const totalCoverage = coverages.reduce((sum, coverage) => {
+    if (coverage.type === "Disability") {
+      return sum + (coverage.monthlyBenefit || 0) * 12; // Annualize monthly benefit
+    }
+    return sum + (coverage.coverageAmount || 0);
+  }, 0);
 
   return (
     <div className="space-y-6">
@@ -97,7 +119,7 @@ export const InsuranceCoverageTab = () => {
               <p className="text-2xl font-bold">{coverages.length}</p>
             </div>
             <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total Coverage</p>
+              <p className="text-sm text-muted-foreground">Total Coverage Value</p>
               <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalCoverage)}</p>
             </div>
             <div className="text-center">
@@ -116,6 +138,7 @@ export const InsuranceCoverageTab = () => {
             coverage={coverage}
             onUpdate={(updatedCoverage) => handleUpdateCoverage(coverage.id, updatedCoverage)}
             onDelete={() => handleDeleteCoverage(coverage.id)}
+            onEdit={() => handleEditCoverage(coverage)}
           />
         ))}
       </div>
@@ -126,6 +149,19 @@ export const InsuranceCoverageTab = () => {
         onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddCoverage}
       />
+
+      {/* Edit Coverage Dialog */}
+      {editingCoverage && (
+        <EditInsuranceCoverageDialog
+          isOpen={!!editingCoverage}
+          onClose={() => setEditingCoverage(null)}
+          onUpdate={(updatedCoverage) => {
+            handleUpdateCoverage(editingCoverage.id, updatedCoverage);
+            setEditingCoverage(null);
+          }}
+          coverage={editingCoverage}
+        />
+      )}
     </div>
   );
 };

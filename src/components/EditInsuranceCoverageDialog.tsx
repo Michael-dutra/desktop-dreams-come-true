@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,52 +8,43 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { InsuranceCoverage } from "./InsuranceCoverageTab";
 
-interface AddInsuranceCoverageDialogProps {
+interface EditInsuranceCoverageDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onAdd: (coverage: Omit<InsuranceCoverage, "id">) => void;
+  onUpdate: (updatedCoverage: Partial<InsuranceCoverage>) => void;
+  coverage: InsuranceCoverage;
 }
 
-export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsuranceCoverageDialogProps) => {
+export const EditInsuranceCoverageDialog = ({ isOpen, onClose, onUpdate, coverage }: EditInsuranceCoverageDialogProps) => {
   const [formData, setFormData] = useState({
-    type: "" as InsuranceCoverage["type"],
-    coverageAmount: 0,
-    monthlyBenefit: 0,
-    insuredPerson: "",
-    beneficiary: "",
-    owner: "",
-    startDate: "",
-    expiryDate: "",
-    features: "",
-    premiumFrequency: "" as InsuranceCoverage["premiumFrequency"]
+    type: coverage.type,
+    coverageAmount: coverage.coverageAmount || 0,
+    monthlyBenefit: coverage.monthlyBenefit || 0,
+    insuredPerson: coverage.insuredPerson,
+    beneficiary: coverage.beneficiary || "",
+    owner: coverage.owner,
+    startDate: coverage.startDate,
+    expiryDate: coverage.expiryDate || "",
+    features: coverage.features,
+    premiumFrequency: coverage.premiumFrequency || ""
   });
 
-  const isDisability = formData.type === "Disability";
-
-  const getDefaultFeatures = (type: InsuranceCoverage["type"]) => {
-    switch (type) {
-      case "Term Life":
-        return "Convertible to whole life, guaranteed renewable";
-      case "Whole Life":
-        return "Cash value accumulation, guaranteed death benefit";
-      case "Universal Life":
-        return "Flexible premiums, investment component";
-      case "Critical Illness":
-        return "Covers 25 critical conditions, return of premium option";
-      case "Disability":
-        return "Own occupation coverage, 90-day elimination period";
-      default:
-        return "";
-    }
-  };
-
-  const handleTypeChange = (type: InsuranceCoverage["type"]) => {
+  useEffect(() => {
     setFormData({
-      ...formData,
-      type,
-      features: getDefaultFeatures(type)
+      type: coverage.type,
+      coverageAmount: coverage.coverageAmount || 0,
+      monthlyBenefit: coverage.monthlyBenefit || 0,
+      insuredPerson: coverage.insuredPerson,
+      beneficiary: coverage.beneficiary || "",
+      owner: coverage.owner,
+      startDate: coverage.startDate,
+      expiryDate: coverage.expiryDate || "",
+      features: coverage.features,
+      premiumFrequency: coverage.premiumFrequency || ""
     });
-  };
+  }, [coverage]);
+
+  const isDisability = formData.type === "Disability";
 
   const handleSubmit = () => {
     if (!formData.type || !formData.insuredPerson || !formData.owner || !formData.startDate) {
@@ -65,7 +56,7 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
       return;
     }
 
-    const coverageData: any = {
+    const updatedData: any = {
       type: formData.type,
       insuredPerson: formData.insuredPerson,
       owner: formData.owner,
@@ -76,43 +67,31 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
     };
 
     if (isDisability) {
-      coverageData.monthlyBenefit = formData.monthlyBenefit;
+      updatedData.monthlyBenefit = formData.monthlyBenefit;
+      updatedData.coverageAmount = undefined;
+      updatedData.beneficiary = undefined;
     } else {
-      coverageData.coverageAmount = formData.coverageAmount;
-      coverageData.beneficiary = formData.beneficiary;
+      updatedData.coverageAmount = formData.coverageAmount;
+      updatedData.beneficiary = formData.beneficiary;
+      updatedData.monthlyBenefit = undefined;
     }
 
-    onAdd(coverageData);
-
-    // Reset form
-    setFormData({
-      type: "" as InsuranceCoverage["type"],
-      coverageAmount: 0,
-      monthlyBenefit: 0,
-      insuredPerson: "",
-      beneficiary: "",
-      owner: "",
-      startDate: "",
-      expiryDate: "",
-      features: "",
-      premiumFrequency: "" as InsuranceCoverage["premiumFrequency"]
-    });
-
-    onClose();
+    onUpdate(updatedData);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Add Insurance Coverage</DialogTitle>
+          <DialogTitle>Edit Insurance Coverage</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="type">Insurance Type</Label>
-              <Select value={formData.type} onValueChange={handleTypeChange}>
+              <Select value={formData.type} onValueChange={(value: InsuranceCoverage["type"]) => 
+                setFormData({...formData, type: value})}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select insurance type" />
                 </SelectTrigger>
@@ -233,7 +212,7 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
               Cancel
             </Button>
             <Button onClick={handleSubmit}>
-              Add Coverage
+              Update Coverage
             </Button>
           </div>
         </div>

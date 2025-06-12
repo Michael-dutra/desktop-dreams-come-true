@@ -2,16 +2,17 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Shield, Calendar, User, Users } from "lucide-react";
+import { Edit, Trash2, Shield, Calendar, User, Users, DollarSign } from "lucide-react";
 import { InsuranceCoverage } from "./InsuranceCoverageTab";
 
 interface InsuranceCoverageCardProps {
   coverage: InsuranceCoverage;
   onUpdate: (updatedCoverage: Partial<InsuranceCoverage>) => void;
   onDelete: () => void;
+  onEdit: () => void;
 }
 
-export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete }: InsuranceCoverageCardProps) => {
+export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete, onEdit }: InsuranceCoverageCardProps) => {
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -46,6 +47,8 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete }: Insuranc
     }
   };
 
+  const isDisability = coverage.type === "Disability";
+
   return (
     <Card className="hover:shadow-lg transition-shadow duration-200">
       <CardHeader className="pb-3">
@@ -54,7 +57,7 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete }: Insuranc
             {coverage.type}
           </Badge>
           <div className="flex gap-2">
-            <Button variant="ghost" size="icon" className="h-8 w-8">
+            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}>
               <Edit className="h-4 w-4" />
             </Button>
             <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onDelete}>
@@ -65,13 +68,24 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete }: Insuranc
       </CardHeader>
       
       <CardContent className="space-y-4">
-        {/* Coverage Amount */}
+        {/* Coverage Amount or Monthly Benefit */}
         <div className="text-center p-4 bg-blue-50 rounded-lg">
           <div className="flex items-center justify-center gap-2 mb-1">
-            <Shield className="h-5 w-5 text-blue-600" />
-            <span className="text-sm font-medium text-blue-600">Coverage Amount</span>
+            {isDisability ? (
+              <DollarSign className="h-5 w-5 text-blue-600" />
+            ) : (
+              <Shield className="h-5 w-5 text-blue-600" />
+            )}
+            <span className="text-sm font-medium text-blue-600">
+              {isDisability ? "Monthly Benefit" : "Coverage Amount"}
+            </span>
           </div>
-          <p className="text-2xl font-bold text-blue-700">{formatCurrency(coverage.coverageAmount)}</p>
+          <p className="text-2xl font-bold text-blue-700">
+            {isDisability 
+              ? `${formatCurrency(coverage.monthlyBenefit || 0)}/month`
+              : formatCurrency(coverage.coverageAmount || 0)
+            }
+          </p>
         </div>
 
         {/* People Details */}
@@ -84,13 +98,16 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete }: Insuranc
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Users className="h-4 w-4 text-muted-foreground" />
-            <div className="flex-1">
-              <p className="text-xs text-muted-foreground">Beneficiary</p>
-              <p className="text-sm font-medium">{coverage.beneficiary}</p>
+          {/* Only show beneficiary for non-disability insurance */}
+          {!isDisability && coverage.beneficiary && (
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-muted-foreground" />
+              <div className="flex-1">
+                <p className="text-xs text-muted-foreground">Beneficiary</p>
+                <p className="text-sm font-medium">{coverage.beneficiary}</p>
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-muted-foreground" />
