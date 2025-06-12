@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area, AreaChart } from "recharts";
 import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface RetirementDetailDialogProps {
   isOpen: boolean;
@@ -145,6 +145,86 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       netAssets: (remainingRRSP + remainingTFSA + remainingNonReg - totalWithdrawal) / 1000,
       phase: 'Withdrawal'
     };
+  });
+
+  // Extended 50-year asset breakdown data (until assets reach zero)
+  const extendedAssetData = Array.from({ length: 50 }, (_, i) => {
+    const age = retirementAge[0] + i;
+    const isRetired = age >= retirementAge[0];
+    
+    // Growth phase (before retirement)
+    if (!isRetired) {
+      const yearsFromNow = age - currentAge;
+      const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                        (monthlyContribution[0] * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                        (monthlyContribution[0] * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
+                          (monthlyContribution[0] * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+      
+      return {
+        age,
+        year: age - currentAge,
+        rrsp: Math.max(0, rrspGrowth),
+        tfsa: Math.max(0, tfsaGrowth),
+        nonReg: Math.max(0, nonRegGrowth),
+        totalAssets: Math.max(0, rrspGrowth + tfsaGrowth + nonRegGrowth),
+        rrspWithdrawal: 0,
+        tfsaWithdrawal: 0,
+        nonRegWithdrawal: 0,
+        totalWithdrawal: 0,
+        phase: 'Growth'
+      };
+    }
+    
+    // Withdrawal phase (after retirement)
+    const yearsIntoRetirement = age - retirementAge[0];
+    const withdrawalRate = rrfWithdrawalRates[Math.min(age, 90)] || 0.2;
+    
+    // Calculate previous year balances to determine withdrawals
+    let prevRRSP = currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.6;
+    let prevTFSA = currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.4;
+    let prevNonReg = currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.2;
+    
+    // Apply withdrawals for each year
+    for (let year = 0; year < yearsIntoRetirement; year++) {
+      const yearWithdrawalRate = rrfWithdrawalRates[Math.min(retirementAge[0] + year, 90)] || 0.2;
+      prevRRSP = Math.max(0, prevRRSP * (1 + investmentReturn) * (1 - yearWithdrawalRate));
+      prevTFSA = Math.max(0, prevTFSA * (1 + investmentReturn) * (1 - 0.04));
+      prevNonReg = Math.max(0, prevNonReg * (1 + investmentReturn) * (1 - 0.04));
+    }
+    
+    // Current year balances with growth
+    const currentRRSP = Math.max(0, prevRRSP * (1 + investmentReturn));
+    const currentTFSA = Math.max(0, prevTFSA * (1 + investmentReturn));
+    const currentNonReg = Math.max(0, prevNonReg * (1 + investmentReturn));
+    
+    // Calculate withdrawals for this year
+    const rrspWithdrawal = currentRRSP * withdrawalRate;
+    const tfsaWithdrawal = currentTFSA * 0.04;
+    const nonRegWithdrawal = currentNonReg * 0.04;
+    
+    // Remaining balances after withdrawals
+    const remainingRRSP = Math.max(0, currentRRSP - rrspWithdrawal);
+    const remainingTFSA = Math.max(0, currentTFSA - tfsaWithdrawal);
+    const remainingNonReg = Math.max(0, currentNonReg - nonRegWithdrawal);
+    
+    return {
+      age,
+      year: age - currentAge,
+      rrsp: remainingRRSP,
+      tfsa: remainingTFSA,
+      nonReg: remainingNonReg,
+      totalAssets: remainingRRSP + remainingTFSA + remainingNonReg,
+      rrspWithdrawal,
+      tfsaWithdrawal,
+      nonRegWithdrawal,
+      totalWithdrawal: rrspWithdrawal + tfsaWithdrawal + nonRegWithdrawal,
+      phase: 'Withdrawal'
+    };
+  }).filter((item, index) => {
+    // Stop when all assets are essentially zero
+    return item.totalAssets > 1000 || index < 30; // Show at least 30 years or until assets are depleted
   });
 
   // Chart data
@@ -461,6 +541,86 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-red-500 rounded"></div>
                       <span>Annual Withdrawal</span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Year-by-Year Account Breakdown Table */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Year-by-Year Account Breakdown</CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Detailed annual breakdown showing each account balance and withdrawals until assets reach zero
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <ScrollArea className="h-96 w-full">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-16">Age</TableHead>
+                          <TableHead className="w-16">Year</TableHead>
+                          <TableHead className="text-right">RRSP Balance</TableHead>
+                          <TableHead className="text-right">RRSP Withdrawal</TableHead>
+                          <TableHead className="text-right">TFSA Balance</TableHead>
+                          <TableHead className="text-right">TFSA Withdrawal</TableHead>
+                          <TableHead className="text-right">Non-Reg Balance</TableHead>
+                          <TableHead className="text-right">Non-Reg Withdrawal</TableHead>
+                          <TableHead className="text-right">Total Assets</TableHead>
+                          <TableHead className="text-right">Total Withdrawal</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {extendedAssetData.map((item, index) => (
+                          <TableRow key={index} className={item.phase === 'Growth' ? 'bg-green-50' : 'bg-blue-50'}>
+                            <TableCell className="font-medium">{item.age}</TableCell>
+                            <TableCell>{item.year}</TableCell>
+                            <TableCell className="text-right font-mono">
+                              ${item.rrsp.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-red-600">
+                              {item.rrspWithdrawal > 0 ? `$${item.rrspWithdrawal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '-'}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ${item.tfsa.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-red-600">
+                              {item.tfsaWithdrawal > 0 ? `$${item.tfsaWithdrawal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '-'}
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              ${item.nonReg.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono text-red-600">
+                              {item.nonRegWithdrawal > 0 ? `$${item.nonRegWithdrawal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '-'}
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-bold">
+                              ${item.totalAssets.toLocaleString(undefined, { maximumFractionDigits: 0 })}
+                            </TableCell>
+                            <TableCell className="text-right font-mono font-bold text-red-600">
+                              {item.totalWithdrawal > 0 ? `$${item.totalWithdrawal.toLocaleString(undefined, { maximumFractionDigits: 0 })}` : '-'}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </ScrollArea>
+                  
+                  {/* Summary Info */}
+                  <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                    <div className="p-3 bg-green-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-3 h-3 bg-green-500 rounded"></div>
+                        <span className="font-medium">Growth Phase</span>
+                      </div>
+                      <span className="text-muted-foreground">Assets growing before retirement</span>
+                    </div>
+                    <div className="p-3 bg-blue-50 rounded-lg">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                        <span className="font-medium">Withdrawal Phase</span>
+                      </div>
+                      <span className="text-muted-foreground">Assets being withdrawn in retirement</span>
                     </div>
                   </div>
                 </CardContent>
