@@ -31,6 +31,13 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
     afterTaxValue: asset.taxable ? asset.value - (asset.value * asset.taxRate) : asset.value
   }));
 
+  // Create data for the final taxes pie chart
+  const finalTaxesData = taxBreakdown.filter(asset => asset.taxAmount > 0).map(asset => ({
+    asset: asset.asset,
+    value: asset.taxAmount,
+    color: asset.color
+  }));
+
   const totalTaxes = taxBreakdown.reduce((sum, asset) => sum + asset.taxAmount, 0);
   const probateFees = 12000; // Fixed probate fees
   const totalCosts = totalTaxes + probateFees;
@@ -160,14 +167,14 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
 
             <Card>
               <CardHeader>
-                <CardTitle>Estate Asset Breakdown</CardTitle>
+                <CardTitle>Final Taxes Breakdown</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <ChartContainer config={chartConfig} className="h-80">
                     <PieChart>
                       <Pie
-                        data={estateBreakdown}
+                        data={finalTaxesData}
                         cx="50%"
                         cy="50%"
                         innerRadius={60}
@@ -175,34 +182,42 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
                         paddingAngle={5}
                         dataKey="value"
                       >
-                        {estateBreakdown.map((entry, index) => (
+                        {finalTaxesData.map((entry, index) => (
                           <Cell key={`cell-${index}`} fill={entry.color} />
                         ))}
                       </Pie>
-                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, ""]} />} />
+                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, "Tax Amount"]} />} />
                     </PieChart>
                   </ChartContainer>
                   
                   <div className="space-y-3">
-                    {estateBreakdown.map((asset) => (
-                      <div key={asset.asset} className="flex items-center justify-between p-3 border rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }} />
-                          <div>
-                            <p className="font-medium">{asset.asset}</p>
+                    {finalTaxesData.map((asset) => {
+                      const originalAsset = taxBreakdown.find(a => a.asset === asset.asset);
+                      return (
+                        <div key={asset.asset} className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center space-x-3">
+                            <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }} />
+                            <div>
+                              <p className="font-medium">{asset.asset}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Tax Rate: {originalAsset ? (originalAsset.taxRate * 100).toFixed(1) : 0}%
+                              </p>
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-red-600">${asset.value.toLocaleString()}</p>
                             <p className="text-sm text-muted-foreground">
-                              {asset.taxable ? "Taxable" : "Tax-Free"}
+                              {totalTaxes > 0 ? ((asset.value / totalTaxes) * 100).toFixed(1) : 0}% of total taxes
                             </p>
                           </div>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold">${asset.value.toLocaleString()}</p>
-                          <p className="text-sm text-muted-foreground">
-                            {((asset.value / totalEstate) * 100).toFixed(1)}%
-                          </p>
-                        </div>
+                      );
+                    })}
+                    {totalTaxes === 0 && (
+                      <div className="text-center p-4 text-muted-foreground">
+                        No taxable assets in current plan
                       </div>
-                    ))}
+                    )}
                   </div>
                 </div>
               </CardContent>
