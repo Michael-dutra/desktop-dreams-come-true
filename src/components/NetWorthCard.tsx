@@ -52,8 +52,8 @@ const NetWorthCard = () => {
           </div>
           
           <div className="border-t border-white/20 pt-3">
-            <h4 className="text-base font-medium mb-2 text-white">5-Year Projection</h4>
-            <ChartContainer config={chartConfig} className="h-40">
+            <h4 className="text-lg font-medium mb-3 text-white">5-Year Projection</h4>
+            <ChartContainer config={chartConfig} className="h-64">
               <AreaChart data={projectionData}>
                 <defs>
                   <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
@@ -63,12 +63,12 @@ const NetWorthCard = () => {
                 </defs>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 12, fill: 'white' }}
+                  tick={{ fontSize: 14, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 12, fill: 'white' }}
+                  tick={{ fontSize: 14, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
@@ -90,11 +90,11 @@ const NetWorthCard = () => {
                   stroke="#10b981" 
                   strokeWidth={3}
                   fill="url(#netWorthGradient)"
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 4, stroke: "white" }}
+                  dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
                 />
               </AreaChart>
             </ChartContainer>
-            <p className="text-sm text-white mt-1">
+            <p className="text-sm text-white mt-2">
               Projected to reach $530K by 2029
             </p>
           </div>

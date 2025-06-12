@@ -66,21 +66,28 @@ const RetirementCard = () => {
               </div>
             </div>
 
-            {/* Progress Bar */}
-            <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
-              <div className="flex justify-between items-center mb-3">
-                <span className="text-sm font-semibold text-indigo-800">Income Coverage</span>
-                <span className="text-sm font-bold text-indigo-600">
+            {/* Enhanced Progress Bar */}
+            <div className="p-5 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-200 shadow-sm">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-lg font-bold text-indigo-800">Income Coverage</span>
+                <span className="text-lg font-bold text-indigo-600 bg-white px-3 py-1 rounded-full">
                   {yearsIncomeWillLast.toFixed(0)} of {yearsInRetirement} years
                 </span>
               </div>
-              <Progress 
-                value={coverageRatio * 100} 
-                className="h-3 mb-2"
-              />
-              <div className="flex items-center space-x-2">
-                <TrendingUp className="h-4 w-4 text-green-600" />
-                <span className="text-sm font-medium text-green-600">On track for retirement at 65</span>
+              <div className="space-y-3">
+                <Progress 
+                  value={coverageRatio * 100} 
+                  className="h-4 bg-indigo-100 border border-indigo-200 rounded-full overflow-hidden"
+                />
+                <div className="flex justify-between text-sm text-indigo-700">
+                  <span>0 years</span>
+                  <span className="font-medium">{(coverageRatio * 100).toFixed(0)}% covered</span>
+                  <span>{yearsInRetirement} years</span>
+                </div>
+              </div>
+              <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
+                <TrendingUp className="h-5 w-5 text-green-600" />
+                <span className="text-sm font-semibold text-green-700">On track for retirement at 65</span>
               </div>
             </div>
           </div>
