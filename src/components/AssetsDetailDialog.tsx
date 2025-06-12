@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -267,7 +268,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
   const confirmDeleteAsset = (assetId: string, assetName: string) => {
     console.log(`Delete confirmed for asset: ${assetName}`);
-    removeDynamicAsset(assetId);
+    // Asset deletion logic would go here
   };
 
   return (
@@ -465,47 +466,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardHeader>
               <CardContent>
                 {/* Content for Non-Registered */}
-              </CardContent>
-            </Card>
-
-            {/* Dynamic assets rendering */}
-            {dynamicAssets.map((asset) => (
-              <DynamicAssetCard key={asset.id} asset={asset} />
-            ))}
-
-            <Card className="border-dashed border-2 border-muted-foreground/30">
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
-                  <Plus className="w-6 h-6" />
-                  Add Asset
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Asset Type</label>
-                    <Select onValueChange={(value) => addDynamicAsset(value)}>
-                      <SelectTrigger className="w-full">
-                        <SelectValue placeholder="Select" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Primary Residence">Primary Residence</SelectItem>
-                        <SelectItem value="Secondary Property">Secondary Property</SelectItem>
-                        <SelectItem value="RRSP">RRSP</SelectItem>
-                        <SelectItem value="RRIF">RRIF</SelectItem>
-                        <SelectItem value="TFSA">TFSA</SelectItem>
-                        <SelectItem value="Non-Registered">Non-Registered</SelectItem>
-                        <SelectItem value="DB">DB (Defined Benefit)</SelectItem>
-                        <SelectItem value="DC">DC (Defined Contribution)</SelectItem>
-                        <SelectItem value="IPP">IPP (Individual Pension Plan)</SelectItem>
-                        <SelectItem value="LIRA">LIRA (Locked-in Retirement Account)</SelectItem>
-                        <SelectItem value="LIF">LIF (Life Income Fund)</SelectItem>
-                        <SelectItem value="Pension">Pension</SelectItem>
-                        <SelectItem value="Chequing">Chequing Account</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
               </CardContent>
             </Card>
           </div>
