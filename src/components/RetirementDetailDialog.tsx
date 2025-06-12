@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -195,19 +196,19 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     }
     
     // Current year balances with growth
-    const currentRRSP = Math.max(0, prevRRSP * (1 + investmentReturn));
-    const currentTFSA = Math.max(0, prevTFSA * (1 + investmentReturn));
-    const currentNonReg = Math.max(0, prevNonReg * (1 + investmentReturn));
+    const currentYearRRSP = Math.max(0, prevRRSP * (1 + investmentReturn));
+    const currentYearTFSA = Math.max(0, prevTFSA * (1 + investmentReturn));
+    const currentYearNonReg = Math.max(0, prevNonReg * (1 + investmentReturn));
     
     // Calculate withdrawals for this year
-    const rrspWithdrawal = currentRRSP * withdrawalRate;
-    const tfsaWithdrawal = currentTFSA * 0.04;
-    const nonRegWithdrawal = currentNonReg * 0.04;
+    const rrspWithdrawal = currentYearRRSP * withdrawalRate;
+    const tfsaWithdrawal = currentYearTFSA * 0.04;
+    const nonRegWithdrawal = currentYearNonReg * 0.04;
     
     // Remaining balances after withdrawals
-    const remainingRRSP = Math.max(0, currentRRSP - rrspWithdrawal);
-    const remainingTFSA = Math.max(0, currentTFSA - tfsaWithdrawal);
-    const remainingNonReg = Math.max(0, currentNonReg - nonRegWithdrawal);
+    const remainingRRSP = Math.max(0, currentYearRRSP - rrspWithdrawal);
+    const remainingTFSA = Math.max(0, currentYearTFSA - tfsaWithdrawal);
+    const remainingNonReg = Math.max(0, currentYearNonReg - nonRegWithdrawal);
     
     return {
       age,
