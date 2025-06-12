@@ -255,7 +255,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                     />
                     <Bar 
                       dataKey="value" 
-                      fill={(entry) => entry.fill}
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -292,7 +291,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                     />
                     <Bar 
                       dataKey="value" 
-                      fill={(entry) => entry.fill}
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
@@ -329,7 +327,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                     />
                     <Bar 
                       dataKey="value" 
-                      fill={(entry) => entry.fill}
                       radius={[4, 4, 0, 0]}
                     />
                   </BarChart>
