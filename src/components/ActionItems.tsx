@@ -2,9 +2,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckSquare, Calendar, Upload, Calculator, User, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AddActionItemDialog } from "./AddActionItemDialog";
+import { useState } from "react";
 
 const ActionItems = () => {
-  const actions = [
+  const [showAddDialog, setShowAddDialog] = useState(false);
+  const [actions, setActions] = useState([
     {
       icon: <CheckSquare className="h-4 w-4" />,
       title: "Revisit RRSP planning",
@@ -29,41 +32,57 @@ const ActionItems = () => {
       subtitle: "Monthly review session",
       color: "text-green-600",
     },
-  ];
+  ]);
+
+  const handleAddActionItem = (newActionItem: any) => {
+    setActions(prev => [...prev, newActionItem]);
+  };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-        <CardTitle className="text-lg flex items-center space-x-2">
-          <Calendar className="h-5 w-5" />
-          <span>Action Items</span>
-        </CardTitle>
-        <Button size="sm" className="flex items-center space-x-2">
-          <Plus className="h-4 w-4" />
-          <span>Add Item</span>
-        </Button>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {actions.map((action, index) => (
-            <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
-              <div className="flex items-center space-x-3">
-                <div className={`${action.color}`}>
-                  {action.icon}
+    <>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+          <CardTitle className="text-lg flex items-center space-x-2">
+            <Calendar className="h-5 w-5" />
+            <span>Action Items</span>
+          </CardTitle>
+          <Button 
+            size="sm" 
+            className="flex items-center space-x-2"
+            onClick={() => setShowAddDialog(true)}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Add Item</span>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {actions.map((action, index) => (
+              <div key={index} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className={`${action.color}`}>
+                    {action.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{action.title}</p>
+                    <p className="text-xs text-muted-foreground">{action.subtitle}</p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{action.title}</p>
-                  <p className="text-xs text-muted-foreground">{action.subtitle}</p>
-                </div>
+                <Button variant="ghost" size="sm">
+                  View
+                </Button>
               </div>
-              <Button variant="ghost" size="sm">
-                View
-              </Button>
-            </div>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+
+      <AddActionItemDialog 
+        isOpen={showAddDialog}
+        onClose={() => setShowAddDialog(false)}
+        onAdd={handleAddActionItem}
+      />
+    </>
   );
 };
 
