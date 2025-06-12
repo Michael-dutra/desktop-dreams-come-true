@@ -5,6 +5,7 @@ import { useState } from "react";
 import { LifeInsuranceCalculator } from "./LifeInsuranceCalculator";
 import { CriticalIllnessCalculator } from "./CriticalIllnessCalculator";
 import { DisabilityCalculator } from "./DisabilityCalculator";
+import { InsuranceCoverageTab } from "./InsuranceCoverageTab";
 
 interface InsuranceDetailDialogProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             <TabsTrigger value="calculator">Life Insurance Calculator</TabsTrigger>
             <TabsTrigger value="critical">Critical Illness Calculator</TabsTrigger>
             <TabsTrigger value="disability">Disability Calculator</TabsTrigger>
+            <TabsTrigger value="coverage">Coverage Analysis</TabsTrigger>
           </TabsList>
 
           <TabsContent value="calculator" className="space-y-6">
@@ -36,6 +38,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
 
           <TabsContent value="disability" className="space-y-6">
             <DisabilityCalculator />
+          </TabsContent>
+
+          <TabsContent value="coverage" className="space-y-6">
+            <InsuranceCoverageTab />
           </TabsContent>
         </Tabs>
       </DialogContent>
