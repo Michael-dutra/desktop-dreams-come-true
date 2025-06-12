@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -10,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 interface Asset {
   name: string;
@@ -89,6 +88,99 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const rrspFV = calculateFV(rrspDetails.currentValue, rrspRate[0], rrspYears[0], rrspDetails.annualContribution);
   const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
   const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
+
+  // Generate stable chart data using useMemo
+  const realEstateChartData = useMemo(() => {
+    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
+      const points = [];
+      const steps = 10;
+      
+      for (let i = 0; i <= steps; i++) {
+        const yearProgress = (years * i) / steps;
+        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+        
+        points.push({
+          year: yearProgress.toFixed(1),
+          current: currentValue,
+          future: currentProjection,
+          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+        });
+      }
+      
+      return points;
+    };
+    
+    return generateDataPoints(realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]);
+  }, [realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]]);
+
+  const rrspChartData = useMemo(() => {
+    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
+      const points = [];
+      const steps = 10;
+      
+      for (let i = 0; i <= steps; i++) {
+        const yearProgress = (years * i) / steps;
+        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+        
+        points.push({
+          year: yearProgress.toFixed(1),
+          current: currentValue,
+          future: currentProjection,
+          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+        });
+      }
+      
+      return points;
+    };
+    
+    return generateDataPoints(rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]);
+  }, [rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]]);
+
+  const tfsaChartData = useMemo(() => {
+    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
+      const points = [];
+      const steps = 10;
+      
+      for (let i = 0; i <= steps; i++) {
+        const yearProgress = (years * i) / steps;
+        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+        
+        points.push({
+          year: yearProgress.toFixed(1),
+          current: currentValue,
+          future: currentProjection,
+          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+        });
+      }
+      
+      return points;
+    };
+    
+    return generateDataPoints(tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]);
+  }, [tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]]);
+
+  const nonRegChartData = useMemo(() => {
+    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
+      const points = [];
+      const steps = 10;
+      
+      for (let i = 0; i <= steps; i++) {
+        const yearProgress = (years * i) / steps;
+        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+        
+        points.push({
+          year: yearProgress.toFixed(1),
+          current: currentValue,
+          future: currentProjection,
+          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+        });
+      }
+      
+      return points;
+    };
+    
+    return generateDataPoints(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
+  }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
 
   const chartConfig = {
     current: { label: "Current Value", color: "#3b82f6" },
@@ -204,42 +296,20 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Growth Visualization Chart Component - Fixed to prevent flickering
+  // Simplified Growth Visualization Chart Component - now receives stable data
   const GrowthChart = ({ 
+    data, 
     currentValue, 
     futureValue, 
-    years, 
-    rate,
+    years,
     color = "#10b981"
   }: { 
+    data: any[];
     currentValue: number;
     futureValue: number;
     years: number;
-    rate: number;
     color?: string;
   }) => {
-    // Generate data points for smooth line progression
-    const generateDataPoints = () => {
-      const points = [];
-      const steps = 10;
-      
-      for (let i = 0; i <= steps; i++) {
-        const yearProgress = (years * i) / steps;
-        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-        
-        points.push({
-          year: yearProgress.toFixed(1),
-          current: currentValue,
-          future: currentProjection,
-          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-        });
-      }
-      
-      return points;
-    };
-
-    const data = generateDataPoints();
-
     return (
       <div className="h-48 w-full bg-muted/20 rounded-lg p-4 border border-border/30">
         <div className="flex justify-between items-center mb-2">
@@ -254,6 +324,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <LineChart 
               data={data} 
               margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+              isAnimationActive={false}
             >
               <XAxis 
                 dataKey="yearLabel"
@@ -299,7 +370,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 }}
               />
               
-              {/* Current value line (flat red line) - NO ANIMATION */}
               <Line 
                 type="monotone" 
                 dataKey="current" 
@@ -310,7 +380,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 isAnimationActive={false}
               />
               
-              {/* Future value projection line (growing green line) - NO ANIMATION */}
               <Line 
                 type="monotone" 
                 dataKey="future" 
@@ -394,10 +463,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
               <GrowthChart 
+                data={realEstateChartData}
                 currentValue={realEstateDetails.currentFMV}
                 futureValue={realEstateFV}
                 years={realEstateYears[0]}
-                rate={realEstateRate[0]}
                 color="#f59e0b"
               />
 
@@ -484,6 +553,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
               <GrowthChart 
+                data={rrspChartData}
                 currentValue={rrspDetails.currentValue}
                 futureValue={rrspFV}
                 years={rrspYears[0]}
@@ -578,10 +648,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
               <GrowthChart 
+                data={tfsaChartData}
                 currentValue={tfsaDetails.currentValue}
                 futureValue={tfsaFV}
                 years={tfsaYears[0]}
-                rate={tfsaRate[0]}
                 color="#06b6d4"
               />
 
@@ -672,10 +742,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
               <GrowthChart 
+                data={nonRegChartData}
                 currentValue={nonRegisteredDetails.totalValue}
                 futureValue={nonRegFV}
                 years={nonRegYears[0]}
-                rate={nonRegRate[0]}
                 color="#ef4444"
               />
 
