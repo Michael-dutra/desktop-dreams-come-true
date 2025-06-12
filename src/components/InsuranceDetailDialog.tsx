@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -489,6 +488,36 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-bold text-red-900">Coverage Gap:</span>
                         <span className="font-bold text-red-600">{formatCurrency(ciCoverageGap)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h4 className="font-semibold text-yellow-800 mb-3">Important Critical Illness Insurance Terms</h4>
+                    <div className="space-y-3 text-sm text-yellow-800">
+                      <div>
+                        <strong>Covered Conditions:</strong> Most CI policies cover major illnesses including:
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>Cancer:</strong> Most forms of malignant cancer</li>
+                          <li><strong>Heart Attack:</strong> Myocardial infarction with specific severity criteria</li>
+                          <li><strong>Stroke:</strong> Cerebrovascular accident with lasting neurological damage</li>
+                          <li><strong>Other conditions:</strong> Kidney failure, major organ transplant, paralysis, etc.</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <strong>Survival Period:</strong> The time you must survive after diagnosis before benefits are paid:
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>30 days:</strong> Standard survival period for most conditions</li>
+                          <li><strong>Immediate:</strong> Some conditions may pay immediately upon diagnosis</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <strong>Payment Options:</strong>
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>Lump Sum:</strong> Full benefit amount paid at once upon qualifying diagnosis</li>
+                          <li><strong>Partial Payments:</strong> Some policies offer partial payments for less severe conditions</li>
+                          <li><strong>Return of Premium:</strong> Some policies return premiums if no claims are made</li>
+                        </ul>
                       </div>
                     </div>
                   </div>
