@@ -7,6 +7,8 @@ import LiabilitiesBreakdown from "@/components/LiabilitiesBreakdown";
 import MonthlyCashFlow from "@/components/MonthlyCashFlow";
 import InsuranceCard from "@/components/InsuranceCard";
 import RetirementCard from "@/components/RetirementCard";
+import BusinessCard from "@/components/BusinessCard";
+import EstateCard from "@/components/EstateCard";
 import GoalsSection from "@/components/GoalsSection";
 import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
@@ -37,17 +39,23 @@ const Index = () => {
             <InsuranceCard />
             <RetirementCard />
           </div>
+
+          {/* Third Row - Business and Estate Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <BusinessCard />
+            <EstateCard />
+          </div>
           
-          {/* Third Row - Recent AI Guidance and Saved AI Guidance (wide) */}
+          {/* Fourth Row - Recent AI Guidance and Saved AI Guidance (wide) */}
           <RecentGuidance />
           
-          {/* Fourth Row - Goals and Action Items */}
+          {/* Fifth Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
           </div>
           
-          {/* Fifth Row - Reports and Financial Vault */}
+          {/* Sixth Row - Reports and Financial Vault */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportsSection />
             <FinancialVault />
