@@ -2,7 +2,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Home, CreditCard, Car, Plus, Building, GraduationCap, User } from "lucide-react";
+import { Home, CreditCard, Car, Plus, Building, GraduationCap, User, X, FileText } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -161,6 +161,21 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     }
   };
 
+  const removeLiability = (liabilityId: string) => {
+    if (liabilityId === "mortgage") {
+      // Handle mortgage removal if needed - for now just console log
+      console.log("Cannot remove default mortgage");
+    } else if (liabilityId === "car-loan") {
+      // Handle car loan removal if needed - for now just console log
+      console.log("Cannot remove default car loan");
+    } else if (liabilityId === "credit-card") {
+      // Handle credit card removal if needed - for now just console log
+      console.log("Cannot remove default credit card");
+    } else {
+      removeCustomLiability(liabilityId);
+    }
+  };
+
   const renderLiabilityCard = (liability: LiabilityDetails) => {
     const Icon = getIconForType(liability.type);
     const newPayment = liability.monthlyPayment + liability.extraPayment;
@@ -211,16 +226,24 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <Icon className="w-6 h-6" />
               {liability.type}
             </div>
-            {liability.id.startsWith('custom-') && (
+            <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
                 size="sm" 
-                onClick={() => removeCustomLiability(liability.id)}
+                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+              >
+                <FileText className="w-4 h-4" />
+                Write-up
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => removeLiability(liability.id)}
                 className="text-red-600 border-red-300 hover:bg-red-50"
               >
-                Remove
+                <X className="w-4 h-4" />
               </Button>
-            )}
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
