@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp, FileText, Edit2, Copy, Check } from "lucide-react";
+import { Eye, TrendingUp, FileText, Edit, Copy, Check } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 
@@ -175,7 +175,7 @@ This projection assumes consistent market performance and regular contributions.
                   onClick={handleEditToggle}
                   className="flex items-center gap-2"
                 >
-                  <Edit2 className="w-4 h-4" />
+                  <Edit className="w-4 h-4" />
                   {isEditing ? 'Preview' : 'Edit'}
                 </Button>
                 <Button 
