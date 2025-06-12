@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, TrendingUp, PieChart, BarChart3 } from "lucide-react";
+import { FileText, TrendingUp, PieChart, BarChart3, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
@@ -15,7 +15,8 @@ const ReportsSection = () => {
     retirement: false,
     aiGuidance: false,
     goals: false,
-    actionItems: false
+    actionItems: false,
+    clientProfile: false
   });
 
   const reportSections = [
@@ -27,7 +28,8 @@ const ReportsSection = () => {
     { key: "retirement", label: "Retirement", icon: <FileText className="h-4 w-4" /> },
     { key: "aiGuidance", label: "Recent AI Guidance", icon: <FileText className="h-4 w-4" /> },
     { key: "goals", label: "Goals", icon: <FileText className="h-4 w-4" /> },
-    { key: "actionItems", label: "Action Items", icon: <FileText className="h-4 w-4" /> }
+    { key: "actionItems", label: "Action Items", icon: <FileText className="h-4 w-4" /> },
+    { key: "clientProfile", label: "Client Profile", icon: <User className="h-4 w-4" /> }
   ];
 
   const handleSelectionChange = (section: string, checked: boolean) => {
@@ -51,23 +53,47 @@ const ReportsSection = () => {
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Generate Custom Report</h3>
           <div className="space-y-3">
-            {reportSections.map((section) => (
-              <div key={section.key} className="flex items-center space-x-3">
-                <Checkbox 
-                  id={section.key}
-                  checked={selections[section.key as keyof typeof selections]}
-                  onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
-                />
-                <div className="flex items-center space-x-2 flex-1">
-                  <div className="text-muted-foreground">
-                    {section.icon}
+            {/* First row - 5 items */}
+            <div className="grid grid-cols-1 gap-3">
+              {reportSections.slice(0, 5).map((section) => (
+                <div key={section.key} className="flex items-center space-x-3">
+                  <Checkbox 
+                    id={section.key}
+                    checked={selections[section.key as keyof typeof selections]}
+                    onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
+                  />
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div className="text-muted-foreground">
+                      {section.icon}
+                    </div>
+                    <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
+                      {section.label}
+                    </label>
                   </div>
-                  <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
-                    {section.label}
-                  </label>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            
+            {/* Second row - 5 items */}
+            <div className="grid grid-cols-1 gap-3">
+              {reportSections.slice(5, 10).map((section) => (
+                <div key={section.key} className="flex items-center space-x-3">
+                  <Checkbox 
+                    id={section.key}
+                    checked={selections[section.key as keyof typeof selections]}
+                    onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
+                  />
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div className="text-muted-foreground">
+                      {section.icon}
+                    </div>
+                    <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
+                      {section.label}
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
           <Button onClick={handleGenerateReport} className="w-full">
             Generate Report
