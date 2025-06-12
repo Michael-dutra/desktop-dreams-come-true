@@ -71,8 +71,8 @@ const BusinessCard = () => {
           <div className="border-t pt-4">
             <h4 className="text-sm font-medium mb-3">Business Valuation Growth</h4>
             <div className="w-full">
-              <ChartContainer config={chartConfig} className="h-32 w-full">
-                <AreaChart data={businessGrowthData} width="100%">
+              <ChartContainer config={chartConfig} className="h-40 w-full">
+                <AreaChart data={businessGrowthData}>
                   <defs>
                     <linearGradient id="businessGradient" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
