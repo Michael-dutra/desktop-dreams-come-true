@@ -13,9 +13,10 @@ import { toast } from "sonner";
 interface AssetsDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  assets: { name: string; amount: string; value: number; color: string; }[];
 }
 
-const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
+const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
   const [activeTab, setActiveTab] = useState("overview");
   const [summaryDialogOpen, setSummaryDialogOpen] = useState(false);
   const [isEditingWriteUp, setIsEditingWriteUp] = useState(false);
