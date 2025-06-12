@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -104,6 +103,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     future: { label: "Future Value", color: "#10b981" }
   };
 
+  // Assumed annual income for calculations (in a real app, this would come from user data)
+  const assumedAnnualIncome = 80000;
+
   // Edit handlers
   const startEdit = (fieldId: string, currentValue: number | string) => {
     setEditingField(fieldId);
@@ -143,14 +145,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     setTempValue("");
   };
 
-  // Editable field component
+  // Editable field component with tips
   const EditableField = ({ 
     fieldId, 
     value, 
     label, 
     isEditable = true, 
     prefix = "$",
-    isAutoCalculated = false
+    isAutoCalculated = false,
+    tip
   }: { 
     fieldId: string; 
     value: number; 
@@ -158,6 +161,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     isEditable?: boolean;
     prefix?: string;
     isAutoCalculated?: boolean;
+    tip?: string;
   }) => {
     const isEditing = editingField === fieldId;
     
@@ -182,9 +186,16 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </div>
         ) : (
           <div className="flex items-center justify-between">
-            <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-              {prefix}{value.toLocaleString()}
-            </p>
+            <div className="flex-1">
+              <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
+                {prefix}{value.toLocaleString()}
+              </p>
+              {tip && (
+                <p className="text-xs text-muted-foreground/80 mt-1 italic">
+                  💡 {tip}
+                </p>
+              )}
+            </div>
             {isEditable && !isAutoCalculated && (
               <Button 
                 size="sm" 
@@ -468,6 +479,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="realEstate.monthlyPayment" 
                   value={realEstateDetails.monthlyPayment} 
                   label="Monthly Payment" 
+                  tip={`${((realEstateDetails.monthlyPayment * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
                 <EditableField 
                   fieldId="realEstate.remainingYears" 
@@ -561,16 +573,19 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="rrsp.availableRoom" 
                   value={rrspDetails.availableRoom} 
                   label="Available Room" 
+                  tip={`If maxed out, worth $${Math.round(rrspDetails.availableRoom * Math.pow(1.07, 10)).toLocaleString()} in 10 years at 7%`}
                 />
                 <EditableField 
                   fieldId="rrsp.annualContribution" 
                   value={rrspDetails.annualContribution} 
                   label="Annual Contribution" 
+                  tip={`${(rrspDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
                 <EditableField 
                   fieldId="rrsp.monthlyContribution" 
                   value={rrspDetails.monthlyContribution} 
                   label="Monthly Contribution" 
+                  tip={`${((rrspDetails.monthlyContribution * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
               </div>
               
@@ -657,6 +672,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="tfsa.availableRoom" 
                   value={tfsaDetails.availableRoom} 
                   label="Available Room" 
+                  tip={`If maxed out, worth $${Math.round(tfsaDetails.availableRoom * Math.pow(1.065, 10)).toLocaleString()} in 10 years at 6.5%`}
                 />
                 <EditableField 
                   fieldId="tfsa.totalRoom" 
@@ -672,11 +688,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="tfsa.annualContribution" 
                   value={tfsaDetails.annualContribution} 
                   label="Annual Contribution" 
+                  tip={`${(tfsaDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
                 <EditableField 
                   fieldId="tfsa.monthlyContribution" 
                   value={tfsaDetails.monthlyContribution} 
                   label="Monthly Contribution" 
+                  tip={`${((tfsaDetails.monthlyContribution * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
               </div>
               
@@ -751,6 +769,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   value={nonRegisteredDetails.unrealizedGains} 
                   label="Unrealized Gains" 
                   prefix="+$"
+                  tip={`${((nonRegisteredDetails.unrealizedGains / nonRegisteredDetails.totalValue) * 100).toFixed(1)}% of total value`}
                 />
                 <EditableField 
                   fieldId="projected-growth-nonreg" 
@@ -764,6 +783,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="nonReg.dividendIncome" 
                   value={nonRegisteredDetails.dividendIncome} 
                   label="Annual Dividend Income" 
+                  tip={`${((nonRegisteredDetails.dividendIncome / nonRegisteredDetails.totalValue) * 100).toFixed(1)}% dividend yield`}
                 />
                 <EditableField 
                   fieldId="nonReg.annualInterestIncome" 
@@ -779,6 +799,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   fieldId="nonReg.annualContribution" 
                   value={nonRegisteredDetails.annualContribution} 
                   label="Annual Contribution" 
+                  tip={`${(nonRegisteredDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
                 />
                 <EditableField 
                   fieldId="nonReg.monthlyContribution" 
