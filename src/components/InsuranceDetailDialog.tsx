@@ -25,8 +25,29 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
   const [charity, setCharity] = useState(10000);
   const [other, setOther] = useState(5000);
 
+  // Current life insurance details
+  const [currentLifeInsurance, setCurrentLifeInsurance] = useState({
+    provider: "ABC Life Insurance",
+    policyType: "Term Life - 20 Year",
+    coverageAmount: 320000,
+    monthlyPremium: 100,
+    beneficiaries: "Spouse (100%)"
+  });
+
+  // CI Calculator fields
+  const [ciIncome, setCiIncome] = useState(65000);
+  const [ciMultiplier, setCiMultiplier] = useState(3);
+  const [ciTreatmentCosts, setCiTreatmentCosts] = useState(50000);
+  const [ciRecoveryPeriod, setCiRecoveryPeriod] = useState(2);
+
+  // DI Calculator fields
+  const [diIncome, setDiIncome] = useState(65000);
+  const [diCoveragePercentage, setDiCoveragePercentage] = useState(65);
+  const [diBenefitPeriod, setDiBenefitPeriod] = useState(5);
+  const [diWaitingPeriod, setDiWaitingPeriod] = useState(90);
+
   const currentCoverage = {
-    life: 320000,
+    life: currentLifeInsurance.coverageAmount,
     criticalIllness: 100000,
     disability: 0
   };
@@ -37,19 +58,38 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     return incomeReplacement + mortgage + childEducation + otherDebts + finalExpenses + taxes + charity + other;
   };
 
+  // Calculate CI need
+  const calculateCiNeed = () => {
+    const incomeReplacement = ciIncome * ciMultiplier;
+    const totalTreatmentCosts = ciTreatmentCosts;
+    const recoveryIncome = (ciIncome * ciRecoveryPeriod);
+    return incomeReplacement + totalTreatmentCosts + recoveryIncome;
+  };
+
+  // Calculate DI need
+  const calculateDiNeed = () => {
+    return (diIncome * (diCoveragePercentage / 100));
+  };
+
   const totalNeed = calculateTotalNeed();
   const coverageGap = totalNeed - currentCoverage.life;
 
+  const ciTotalNeed = calculateCiNeed();
+  const ciCoverageGap = ciTotalNeed - currentCoverage.criticalIllness;
+
+  const diTotalNeed = calculateDiNeed();
+  const diCoverageGap = diTotalNeed - currentCoverage.disability;
+
   const recommendedCoverage = {
     life: totalNeed,
-    criticalIllness: 200000,
-    disability: 39000
+    criticalIllness: ciTotalNeed,
+    disability: diTotalNeed
   };
 
   const coverageGaps = {
     life: coverageGap,
-    criticalIllness: recommendedCoverage.criticalIllness - currentCoverage.criticalIllness,
-    disability: recommendedCoverage.disability - currentCoverage.disability
+    criticalIllness: ciCoverageGap,
+    disability: diCoverageGap
   };
 
   const coverageComparison = [
@@ -130,12 +170,85 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="life-calculator" className="w-full">
-            <TabsList className="grid w-full grid-cols-3">
+          <Tabs defaultValue="current-life" className="w-full">
+            <TabsList className="grid w-full grid-cols-4">
+              <TabsTrigger value="current-life">Current Life Insurance</TabsTrigger>
               <TabsTrigger value="life-calculator">Life Insurance Calculator</TabsTrigger>
-              <TabsTrigger value="ci-disability">CI & Disability</TabsTrigger>
-              <TabsTrigger value="coverage-comparison">Coverage Comparison</TabsTrigger>
+              <TabsTrigger value="ci-calculator">CI Calculator</TabsTrigger>
+              <TabsTrigger value="di-calculator">DI Calculator</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="current-life" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Current Life Insurance Policy</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Insurance Provider</label>
+                      <Input
+                        value={currentLifeInsurance.provider}
+                        onChange={(e) => setCurrentLifeInsurance(prev => ({ ...prev, provider: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Policy Type</label>
+                      <Input
+                        value={currentLifeInsurance.policyType}
+                        onChange={(e) => setCurrentLifeInsurance(prev => ({ ...prev, policyType: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Coverage Amount</label>
+                      <Input
+                        type="number"
+                        value={currentLifeInsurance.coverageAmount}
+                        onChange={(e) => setCurrentLifeInsurance(prev => ({ ...prev, coverageAmount: Number(e.target.value) }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Monthly Premium</label>
+                      <Input
+                        type="number"
+                        value={currentLifeInsurance.monthlyPremium}
+                        onChange={(e) => setCurrentLifeInsurance(prev => ({ ...prev, monthlyPremium: Number(e.target.value) }))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="text-sm font-medium mb-2 block">Beneficiaries</label>
+                      <Input
+                        value={currentLifeInsurance.beneficiaries}
+                        onChange={(e) => setCurrentLifeInsurance(prev => ({ ...prev, beneficiaries: e.target.value }))}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <h4 className="font-semibold text-blue-900 mb-3">Policy Summary</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Annual Premium:</span>
+                        <span className="font-medium">{formatCurrency(currentLifeInsurance.monthlyPremium * 12)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Coverage Amount:</span>
+                        <span className="font-medium">{formatCurrency(currentLifeInsurance.coverageAmount)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Cost per $1,000 coverage:</span>
+                        <span className="font-medium">{formatCurrency((currentLifeInsurance.monthlyPremium * 12) / (currentLifeInsurance.coverageAmount / 1000))}</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
 
             <TabsContent value="life-calculator" className="space-y-6">
               <Card>
@@ -300,157 +413,171 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
               </Card>
             </TabsContent>
 
-            <TabsContent value="ci-disability" className="space-y-6">
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Critical Illness Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Current Coverage</span>
-                        <span className="font-medium">{formatCurrency(currentCoverage.criticalIllness)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Recommended Coverage</span>
-                        <span className="font-medium">{formatCurrency(recommendedCoverage.criticalIllness)}</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold">Coverage Gap</span>
-                        <span className="font-bold text-red-600">{formatCurrency(coverageGaps.criticalIllness)}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-orange-50 p-3 rounded-lg">
-                      <p className="text-sm text-orange-800">
-                        <strong>Recommendation:</strong> CI coverage should be 2-3x annual income to cover treatment costs and income replacement during recovery.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Disability Insurance Analysis</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-3">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Current Coverage</span>
-                        <span className="font-medium">{formatCurrency(currentCoverage.disability)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Recommended Coverage</span>
-                        <span className="font-medium">{formatCurrency(recommendedCoverage.disability)} annually</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold">Coverage Gap</span>
-                        <span className="font-bold text-red-600">{formatCurrency(coverageGaps.disability)} annually</span>
-                      </div>
-                    </div>
-                    
-                    <div className="bg-yellow-50 p-3 rounded-lg">
-                      <p className="text-sm text-yellow-800">
-                        <strong>Critical Gap:</strong> No disability coverage currently in place. Recommended coverage is 60-70% of gross income.
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="coverage-comparison" className="space-y-6">
-              
+            <TabsContent value="ci-calculator" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Coverage Comparison: Current vs Recommended</CardTitle>
+                  <CardTitle>Critical Illness Insurance Calculator</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-6">
-                    {coverageComparison.map((coverage, index) => (
-                      <div key={index} className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h4 className="font-medium">{coverage.type}</h4>
-                          <div className="flex items-center space-x-2">
-                            {coverage.status === "underinsured" ? (
-                              <AlertTriangle className="h-4 w-4 text-red-600" />
-                            ) : (
-                              <CheckCircle className="h-4 w-4 text-green-600" />
-                            )}
-                            <span className={`text-sm font-medium ${
-                              coverage.status === "underinsured" ? "text-red-600" : "text-green-600"
-                            }`}>
-                              {coverage.status === "underinsured" ? "Underinsured" : "Adequate"}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-3 gap-4 text-sm">
-                          <div>
-                            <span className="text-muted-foreground block">Current</span>
-                            <span className="font-medium">{formatCurrency(coverage.current)}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground block">Recommended</span>
-                            <span className="font-medium">{formatCurrency(coverage.recommended)}</span>
-                          </div>
-                          <div>
-                            <span className="text-muted-foreground block">Gap</span>
-                            <span className={`font-medium ${coverage.gap > 0 ? "text-red-600" : "text-green-600"}`}>
-                              {coverage.gap > 0 ? formatCurrency(coverage.gap) : "Adequate"}
-                            </span>
-                          </div>
-                        </div>
-                        
-                        
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${
-                              coverage.current >= coverage.recommended ? "bg-green-500" : "bg-red-500"
-                            }`}
-                            style={{ 
-                              width: `${Math.min((coverage.current / coverage.recommended) * 100, 100)}%` 
-                            }}
-                          ></div>
-                        </div>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Annual Income</label>
+                      <Input
+                        type="number"
+                        value={ciIncome}
+                        onChange={(e) => setCiIncome(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Income Multiplier</label>
+                      <Input
+                        type="number"
+                        value={ciMultiplier}
+                        onChange={(e) => setCiMultiplier(Number(e.target.value))}
+                        className="w-full"
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended: 2-3x annual income
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Estimated Treatment Costs</label>
+                      <Input
+                        type="number"
+                        value={ciTreatmentCosts}
+                        onChange={(e) => setCiTreatmentCosts(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Recovery Period (years)</label>
+                      <Input
+                        type="number"
+                        value={ciRecoveryPeriod}
+                        onChange={(e) => setCiRecoveryPeriod(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                    <h4 className="font-semibold text-orange-900 mb-3">Critical Illness Need Calculation</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Income Replacement:</span>
+                        <span className="font-medium">{formatCurrency(ciIncome * ciMultiplier)}</span>
                       </div>
-                    ))}
+                      <div className="flex justify-between">
+                        <span>Treatment Costs:</span>
+                        <span className="font-medium">{formatCurrency(ciTreatmentCosts)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Recovery Income:</span>
+                        <span className="font-medium">{formatCurrency(ciIncome * ciRecoveryPeriod)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-orange-900">Total CI Need:</span>
+                        <span className="font-bold text-orange-700">{formatCurrency(ciTotalNeed)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Current Coverage:</span>
+                        <span className="font-medium">{formatCurrency(currentCoverage.criticalIllness)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-red-900">Coverage Gap:</span>
+                        <span className="font-bold text-red-600">{formatCurrency(ciCoverageGap)}</span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
+            </TabsContent>
 
-              
+            <TabsContent value="di-calculator" className="space-y-6">
               <Card>
                 <CardHeader>
-                  <CardTitle>Recommended Actions</CardTitle>
+                  <CardTitle>Disability Insurance Calculator</CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-start space-x-3 p-3 bg-red-50 rounded-lg">
-                      <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-red-900">Priority 1: Increase Life Insurance</p>
-                        <p className="text-sm text-red-700">Add {formatCurrency(coverageGaps.life)} in life insurance coverage to protect family's financial security.</p>
+                <CardContent className="space-y-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Annual Income</label>
+                      <Input
+                        type="number"
+                        value={diIncome}
+                        onChange={(e) => setDiIncome(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Coverage Percentage</label>
+                      <Input
+                        type="number"
+                        value={diCoveragePercentage}
+                        onChange={(e) => setDiCoveragePercentage(Number(e.target.value))}
+                        className="w-full"
+                        min={0}
+                        max={100}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Recommended: 60-70% of gross income
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Benefit Period (years)</label>
+                      <Input
+                        type="number"
+                        value={diBenefitPeriod}
+                        onChange={(e) => setDiBenefitPeriod(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Waiting Period (days)</label>
+                      <Input
+                        type="number"
+                        value={diWaitingPeriod}
+                        onChange={(e) => setDiWaitingPeriod(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                    <h4 className="font-semibold text-purple-900 mb-3">Disability Insurance Need Calculation</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Annual Income:</span>
+                        <span className="font-medium">{formatCurrency(diIncome)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Coverage Percentage:</span>
+                        <span className="font-medium">{diCoveragePercentage}%</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Monthly Benefit Need:</span>
+                        <span className="font-medium">{formatCurrency(diTotalNeed / 12)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-purple-900">Annual Benefit Need:</span>
+                        <span className="font-bold text-purple-700">{formatCurrency(diTotalNeed)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Current Coverage:</span>
+                        <span className="font-medium">{formatCurrency(currentCoverage.disability)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-red-900">Coverage Gap:</span>
+                        <span className="font-bold text-red-600">{formatCurrency(diCoverageGap)}</span>
                       </div>
                     </div>
-                    
-                    <div className="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg">
-                      <Shield className="h-5 w-5 text-yellow-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-yellow-900">Priority 2: Add Disability Insurance</p>
-                        <p className="text-sm text-yellow-700">Implement disability coverage for {formatCurrency(recommendedCoverage.disability)} annual benefit.</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-start space-x-3 p-3 bg-orange-50 rounded-lg">
-                      <TrendingUp className="h-5 w-5 text-orange-600 mt-0.5" />
-                      <div>
-                        <p className="font-medium text-orange-900">Priority 3: Enhance Critical Illness</p>
-                        <p className="text-sm text-orange-700">Increase critical illness coverage by {formatCurrency(coverageGaps.criticalIllness)}.</p>
-                      </div>
-                    </div>
+                  </div>
+
+                  <div className="bg-yellow-50 p-3 rounded-lg">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Note:</strong> Benefit period of {diBenefitPeriod} years with {diWaitingPeriod} day waiting period. Consider "own occupation" vs "any occupation" definitions when selecting coverage.
+                    </p>
                   </div>
                 </CardContent>
               </Card>
