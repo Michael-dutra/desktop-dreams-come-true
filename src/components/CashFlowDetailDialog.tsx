@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -239,15 +238,15 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                       </div>
                       <div className="flex justify-between">
                         <span>Good (21-35%):</span>
-                        <span className="text-gray-500">Above your level</span>
+                        <span className="text-gray-500">Good</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Fair (36-49%):</span>
-                        <span className="text-orange-500">Above your level</span>
+                        <span className="text-orange-500">Fair</span>
                       </div>
                       <div className="flex justify-between">
                         <span>Poor (50%+):</span>
-                        <span className="text-red-500">Well above your level</span>
+                        <span className="text-red-500">Poor</span>
                       </div>
                     </div>
                   </div>
