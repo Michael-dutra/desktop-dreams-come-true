@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -125,9 +126,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="income"
-                type="text"
-                value={income.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setIncome)}
+                type="number"
+                value={income}
+                onChange={(e) => setIncome(Number(e.target.value) || 0)}
                 className="pl-10"
                 placeholder="Enter annual income"
               />
@@ -159,9 +160,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="currentCoverage"
-                type="text"
-                value={currentCoverage.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setCurrentCoverage)}
+                type="number"
+                value={currentCoverage}
+                onChange={(e) => setCurrentCoverage(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -173,9 +174,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="mortgage"
-                type="text"
-                value={mortgage.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setMortgage)}
+                type="number"
+                value={mortgage}
+                onChange={(e) => setMortgage(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -187,9 +188,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="otherDebts"
-                type="text"
-                value={otherDebts.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setOtherDebts)}
+                type="number"
+                value={otherDebts}
+                onChange={(e) => setOtherDebts(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -201,9 +202,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="kidsEducation"
-                type="text"
-                value={kidsEducation.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setKidsEducation)}
+                type="number"
+                value={kidsEducation}
+                onChange={(e) => setKidsEducation(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -215,9 +216,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="charitableDonations"
-                type="text"
-                value={charitableDonations.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setCharitableDonations)}
+                type="number"
+                value={charitableDonations}
+                onChange={(e) => setCharitableDonations(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -229,9 +230,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="finalExpenses"
-                type="text"
-                value={finalExpenses.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setFinalExpenses)}
+                type="number"
+                value={finalExpenses}
+                onChange={(e) => setFinalExpenses(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
@@ -243,9 +244,9 @@ ${shortage > 0 ? `Consider reviewing term life insurance options to bridge the c
               <DollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 id="other"
-                type="text"
-                value={other.toLocaleString()}
-                onChange={(e) => handleNumberInput(e.target.value, setOther)}
+                type="number"
+                value={other}
+                onChange={(e) => setOther(Number(e.target.value) || 0)}
                 className="pl-10"
               />
             </div>
