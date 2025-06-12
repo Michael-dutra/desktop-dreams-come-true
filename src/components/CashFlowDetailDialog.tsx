@@ -1,8 +1,9 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, AlertTriangle, Plus, Trash2, Edit, Save, Lightbulb } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Edit, Save } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,18 +43,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
   const [newIncomeAmount, setNewIncomeAmount] = useState("");
   const [newExpenseCategory, setNewExpenseCategory] = useState("");
   const [newExpenseAmount, setNewExpenseAmount] = useState("");
-
-  const assetsGuidance = [
-    "Consider diversifying your investment portfolio by adding international ETFs to reduce geographical risk concentration.",
-    "Your emergency fund could benefit from being moved to a high-yield savings account to earn better returns while maintaining liquidity.",
-    "Review your real estate allocation - with current market conditions, you might want to consider REITs for broader exposure."
-  ];
-
-  const liabilitiesGuidance = [
-    "With interest rates potentially declining, consider refinancing your mortgage to lock in a lower rate and reduce monthly payments.",
-    "Prioritize paying off high-interest credit card debt first using the avalanche method to minimize total interest paid.",
-    "Consider consolidating multiple debts into a single loan with a lower interest rate to simplify payments and reduce costs."
-  ];
 
   const updateIncomePercentages = (data: typeof incomeSourcesData) => {
     const total = data.reduce((sum, item) => sum + item.amount, 0);
@@ -130,7 +119,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
   const totalIncome = incomeSourcesData.reduce((sum, item) => sum + item.amount, 0);
   const totalExpenses = expensesData.reduce((sum, item) => sum + item.amount, 0);
   const netCashFlow = totalIncome - totalExpenses;
-  const emergencyFundCoverage = 45000 / totalExpenses;
 
   const incomeColors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b"];
   const expenseColors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#06b6d4", "#8b5cf6", "#ec4899", "#6366f1", "#f59e0b", "#10b981", "#64748b"];
@@ -147,7 +135,7 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
 
         <div className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -182,21 +170,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                     </p>
                   </div>
                   <DollarSign className="h-8 w-8 text-blue-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Emergency Fund</p>
-                    <p className="text-2xl font-bold text-blue-600">{emergencyFundCoverage.toFixed(1)} months</p>
-                    <Badge variant={emergencyFundCoverage >= 6 ? "default" : "destructive"} className="mt-1">
-                      {emergencyFundCoverage >= 6 ? "Adequate" : "Needs Attention"}
-                    </Badge>
-                  </div>
-                  <AlertTriangle className="h-8 w-8 text-orange-500" />
                 </div>
               </CardContent>
             </Card>
@@ -390,12 +363,21 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                 </div>
 
                 <ChartContainer config={{}} className="h-80">
-                  <BarChart data={expensesData}>
-                    <XAxis type="number" />
-                    <YAxis dataKey="category" type="category" width={100} tick={{ fontSize: 10 }} />
+                  <PieChart>
+                    <Pie
+                      data={expensesData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={100}
+                      dataKey="amount"
+                      label={({ category, percentage }) => `${category}: ${percentage.toFixed(1)}%`}
+                    >
+                      {expensesData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={expenseColors[index % expenseColors.length]} />
+                      ))}
+                    </Pie>
                     <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="amount" fill="#ef4444" />
-                  </BarChart>
+                  </PieChart>
                 </ChartContainer>
               </div>
             </CardContent>
@@ -415,15 +397,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                   <p className="font-medium text-green-800">Positive Cash Flow</p>
                   <p className="text-sm text-green-600">You're maintaining a healthy positive cash flow of ${netCashFlow.toLocaleString()}/month.</p>
                 </div>
-                
-                {emergencyFundCoverage < 6 && (
-                  <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
-                    <p className="font-medium text-orange-800">Emergency Fund Gap</p>
-                    <p className="text-sm text-orange-600">
-                      Your emergency fund covers {emergencyFundCoverage.toFixed(1)} months. Consider building it to 6+ months of expenses.
-                    </p>
-                  </div>
-                )}
 
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <p className="font-medium text-blue-800">Diversification Opportunity</p>
