@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -44,8 +45,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
   // DI Calculator fields
   const [diIncome, setDiIncome] = useState(65000);
   const [diCoveragePercentage, setDiCoveragePercentage] = useState(65);
-  const [diBenefitPeriod, setDiBenefitPeriod] = useState(5);
-  const [diWaitingPeriod, setDiWaitingPeriod] = useState(90);
 
   const currentCoverage = {
     life: currentLifeInsurance.coverageAmount,
@@ -527,24 +526,6 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                         Recommended: 60-70% of gross income
                       </p>
                     </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Benefit Period (years)</label>
-                      <Input
-                        type="number"
-                        value={diBenefitPeriod}
-                        onChange={(e) => setDiBenefitPeriod(Number(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Waiting Period (days)</label>
-                      <Input
-                        type="number"
-                        value={diWaitingPeriod}
-                        onChange={(e) => setDiWaitingPeriod(Number(e.target.value))}
-                        className="w-full"
-                      />
-                    </div>
                   </div>
 
                   <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
@@ -577,10 +558,33 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                     </div>
                   </div>
 
-                  <div className="bg-yellow-50 p-3 rounded-lg">
-                    <p className="text-sm text-yellow-800">
-                      <strong>Note:</strong> Benefit period of {diBenefitPeriod} years with {diWaitingPeriod} day waiting period. Consider "own occupation" vs "any occupation" definitions when selecting coverage.
-                    </p>
+                  <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
+                    <h4 className="font-semibold text-yellow-800 mb-3">Important Disability Insurance Terms</h4>
+                    <div className="space-y-3 text-sm text-yellow-800">
+                      <div>
+                        <strong>Benefit Period:</strong> The length of time you'll receive disability benefits. Common options include:
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>2 years:</strong> Short-term coverage for temporary disabilities</li>
+                          <li><strong>5 years:</strong> Medium-term protection for moderate recovery periods</li>
+                          <li><strong>To age 65:</strong> Long-term coverage until retirement age (most comprehensive)</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <strong>Waiting Period:</strong> The time between becoming disabled and when benefits begin. Common options:
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>30 days:</strong> Shorter wait, higher premiums</li>
+                          <li><strong>90 days:</strong> Standard option, balanced cost</li>
+                          <li><strong>180 days:</strong> Longer wait, lower premiums</li>
+                        </ul>
+                      </div>
+                      <div>
+                        <strong>Definition Types:</strong>
+                        <ul className="list-disc list-inside ml-4 mt-1">
+                          <li><strong>"Own Occupation":</strong> Pays if you can't perform your specific job duties</li>
+                          <li><strong>"Any Occupation":</strong> Pays only if you can't work in any job suited to your education and experience</li>
+                        </ul>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
