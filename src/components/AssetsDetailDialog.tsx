@@ -941,32 +941,91 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  const aiGuidanceTips = [
-    {
-      icon: TrendingUp,
-      title: "Diversification Opportunity",
-      tip: "Your portfolio is heavily weighted in real estate (84%). Consider increasing liquid investments to reduce concentration risk.",
-      color: "text-orange-600",
-      bgColor: "bg-orange-50",
-      borderColor: "border-orange-200"
-    },
-    {
-      icon: Brain,
-      title: "Tax Optimization",
-      tip: "Maximize your TFSA contributions first ($38K current vs $88K+ limit), then focus on RRSP to reduce taxable income.",
-      color: "text-blue-600", 
-      bgColor: "bg-blue-50",
-      borderColor: "border-blue-200"
-    },
-    {
-      icon: Lightbulb,
-      title: "Emergency Fund Strategy",
-      tip: "Consider keeping 3-6 months of expenses in high-interest savings. Your current liquid assets may not provide adequate emergency coverage.",
-      color: "text-green-600",
-      bgColor: "bg-green-50", 
-      borderColor: "border-green-200"
+  const [reportModalOpen, setReportModalOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<{ name: string; type: string } | null>(null);
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [assetToDelete, setAssetToDelete] = useState<{ name: string; type: string } | null>(null);
+
+  const generateAssetReport = (assetName: string, assetType: string) => {
+    // Generate different reports based on asset type
+    switch (assetType) {
+      case "Primary Residence":
+        return `Your Primary Residence currently holds $${realEstateDetails.currentFMV.toLocaleString()} and is projected to grow to $${Math.round(realEstateFV).toLocaleString()} over ${realEstateYears[0]} years, assuming ${realEstateRate[0]}% annual appreciation.
+
+Current Fair Market Value: $${realEstateDetails.currentFMV.toLocaleString()}
+Purchase Price: $${realEstateDetails.purchasePrice.toLocaleString()}
+Mortgage Balance: $${realEstateDetails.mortgageBalance.toLocaleString()}
+Net Equity: $${(realEstateDetails.currentFMV - realEstateDetails.mortgageBalance).toLocaleString()}
+Growth Assumption: ${realEstateRate[0]}% annually
+Projected Value: $${Math.round(realEstateFV).toLocaleString()}
+Total Projected Growth: $${Math.round(realEstateFV - realEstateDetails.currentFMV).toLocaleString()}
+
+This projection assumes consistent real estate market performance. Actual results may vary based on local market conditions, property improvements, and economic factors.`;
+
+      case "RRSP":
+        return `Your RRSP currently holds $${rrspDetails.currentValue.toLocaleString()} and is projected to grow to $${Math.round(rrspFV).toLocaleString()} over ${rrspYears[0]} years, assuming ${rrspRate[0]}% annual returns and $${rrspDetails.annualContribution.toLocaleString()} in annual contributions.
+
+Current Value: $${rrspDetails.currentValue.toLocaleString()}
+Available Contribution Room: $${rrspDetails.availableRoom.toLocaleString()}
+Annual Contributions: $${rrspDetails.annualContribution.toLocaleString()}
+Monthly Contributions: $${rrspDetails.monthlyContribution.toLocaleString()}
+Growth Assumption: ${rrspRate[0]}% annually
+Projected Value: $${Math.round(rrspFV).toLocaleString()}
+Total Projected Growth: $${Math.round(rrspFV - rrspDetails.currentValue).toLocaleString()}
+
+This projection assumes consistent market performance and regular contributions. RRSP contributions provide immediate tax deductions, making this an excellent tax-deferred growth vehicle.`;
+
+      case "TFSA":
+        return `Your TFSA currently holds $${tfsaDetails.currentValue.toLocaleString()} and is projected to grow to $${Math.round(tfsaFV).toLocaleString()} over ${tfsaYears[0]} years, assuming ${tfsaRate[0]}% annual returns and $${tfsaDetails.annualContribution.toLocaleString()} in annual contributions.
+
+Current Value: $${tfsaDetails.currentValue.toLocaleString()}
+Available Contribution Room: $${tfsaDetails.availableRoom.toLocaleString()}
+Annual Contributions: $${tfsaDetails.annualContribution.toLocaleString()}
+Monthly Contributions: $${tfsaDetails.monthlyContribution.toLocaleString()}
+Growth Assumption: ${tfsaRate[0]}% annually
+Projected Value: $${Math.round(tfsaFV).toLocaleString()}
+Total Projected Growth: $${Math.round(tfsaFV - tfsaDetails.currentValue).toLocaleString()}
+
+This projection assumes consistent market performance and regular contributions. TFSA growth is completely tax-free, making this an excellent vehicle for long-term wealth building.`;
+
+      case "Non-Registered":
+        return `Your Non-Registered investment account currently holds $${nonRegisteredDetails.totalValue.toLocaleString()} and is projected to grow to $${Math.round(nonRegFV).toLocaleString()} over ${nonRegYears[0]} years, assuming ${nonRegRate[0]}% annual returns and $${nonRegisteredDetails.annualContribution.toLocaleString()} in annual contributions.
+
+Current Value: $${nonRegisteredDetails.totalValue.toLocaleString()}
+Unrealized Gains: $${nonRegisteredDetails.unrealizedGains.toLocaleString()}
+Annual Contributions: $${nonRegisteredDetails.annualContribution.toLocaleString()}
+Monthly Contributions: $${nonRegisteredDetails.monthlyContribution.toLocaleString()}
+Growth Assumption: ${nonRegRate[0]}% annually
+Projected Value: $${Math.round(nonRegFV).toLocaleString()}
+Total Projected Growth: $${Math.round(nonRegFV - nonRegisteredDetails.totalValue).toLocaleString()}
+
+This projection assumes consistent market performance and regular contributions. Note that capital gains and dividends in non-registered accounts are subject to taxation.`;
+
+      default:
+        return `Your ${assetName} is being tracked with custom parameters. Please review the detailed projections in the card above for specific growth assumptions and projected values.`;
     }
-  ];
+  };
+
+  const handleAssetReport = (assetName: string, assetType: string) => {
+    setSelectedAsset({ name: assetName, type: assetType });
+    setReportModalOpen(true);
+  };
+
+  const handleAssetDelete = (assetName: string, assetType: string) => {
+    setAssetToDelete({ name: assetName, type: assetType });
+    setDeleteModalOpen(true);
+  };
+
+  const confirmAssetDelete = () => {
+    if (assetToDelete) {
+      console.log(`Delete confirmed for asset: ${assetToDelete.name}`);
+      // Note: For the main assets (Primary Residence, RRSP, TFSA, Non-Registered), 
+      // deletion would need to be handled differently as they're not in a removable array
+      // For now, we'll just close the modal
+      setDeleteModalOpen(false);
+      setAssetToDelete(null);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -1024,13 +1083,23 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      showAssetWriteup("Primary Residence", "Primary Residence");
+                      handleAssetReport("Primary Residence", "Primary Residence");
                     }}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAssetDelete("Primary Residence", "Primary Residence");
+                    }}
+                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1127,13 +1196,23 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      showAssetWriteup("RRSP", "RRSP");
+                      handleAssetReport("RRSP", "RRSP");
                     }}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAssetDelete("RRSP", "RRSP");
+                    }}
+                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1234,13 +1313,23 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      showAssetWriteup("TFSA", "TFSA");
+                      handleAssetReport("TFSA", "TFSA");
                     }}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAssetDelete("TFSA", "TFSA");
+                    }}
+                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1341,13 +1430,23 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     size="sm" 
                     onClick={(e) => {
                       e.stopPropagation();
-                      showAssetWriteup("Non-Registered", "Non-Registered");
+                      handleAssetReport("Non-Registered", "Non-Registered");
                     }}
-                    className="text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
                   >
                     <FileText className="w-4 h-4" />
                   </Button>
-                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleAssetDelete("Non-Registered", "Non-Registered");
+                    }}
+                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
                 </div>
               </CardTitle>
             </CardHeader>
@@ -1485,7 +1584,32 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {aiGuidanceTips.map((tip, index) => (
+              {[
+                {
+                  icon: TrendingUp,
+                  title: "Diversification Opportunity",
+                  tip: "Your portfolio is heavily weighted in real estate (84%). Consider increasing liquid investments to reduce concentration risk.",
+                  color: "text-orange-600",
+                  bgColor: "bg-orange-50",
+                  borderColor: "border-orange-200"
+                },
+                {
+                  icon: Brain,
+                  title: "Tax Optimization",
+                  tip: "Maximize your TFSA contributions first ($38K current vs $88K+ limit), then focus on RRSP to reduce taxable income.",
+                  color: "text-blue-600", 
+                  bgColor: "bg-blue-50",
+                  borderColor: "border-blue-200"
+                },
+                {
+                  icon: Lightbulb,
+                  title: "Emergency Fund Strategy",
+                  tip: "Consider keeping 3-6 months of expenses in high-interest savings. Your current liquid assets may not provide adequate emergency coverage.",
+                  color: "text-green-600",
+                  bgColor: "bg-green-50", 
+                  borderColor: "border-green-200"
+                }
+              ].map((tip, index) => (
                 <div key={index} className={`p-3 rounded-lg border ${tip.bgColor} ${tip.borderColor}`}>
                   <div className="flex items-start gap-3">
                     <tip.icon className={`w-4 h-4 mt-0.5 ${tip.color}`} />
@@ -1499,6 +1623,59 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </div>
           </CardContent>
         </Card>
+
+        {/* Asset Report Modal */}
+        <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle className="flex items-center space-x-2">
+                <FileText className="h-5 w-5 text-blue-600" />
+                <span>{selectedAsset?.name} Report</span>
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800">
+                  {selectedAsset ? generateAssetReport(selectedAsset.name, selectedAsset.type) : ''}
+                </pre>
+              </div>
+              <div className="flex justify-end space-x-2">
+                <Button variant="outline" onClick={() => setReportModalOpen(false)}>
+                  Close
+                </Button>
+                <Button className="bg-blue-600 hover:bg-blue-700">
+                  Export to PDF
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center space-x-2 text-red-600">
+                <X className="h-5 w-5" />
+                <span>Delete Asset Card</span>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete the <strong>{assetToDelete?.name}</strong> asset card? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setDeleteModalOpen(false)}>
+                Cancel
+              </AlertDialogCancel>
+              <AlertDialogAction 
+                onClick={confirmAssetDelete}
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </DialogContent>
     </Dialog>
   );
