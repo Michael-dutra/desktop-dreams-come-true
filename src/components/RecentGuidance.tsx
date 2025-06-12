@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, DollarSign, Shield, Trash2, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -82,6 +83,10 @@ const RecentGuidance = () => {
   const handleSave = (item: any) => {
     setSavedItems(prev => [...prev, { ...item, savedAt: new Date().toISOString() }]);
     setGuidanceItems(prev => prev.filter(i => i.id !== item.id));
+  };
+
+  const handleDeleteSaved = (index: number) => {
+    setSavedItems(prev => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -201,6 +206,29 @@ const RecentGuidance = () => {
                           Saved on {new Date(item.savedAt).toLocaleDateString()}
                         </p>
                       </div>
+                    </div>
+                    <div className="flex items-center space-x-2 ml-4">
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Are you sure you want to delete this saved guidance?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              This action cannot be undone. This will permanently delete the saved AI guidance item.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDeleteSaved(index)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </div>
                 </div>
