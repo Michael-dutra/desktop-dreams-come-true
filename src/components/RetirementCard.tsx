@@ -1,5 +1,5 @@
 
-import { PiggyBank, TrendingUp, Eye } from "lucide-react";
+import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -21,72 +21,78 @@ const RetirementCard = () => {
 
   return (
     <>
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-lg flex items-center space-x-2">
-            <PiggyBank className="h-5 w-5" />
-            <span>Retirement</span>
+      <Card className="relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
+          <CardTitle className="text-xl flex items-center space-x-3">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <PiggyBank className="h-6 w-6 text-purple-600" />
+            </div>
+            <span>Retirement Planning</span>
           </CardTitle>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 hover:bg-purple-50"
           >
             <Eye className="w-4 h-4" />
-            View Details
+            Details
           </Button>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <div>
-              <p className="text-2xl font-bold text-foreground">$90,000</p>
-              <p className="text-sm text-muted-foreground">Total Retirement Savings</p>
-            </div>
+        <CardContent className="space-y-6">
+          {/* Total Savings */}
+          <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+            <p className="text-3xl font-bold text-purple-600 mb-1">$90,000</p>
+            <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
+          </div>
           
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">RRSP</span>
-                <span className="text-sm font-medium">$52,000</span>
+          {/* Account Breakdown */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <p className="text-sm font-semibold text-blue-800 mb-1">RRSP</p>
+              <p className="text-lg font-bold text-blue-600">$52,000</p>
+            </div>
+            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-sm font-semibold text-green-800 mb-1">TFSA</p>
+              <p className="text-lg font-bold text-green-600">$38,000</p>
+            </div>
+          </div>
+          
+          {/* Retirement Goals */}
+          <div className="space-y-4 pt-2 border-t border-gray-200">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Calendar className="h-4 w-4 text-orange-600" />
+                  <span className="text-sm font-medium text-orange-800">Retirement Age</span>
+                </div>
+                <p className="text-lg font-bold text-orange-600">{retirementAge}</p>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">TFSA</span>
-                <span className="text-sm font-medium">$38,000</span>
+              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
+                <div className="flex items-center space-x-2 mb-1">
+                  <Target className="h-4 w-4 text-emerald-600" />
+                  <span className="text-sm font-medium text-emerald-800">Monthly Need</span>
+                </div>
+                <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded.toLocaleString()}</p>
               </div>
             </div>
-          
-            <div className="border-t pt-3 space-y-3">
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <p className="text-sm text-muted-foreground">Retirement Age</p>
-                  <p className="text-lg font-semibold">{retirementAge}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Net Monthly Income Needed</p>
-                  <p className="text-lg font-semibold">${netMonthlyIncomeNeeded.toLocaleString()}</p>
-                </div>
-              </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Income Coverage</span>
-                  <span className="text-sm font-bold">
-                    {yearsIncomeWillLast.toFixed(0)} of {yearsInRetirement} years
-                  </span>
-                </div>
-                <Progress 
-                  value={coverageRatio * 100} 
-                  className="h-3"
-                />
-                <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                  <span>Years Needed: {yearsInRetirement}</span>
-                  <span>Years Covered: {yearsIncomeWillLast.toFixed(0)}</span>
-                </div>
+            {/* Progress Bar */}
+            <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+              <div className="flex justify-between items-center mb-3">
+                <span className="text-sm font-semibold text-indigo-800">Income Coverage</span>
+                <span className="text-sm font-bold text-indigo-600">
+                  {yearsIncomeWillLast.toFixed(0)} of {yearsInRetirement} years
+                </span>
               </div>
-            
-              <div className="flex items-center space-x-1 text-green-600">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">On track for 65</span>
+              <Progress 
+                value={coverageRatio * 100} 
+                className="h-3 mb-2"
+              />
+              <div className="flex items-center space-x-2">
+                <TrendingUp className="h-4 w-4 text-green-600" />
+                <span className="text-sm font-medium text-green-600">On track for retirement at 65</span>
               </div>
             </div>
           </div>
