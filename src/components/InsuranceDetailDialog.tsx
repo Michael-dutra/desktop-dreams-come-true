@@ -498,10 +498,12 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                       <div>
                         <strong>Covered Conditions:</strong> Most CI policies cover major illnesses including:
                         <ul className="list-disc list-inside ml-4 mt-1">
-                          <li><strong>Cancer:</strong> Most forms of malignant cancer</li>
-                          <li><strong>Heart Attack:</strong> Myocardial infarction with specific severity criteria</li>
-                          <li><strong>Stroke:</strong> Cerebrovascular accident with lasting neurological damage</li>
-                          <li><strong>Other conditions:</strong> Kidney failure, major organ transplant, paralysis, etc.</li>
+                          <li>Cancer</li>
+                          <li>Heart Attack</li>
+                          <li>Stroke</li>
+                          <li>Kidney failure</li>
+                          <li>Major organ transplant</li>
+                          <li>Paralysis</li>
                         </ul>
                       </div>
                       <div>
