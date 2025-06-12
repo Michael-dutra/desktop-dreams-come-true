@@ -406,7 +406,7 @@ Next Review: September 2024`);
               className="flex items-center space-x-2"
             >
               <FileText className="h-4 w-4" />
-              <span>View Write-Up</span>
+              <span>Generate Report</span>
             </Button>
             
             <div className="flex space-x-3">
