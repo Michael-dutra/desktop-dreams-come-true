@@ -25,14 +25,14 @@ export const GrowthChart = ({ data, title }: GrowthChartProps) => {
   };
 
   const formatValue = (value: number) => {
-    if (value >= 999000) {
+    if (value > 999000) {
       return `$${(value / 1000000).toFixed(2)}M`;
     }
     return `$${(value / 1000).toFixed(0)}K`;
   };
 
   const formatYAxisTick = (value: number) => {
-    if (value >= 999000) {
+    if (value > 999000) {
       return `${(value / 1000000).toFixed(2)}M`;
     }
     return `${(value / 1000).toFixed(0)}K`;
@@ -42,7 +42,7 @@ export const GrowthChart = ({ data, title }: GrowthChartProps) => {
     const maxValue = Math.max(...data.map(d => Math.max(d.baseline, d.optimized)));
     const minValue = Math.min(...data.map(d => Math.min(d.baseline, d.optimized)));
     
-    if (maxValue >= 999000) {
+    if (maxValue > 999000) {
       // For values in millions, create ticks in 0.01M increments
       const maxM = maxValue / 1000000;
       const minM = minValue / 1000000;
