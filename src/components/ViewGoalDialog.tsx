@@ -20,8 +20,9 @@ export const ViewGoalDialog = ({ isOpen, onClose, goal }: ViewGoalDialogProps) =
   if (!goal) return null;
 
   const getProgressColor = (progress: number) => {
-    const red = Math.max(0, 255 - (progress * 2.55));
-    const green = Math.min(255, progress * 2.55);
+    // Create a gradient from bright red (0%) to bright green (100%)
+    const red = Math.round(255 - (progress * 2.55));
+    const green = Math.round(progress * 2.55);
     return `rgb(${red}, ${green}, 0)`;
   };
 

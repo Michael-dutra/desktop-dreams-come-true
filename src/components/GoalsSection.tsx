@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -56,9 +57,9 @@ const GoalsSection = () => {
   };
 
   const getProgressColor = (progress: number) => {
-    // Create a gradient from red (0%) to green (100%)
-    const red = Math.max(0, 255 - (progress * 2.55));
-    const green = Math.min(255, progress * 2.55);
+    // Create a gradient from bright red (0%) to bright green (100%)
+    const red = Math.round(255 - (progress * 2.55));
+    const green = Math.round(progress * 2.55);
     return `rgb(${red}, ${green}, 0)`;
   };
 
