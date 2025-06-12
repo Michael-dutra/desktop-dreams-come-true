@@ -61,6 +61,43 @@ export const IncomeTaxCalculator = () => {
 
   const calculateTax = () => {
     const brackets = taxBrackets[province as keyof typeof taxBrackets];
+    
+    // Safety check - if province data doesn't exist, use Ontario as default
+    if (!brackets) {
+      console.log(`Tax data not available for province ${province}, using Ontario as fallback`);
+      const fallbackBrackets = taxBrackets.ON;
+      let federalTax = 0;
+      let provincialTax = 0;
+
+      // Calculate federal tax
+      for (const bracket of fallbackBrackets.federal) {
+        if (income > bracket.min) {
+          const taxableInBracket = Math.min(income, bracket.max) - bracket.min;
+          federalTax += taxableInBracket * bracket.rate;
+        }
+      }
+
+      // Calculate provincial tax
+      for (const bracket of fallbackBrackets.provincial) {
+        if (income > bracket.min) {
+          const taxableInBracket = Math.min(income, bracket.max) - bracket.min;
+          provincialTax += taxableInBracket * bracket.rate;
+        }
+      }
+
+      const totalTax = federalTax + provincialTax;
+      const afterTaxIncome = income - totalTax;
+      const effectiveRate = (totalTax / income) * 100;
+
+      return {
+        totalTax,
+        afterTaxIncome,
+        effectiveRate,
+        federalTax,
+        provincialTax
+      };
+    }
+
     let federalTax = 0;
     let provincialTax = 0;
 
