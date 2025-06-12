@@ -2,9 +2,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, LineChart, Line } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Calendar, AlertTriangle } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
+import { TrendingUp, TrendingDown, DollarSign, AlertTriangle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { IncomeTaxCalculator } from "./IncomeTaxCalculator";
 
 interface CashFlowDetailDialogProps {
   isOpen: boolean;
@@ -31,15 +32,6 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
     { category: "Personal Care", amount: 300, percentage: 2 },
     { category: "Miscellaneous", amount: 450, percentage: 3 },
     { category: "Savings & Investments", amount: 2000, percentage: 13.3 }
-  ];
-
-  const cashFlowTrend = [
-    { month: "Jan", income: 22500, expenses: 15000, netFlow: 7500 },
-    { month: "Feb", income: 22500, expenses: 15200, netFlow: 7300 },
-    { month: "Mar", income: 23000, expenses: 15500, netFlow: 7500 },
-    { month: "Apr", income: 23000, expenses: 15800, netFlow: 7200 },
-    { month: "May", income: 23500, expenses: 16000, netFlow: 7500 },
-    { month: "Jun", income: 22500, expenses: 15000, netFlow: 7500 }
   ];
 
   const totalIncome = incomeSourcesData.reduce((sum, item) => sum + item.amount, 0);
@@ -204,45 +196,8 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
             </CardContent>
           </Card>
 
-          {/* Cash Flow Trend */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                6-Month Cash Flow Trend
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={{}} className="h-64">
-                <LineChart data={cashFlowTrend}>
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <Line 
-                    type="monotone" 
-                    dataKey="income" 
-                    stroke="#10b981" 
-                    strokeWidth={3}
-                    name="Income"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="expenses" 
-                    stroke="#ef4444" 
-                    strokeWidth={3}
-                    name="Expenses"
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="netFlow" 
-                    stroke="#3b82f6" 
-                    strokeWidth={3}
-                    name="Net Flow"
-                  />
-                </LineChart>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+          {/* Income Tax Calculator */}
+          <IncomeTaxCalculator />
 
           {/* Recommendations */}
           <Card>

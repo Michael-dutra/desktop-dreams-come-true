@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -56,7 +55,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   });
 
   const [rrspDetails, setRrspDetails] = useState({
-    totalContributions: 45000,
     currentValue: 52000,
     availableRoom: 18500,
     ytdGrowth: 8.2,
@@ -65,7 +63,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   });
 
   const [tfsaDetails, setTfsaDetails] = useState({
-    totalContributions: 35000,
     currentValue: 38000,
     availableRoom: 8500,
     ytdGrowth: 6.1,
@@ -540,11 +537,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   isEditable={false}
                 />
                 <EditableField 
-                  fieldId="rrsp.totalContributions" 
-                  value={rrspDetails.totalContributions} 
-                  label="Total Contributions" 
-                />
-                <EditableField 
                   fieldId="projected-growth-rrsp" 
                   value={Math.round(rrspFV - rrspDetails.currentValue)} 
                   label="Projected Growth" 
@@ -637,11 +629,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   label={`Future Value (${tfsaYears[0]} years)`} 
                   isAutoCalculated={true}
                   isEditable={false}
-                />
-                <EditableField 
-                  fieldId="tfsa.totalContributions" 
-                  value={tfsaDetails.totalContributions} 
-                  label="Total Contributions" 
                 />
                 <EditableField 
                   fieldId="projected-growth-tfsa" 
@@ -844,4 +831,3 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     </Dialog>
   );
 };
-
