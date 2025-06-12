@@ -45,7 +45,7 @@ const AssetsBreakdown = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Breakdown List */}
             <div className="space-y-3">
               {assets.map((asset, index) => (
@@ -59,25 +59,27 @@ const AssetsBreakdown = () => {
               ))}
             </div>
             
-            {/* Chart */}
-            <ChartContainer config={chartConfig} className="h-64">
-              <PieChart>
-                <Pie
-                  data={assets}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={40}
-                  outerRadius={90}
-                  paddingAngle={2}
-                  dataKey="value"
-                >
-                  {assets.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <ChartTooltip content={<ChartTooltipContent />} />
-              </PieChart>
-            </ChartContainer>
+            {/* Chart - Made bigger and better centered */}
+            <div className="flex justify-center">
+              <ChartContainer config={chartConfig} className="h-80 w-full max-w-md mx-auto">
+                <PieChart>
+                  <Pie
+                    data={assets}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={120}
+                    paddingAngle={3}
+                    dataKey="value"
+                  >
+                    {assets.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
+                    ))}
+                  </Pie>
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                </PieChart>
+              </ChartContainer>
+            </div>
           </div>
         </CardContent>
       </Card>
