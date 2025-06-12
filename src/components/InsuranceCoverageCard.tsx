@@ -88,6 +88,24 @@ export const InsuranceCoverageCard = ({ coverage, onUpdate, onDelete, onEdit }: 
           </p>
         </div>
 
+        {/* Premium Amount */}
+        {coverage.premiumAmount && (
+          <div className="text-center p-3 bg-green-50 rounded-lg">
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <span className="text-xs font-medium text-green-600">Premium</span>
+            </div>
+            <p className="text-lg font-semibold text-green-700">
+              {formatCurrency(coverage.premiumAmount)}
+              {coverage.premiumFrequency && (
+                <span className="text-xs text-green-600 ml-1">
+                  /{coverage.premiumFrequency.toLowerCase()}
+                </span>
+              )}
+            </p>
+          </div>
+        )}
+
         {/* People Details */}
         <div className="space-y-3">
           <div className="flex items-center gap-2">

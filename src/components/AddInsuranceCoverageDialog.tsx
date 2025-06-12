@@ -25,7 +25,8 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
     startDate: "",
     expiryDate: "",
     features: "",
-    premiumFrequency: "" as InsuranceCoverage["premiumFrequency"]
+    premiumFrequency: "" as InsuranceCoverage["premiumFrequency"],
+    premiumAmount: 0
   });
 
   const isDisability = formData.type === "Disability";
@@ -72,14 +73,18 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
       startDate: formData.startDate,
       expiryDate: formData.expiryDate || undefined,
       features: formData.features,
-      premiumFrequency: formData.premiumFrequency || undefined
+      premiumFrequency: formData.premiumFrequency || undefined,
+      premiumAmount: formData.premiumAmount || undefined
     };
 
     if (isDisability) {
       coverageData.monthlyBenefit = formData.monthlyBenefit;
+      coverageData.coverageAmount = undefined;
+      coverageData.beneficiary = undefined;
     } else {
       coverageData.coverageAmount = formData.coverageAmount;
       coverageData.beneficiary = formData.beneficiary;
+      coverageData.monthlyBenefit = undefined;
     }
 
     onAdd(coverageData);
@@ -95,7 +100,8 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
       startDate: "",
       expiryDate: "",
       features: "",
-      premiumFrequency: "" as InsuranceCoverage["premiumFrequency"]
+      premiumFrequency: "" as InsuranceCoverage["premiumFrequency"],
+      premiumAmount: 0
     });
 
     onClose();
@@ -179,6 +185,19 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
             </div>
 
             <div className="space-y-2">
+              <Label htmlFor="premiumAmount">Premium Amount (Optional)</Label>
+              <Input
+                id="premiumAmount"
+                type="number"
+                value={formData.premiumAmount}
+                onChange={(e) => setFormData({...formData, premiumAmount: Number(e.target.value)})}
+                placeholder="125"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
               <Label htmlFor="premiumFrequency">Premium Frequency (Optional)</Label>
               <Select value={formData.premiumFrequency} onValueChange={(value: InsuranceCoverage["premiumFrequency"]) => 
                 setFormData({...formData, premiumFrequency: value})}>
@@ -193,9 +212,7 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
                 </SelectContent>
               </Select>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="startDate">Start Date</Label>
               <Input
@@ -205,16 +222,16 @@ export const AddInsuranceCoverageDialog = ({ isOpen, onClose, onAdd }: AddInsura
                 onChange={(e) => setFormData({...formData, startDate: e.target.value})}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
-              <Input
-                id="expiryDate"
-                type="date"
-                value={formData.expiryDate}
-                onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="expiryDate">Expiry Date (Optional)</Label>
+            <Input
+              id="expiryDate"
+              type="date"
+              value={formData.expiryDate}
+              onChange={(e) => setFormData({...formData, expiryDate: e.target.value})}
+            />
           </div>
 
           <div className="space-y-2">

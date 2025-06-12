@@ -19,6 +19,7 @@ export interface InsuranceCoverage {
   expiryDate?: string;
   features: string;
   premiumFrequency?: "Monthly" | "Quarterly" | "Semi-Annual" | "Annual";
+  premiumAmount?: number; // New field for premium amount
 }
 
 export const InsuranceCoverageTab = () => {
@@ -33,7 +34,8 @@ export const InsuranceCoverageTab = () => {
       startDate: "2020-01-01",
       expiryDate: "2040-01-01",
       features: "Convertible to whole life, guaranteed renewable",
-      premiumFrequency: "Monthly"
+      premiumFrequency: "Monthly",
+      premiumAmount: 125
     },
     {
       id: "2",
@@ -44,7 +46,8 @@ export const InsuranceCoverageTab = () => {
       owner: "John Doe",
       startDate: "2021-03-15",
       features: "Covers 25 critical conditions, return of premium option",
-      premiumFrequency: "Annual"
+      premiumFrequency: "Annual",
+      premiumAmount: 850
     },
     {
       id: "3",
@@ -54,7 +57,8 @@ export const InsuranceCoverageTab = () => {
       owner: "John Doe",
       startDate: "2019-06-01",
       features: "Own occupation coverage, 90-day elimination period",
-      premiumFrequency: "Monthly"
+      premiumFrequency: "Monthly",
+      premiumAmount: 320
     }
   ]);
 
