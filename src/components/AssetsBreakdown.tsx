@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -7,6 +6,7 @@ import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import RRIFCard from "./RRIFCard";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -111,6 +111,9 @@ This projection assumes consistent market performance and regular contributions.
         </CardContent>
       </Card>
 
+      {/* RRIF Card */}
+      <RRIFCard />
+
       {/* Document Report Modal */}
       <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
         <DialogContent className="max-w-2xl">
@@ -142,7 +145,6 @@ This projection assumes consistent market performance and regular contributions.
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
         assets={assets}
-        setAssets={setAssets}
         onDocumentClick={(asset) => {
           setSelectedAsset(asset);
           setReportModalOpen(true);
