@@ -47,18 +47,6 @@ const RetirementCard = () => {
             <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
           
-          {/* Account Breakdown */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-              <p className="text-sm font-semibold text-blue-800 mb-1">RRSP</p>
-              <p className="text-lg font-bold text-blue-600">$52,000</p>
-            </div>
-            <div className="p-4 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-sm font-semibold text-green-800 mb-1">TFSA</p>
-              <p className="text-lg font-bold text-green-600">$38,000</p>
-            </div>
-          </div>
-          
           {/* Retirement Goals */}
           <div className="space-y-4 pt-2 border-t border-gray-200">
             <div className="grid grid-cols-2 gap-4">

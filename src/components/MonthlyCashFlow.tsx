@@ -64,10 +64,6 @@ const MonthlyCashFlow = () => {
               </div>
               <span className="text-lg font-bold text-blue-600">33.3%</span>
             </div>
-            <div className="flex justify-between items-center p-3 bg-emerald-50 rounded-lg">
-              <span className="text-sm font-medium text-emerald-800">vs Last Month</span>
-              <span className="text-lg font-bold text-emerald-600">+$1,200</span>
-            </div>
           </div>
         </CardContent>
       </Card>
