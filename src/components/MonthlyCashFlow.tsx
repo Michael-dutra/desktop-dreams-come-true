@@ -17,13 +17,13 @@ const MonthlyCashFlow = () => {
             <div className="p-2 bg-green-100 rounded-lg">
               <TrendingUp className="h-6 w-6 text-green-600" />
             </div>
-            <span>Monthly Cash Flow</span>
+            <span>Cash Flow</span>
           </CardTitle>
           <Button 
             variant="outline" 
             size="sm"
             onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 hover:bg-green-50"
+            className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
           >
             <Eye className="w-4 h-4" />
             Details

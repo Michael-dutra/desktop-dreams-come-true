@@ -38,7 +38,7 @@ const AssetsBreakdown = () => {
             variant="outline" 
             size="sm"
             onClick={() => setIsDialogOpen(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
           >
             <Eye className="w-4 h-4" />
             Details

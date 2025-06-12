@@ -1,3 +1,4 @@
+
 import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -33,7 +34,7 @@ const RetirementCard = () => {
             variant="outline" 
             size="sm"
             onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 hover:bg-purple-50"
+            className="flex items-center gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
           >
             <Eye className="w-4 h-4" />
             Details

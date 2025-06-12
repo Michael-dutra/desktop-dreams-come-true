@@ -36,7 +36,7 @@ const LiabilitiesBreakdown = () => {
             variant="outline" 
             size="sm"
             onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
           >
             <Eye className="w-4 h-4" />
             Details
