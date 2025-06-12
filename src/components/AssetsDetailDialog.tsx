@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -201,7 +200,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Growth Visualization Chart Component
+  // Growth Visualization Chart Component - Updated
   const GrowthChart = ({ 
     currentValue, 
     futureValue, 
@@ -215,54 +214,124 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     rate: number;
     color?: string;
   }) => {
-    const data = [
-      { 
-        name: "Current", 
-        value: currentValue,
-        fill: "#64748b"
-      },
-      { 
-        name: `${years}Y Future`, 
-        value: futureValue,
-        fill: color
+    // Generate data points for smooth line progression
+    const generateDataPoints = () => {
+      const points = [];
+      const steps = 10;
+      
+      for (let i = 0; i <= steps; i++) {
+        const yearProgress = (years * i) / steps;
+        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+        
+        points.push({
+          year: yearProgress.toFixed(1),
+          current: currentValue,
+          future: currentProjection,
+          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+        });
       }
-    ];
+      
+      return points;
+    };
+
+    const data = generateDataPoints();
 
     return (
-      <div className="h-32 w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-            <XAxis 
-              dataKey="name" 
-              axisLine={false}
-              tickLine={false}
-              tick={{ fontSize: 12, fill: '#64748b' }}
-            />
-            <YAxis hide />
-            <ChartTooltip 
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  const data = payload[0];
-                  return (
-                    <div className="bg-background border rounded-lg p-2 shadow-md">
-                      <p className="font-medium">{data.payload.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        ${data.value?.toLocaleString()}
-                      </p>
-                      {data.payload.name.includes('Future') && (
-                        <p className="text-xs text-green-600">
-                          +{((futureValue / currentValue - 1) * 100).toFixed(1)}% growth
-                        </p>
-                      )}
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Bar dataKey="value" radius={[4, 4, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+      <div className="h-48 w-full bg-gray-900 rounded-lg p-4 border border-gray-700">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs text-gray-300 font-medium">Growth Projection</span>
+          <span className="text-xs text-purple-400 font-semibold">
+            +{((futureValue / currentValue - 1) * 100).toFixed(1)}% over {years} years
+          </span>
+        </div>
+        
+        <div className="h-40 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart 
+              data={data} 
+              margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
+            >
+              <XAxis 
+                dataKey="yearLabel"
+                axisLine={{ stroke: '#a855f7', strokeWidth: 2 }}
+                tickLine={{ stroke: '#a855f7', strokeWidth: 1 }}
+                tick={{ fontSize: 10, fill: '#a855f7', fontWeight: 'bold' }}
+                interval={0}
+              />
+              <YAxis 
+                axisLine={{ stroke: '#a855f7', strokeWidth: 2 }}
+                tickLine={{ stroke: '#a855f7', strokeWidth: 1 }}
+                tick={{ fontSize: 10, fill: '#a855f7', fontWeight: 'bold' }}
+                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
+              />
+              <ChartTooltip 
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    const current = payload.find(p => p.dataKey === 'current')?.value;
+                    const future = payload.find(p => p.dataKey === 'future')?.value;
+                    
+                    return (
+                      <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl">
+                        <p className="font-medium text-purple-300 mb-1">{label}</p>
+                        <div className="space-y-1">
+                          <p className="text-sm">
+                            <span className="text-red-400">Current: </span>
+                            <span className="text-white font-semibold">${current?.toLocaleString()}</span>
+                          </p>
+                          <p className="text-sm">
+                            <span className="text-green-400">Future: </span>
+                            <span className="text-white font-semibold">${future?.toLocaleString()}</span>
+                          </p>
+                          {future && current && (
+                            <p className="text-xs text-purple-300">
+                              Growth: +{(((future as number) / (current as number) - 1) * 100).toFixed(1)}%
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              
+              {/* Current value line (flat red line) */}
+              <Line 
+                type="monotone" 
+                dataKey="current" 
+                stroke="#ef4444" 
+                strokeWidth={3}
+                dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
+                animationDuration={1000}
+                animationEasing="ease-out"
+              />
+              
+              {/* Future value projection line (growing green line) */}
+              <Line 
+                type="monotone" 
+                dataKey="future" 
+                stroke="#22c55e" 
+                strokeWidth={3}
+                dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
+                activeDot={{ r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
+                animationDuration={1500}
+                animationEasing="ease-out"
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+        
+        <div className="flex justify-between items-center mt-2 text-xs">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-red-400 rounded"></div>
+            <span className="text-red-300">Current Value</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-0.5 bg-green-400 rounded"></div>
+            <span className="text-green-300">Future Value</span>
+          </div>
+        </div>
       </div>
     );
   };
@@ -322,19 +391,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">Current vs Future Value</p>
-                  <span className="text-xs text-muted-foreground">{realEstateRate[0]}% for {realEstateYears[0]} years</span>
-                </div>
-                <GrowthChart 
-                  currentValue={realEstateDetails.currentFMV}
-                  futureValue={realEstateFV}
-                  years={realEstateYears[0]}
-                  rate={realEstateRate[0]}
-                  color="#f59e0b"
-                />
-              </div>
+              <GrowthChart 
+                currentValue={realEstateDetails.currentFMV}
+                futureValue={realEstateFV}
+                years={realEstateYears[0]}
+                rate={realEstateRate[0]}
+                color="#f59e0b"
+              />
 
               {/* Real Estate Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
@@ -433,19 +496,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">Current vs Future Value</p>
-                  <span className="text-xs text-muted-foreground">{rrspRate[0]}% for {rrspYears[0]} years</span>
-                </div>
-                <GrowthChart 
-                  currentValue={rrspDetails.currentValue}
-                  futureValue={rrspFV}
-                  years={rrspYears[0]}
-                  rate={rrspRate[0]}
-                  color="#8b5cf6"
-                />
-              </div>
+              <GrowthChart 
+                currentValue={rrspDetails.currentValue}
+                futureValue={rrspFV}
+                years={rrspYears[0]}
+                rate={rrspRate[0]}
+                color="#8b5cf6"
+              />
 
               {/* RRSP Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
@@ -535,19 +592,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">Current vs Future Value</p>
-                  <span className="text-xs text-muted-foreground">{tfsaRate[0]}% for {tfsaYears[0]} years</span>
-                </div>
-                <GrowthChart 
-                  currentValue={tfsaDetails.currentValue}
-                  futureValue={tfsaFV}
-                  years={tfsaYears[0]}
-                  rate={tfsaRate[0]}
-                  color="#06b6d4"
-                />
-              </div>
+              <GrowthChart 
+                currentValue={tfsaDetails.currentValue}
+                futureValue={tfsaFV}
+                years={tfsaYears[0]}
+                rate={tfsaRate[0]}
+                color="#06b6d4"
+              />
 
               {/* TFSA Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
@@ -647,19 +698,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Growth Visualization */}
-              <div className="bg-muted/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-sm font-medium">Current vs Future Value</p>
-                  <span className="text-xs text-muted-foreground">{nonRegRate[0]}% for {nonRegYears[0]} years</span>
-                </div>
-                <GrowthChart 
-                  currentValue={nonRegisteredDetails.totalValue}
-                  futureValue={nonRegFV}
-                  years={nonRegYears[0]}
-                  rate={nonRegRate[0]}
-                  color="#ef4444"
-                />
-              </div>
+              <GrowthChart 
+                currentValue={nonRegisteredDetails.totalValue}
+                futureValue={nonRegFV}
+                years={nonRegYears[0]}
+                rate={nonRegRate[0]}
+                color="#ef4444"
+              />
 
               {/* Non-Registered Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
