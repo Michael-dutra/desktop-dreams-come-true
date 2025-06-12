@@ -1,123 +1,111 @@
 
-import { Briefcase, TrendingUp, DollarSign, Building2, Eye } from "lucide-react";
+import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const BusinessCard = () => {
-  const growthData = [
-    { year: "2022", revenue: 125000 },
-    { year: "2023", revenue: 165000 },
-    { year: "2024", revenue: 185000 },
-    { year: "2025", revenue: 210000 },
+  const businessGrowthData = [
+    { year: "2020", valuation: 150000 },
+    { year: "2021", valuation: 180000 },
+    { year: "2022", valuation: 220000 },
+    { year: "2023", valuation: 275000 },
+    { year: "2024", valuation: 325000 },
   ];
 
   const chartConfig = {
-    revenue: { label: "Revenue", color: "#3b82f6" },
+    valuation: {
+      label: "Business Valuation",
+      color: "#8b5cf6",
+    },
   };
 
   return (
-    <Card className="relative overflow-hidden">
-      <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
-      <CardHeader className="flex flex-row items-center justify-between pb-4">
-        <CardTitle className="text-xl flex items-center space-x-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
-            <Briefcase className="h-6 w-6 text-blue-600" />
-          </div>
-          <span>Business</span>
-        </CardTitle>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="flex items-center gap-2 hover:bg-blue-50"
-        >
-          <Eye className="w-4 h-4" />
-          Details
-        </Button>
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg flex items-center space-x-2">
+            <Building2 className="h-5 w-5" />
+            <span>Business Planning</span>
+          </CardTitle>
+          <Button variant="outline" size="sm" className="flex items-center space-x-2">
+            <Eye className="h-4 w-4" />
+            <span>Details</span>
+          </Button>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-5">
-        {/* Business Valuation */}
-        <div className="p-5 bg-blue-50 border border-blue-200 rounded-xl">
-          <div className="flex justify-between items-center">
-            <div className="space-y-1">
-              <p className="text-lg font-semibold text-blue-900">Business Valuation</p>
-              <p className="text-sm text-blue-700">Current Market Value</p>
-            </div>
-            <div className="text-right space-y-1">
-              <p className="text-xl font-bold text-blue-600">$450K</p>
-              <div className="flex items-center text-sm text-green-600">
-                <TrendingUp className="h-4 w-4 mr-1" />
-                <span>+12% YoY</span>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-6">
+            <div>
+              <p className="text-sm text-muted-foreground">Business Value</p>
+              <p className="text-2xl font-bold">$325,000</p>
+              <div className="flex items-center space-x-1 text-green-600 mt-1">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm">+18% this year</span>
               </div>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">Annual Revenue</p>
+              <p className="text-2xl font-bold">$485,000</p>
+              <p className="text-sm text-muted-foreground mt-1">Projected 2024</p>
             </div>
           </div>
-        </div>
-
-        {/* Annual Revenue */}
-        <div className="p-5 bg-green-50 border border-green-200 rounded-xl">
-          <div className="flex justify-between items-center">
-            <div className="space-y-1">
-              <p className="text-lg font-semibold text-green-900">Annual Revenue</p>
-              <p className="text-sm text-green-700">Gross Business Income</p>
+          
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Business Insurance</span>
+              <span className="text-sm font-medium text-green-600">Active</span>
             </div>
-            <div className="text-right space-y-1">
-              <p className="text-xl font-bold text-green-600">$185K</p>
-              <div className="flex items-center text-sm text-green-600">
-                <DollarSign className="h-4 w-4 mr-1" />
-                <span>+8% vs target</span>
-              </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Succession Plan</span>
+              <span className="text-sm font-medium text-orange-600">In Progress</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-muted-foreground">Key Person Insurance</span>
+              <span className="text-sm font-medium text-green-600">Covered</span>
             </div>
           </div>
-        </div>
-
-        {/* Business Growth Chart */}
-        <div className="p-5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl">
-          <h4 className="text-lg font-semibold text-indigo-900 mb-3">Revenue Growth</h4>
-          <ChartContainer config={chartConfig} className="h-40">
-            <LineChart data={growthData}>
-              <XAxis 
-                dataKey="year" 
-                tick={{ fontSize: 12 }}
-                axisLine={{ stroke: '#6366f1', strokeWidth: 1 }}
-                tickLine={{ stroke: '#6366f1' }}
-              />
-              <YAxis 
-                tick={{ fontSize: 12 }}
-                axisLine={{ stroke: '#6366f1', strokeWidth: 1 }}
-                tickLine={{ stroke: '#6366f1' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-              />
-              <ChartTooltip 
-                content={<ChartTooltipContent 
-                  formatter={(value) => [`$${value.toLocaleString()}`, "Revenue"]}
-                />} 
-              />
-              <Line 
-                type="monotone" 
-                dataKey="revenue" 
-                stroke="#3b82f6" 
-                strokeWidth={3}
-                dot={{ fill: "#3b82f6", strokeWidth: 2, r: 4 }}
-              />
-            </LineChart>
-          </ChartContainer>
-          <p className="text-sm text-indigo-700 mt-2">Projected: $210K by 2025</p>
-        </div>
-
-        {/* Business Structure */}
-        <div className="p-5 bg-purple-50 border border-purple-200 rounded-xl">
-          <div className="flex justify-between items-center">
-            <div className="space-y-1">
-              <p className="text-lg font-semibold text-purple-900">Business Structure</p>
-              <p className="text-sm text-purple-700">Incorporated</p>
-            </div>
-            <div className="text-right space-y-1">
-              <p className="text-xl font-bold text-purple-600">Corp</p>
-              <div className="flex items-center text-sm text-blue-600">
-                <Building2 className="h-4 w-4 mr-1" />
-                <span>Tax optimized</span>
-              </div>
+          
+          <div className="border-t pt-4">
+            <h4 className="text-sm font-medium mb-3">Business Valuation Growth</h4>
+            <div className="w-full">
+              <ChartContainer config={chartConfig} className="h-32 w-full">
+                <AreaChart data={businessGrowthData} width="100%">
+                  <defs>
+                    <linearGradient id="businessGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="year" 
+                    tick={{ fontSize: 12 }}
+                    axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
+                    tickLine={{ stroke: '#e2e8f0' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value) => [`$${value.toLocaleString()}`, "Valuation"]}
+                    />} 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="valuation" 
+                    stroke="#8b5cf6" 
+                    strokeWidth={2}
+                    fill="url(#businessGradient)"
+                    dot={{ fill: "#8b5cf6", strokeWidth: 2, r: 4 }}
+                  />
+                </AreaChart>
+              </ChartContainer>
             </div>
           </div>
         </div>
