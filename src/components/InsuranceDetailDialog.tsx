@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,9 +6,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Calculator, Edit } from "lucide-react";
+import { Calculator, Edit, Heart } from "lucide-react";
 import { useState } from "react";
 import { LifeInsuranceCalculator } from "./LifeInsuranceCalculator";
+import { CriticalIllnessCalculator } from "./CriticalIllnessCalculator";
 import { CoverageAnalysisTab } from "./CoverageAnalysisTab";
 
 interface InsuranceDetailDialogProps {
@@ -112,6 +114,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
         <Tabs defaultValue="calculator" className="w-full">
           <TabsList>
             <TabsTrigger value="calculator">Life Insurance Calculator</TabsTrigger>
+            <TabsTrigger value="critical">Critical Illness Calculator</TabsTrigger>
             <TabsTrigger value="coverage">Coverage Analysis</TabsTrigger>
             <TabsTrigger value="details">Financial Details</TabsTrigger>
             <TabsTrigger value="factors">Coverage Factors</TabsTrigger>
@@ -119,6 +122,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
 
           <TabsContent value="calculator" className="space-y-6">
             <LifeInsuranceCalculator />
+          </TabsContent>
+
+          <TabsContent value="critical" className="space-y-6">
+            <CriticalIllnessCalculator />
           </TabsContent>
 
           <TabsContent value="coverage" className="space-y-6">
