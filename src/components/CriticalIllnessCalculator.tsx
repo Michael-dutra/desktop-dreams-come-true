@@ -1,11 +1,12 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
-import { Heart, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
+import { Heart, DollarSign, TrendingUp, AlertTriangle, FileText } from "lucide-react";
 
 export const CriticalIllnessCalculator = () => {
   const [income, setIncome] = useState(75000);
@@ -17,6 +18,7 @@ export const CriticalIllnessCalculator = () => {
   const [lostIncome, setLostIncome] = useState(income * 0.7);
   const [debtPayment, setDebtPayment] = useState(20000);
   const [emergencyFund, setEmergencyFund] = useState(30000);
+  const [showWriteUp, setShowWriteUp] = useState(false);
 
   // Calculate total need
   const totalAnnualNeed = medicalExpenses + caregivingCosts + lostIncome;
@@ -24,6 +26,33 @@ export const CriticalIllnessCalculator = () => {
   const shortage = Math.max(0, totalNeed - currentCoverage);
   const surplus = Math.max(0, currentCoverage - totalNeed);
   const coveragePercentage = Math.min(100, (currentCoverage / totalNeed) * 100);
+
+  const generateWriteUp = () => {
+    const coverageStatus = shortage > 0 ? `shortfall of $${shortage.toLocaleString()}` : 
+                          surplus > 0 ? `surplus of $${surplus.toLocaleString()}` : 'adequate coverage';
+    
+    return `Critical Illness Insurance Analysis Summary
+
+Based on our comprehensive analysis of your potential critical illness financial needs, here are the key findings:
+
+**Financial Impact Assessment:**
+A critical illness could significantly impact your $${income.toLocaleString()} annual income. We've projected a ${recoveryYears[0]}-year recovery period, during which you may experience reduced income of approximately $${lostIncome.toLocaleString()} annually.
+
+**Total Financial Need:**
+Your total critical illness coverage need is $${totalNeed.toLocaleString()}, which includes:
+- Medical treatment costs: $${(medicalExpenses * recoveryYears[0]).toLocaleString()} (over ${recoveryYears[0]} years)
+- Caregiving support: $${(caregivingCosts * recoveryYears[0]).toLocaleString()} (over ${recoveryYears[0]} years)
+- Lost income replacement: $${(lostIncome * recoveryYears[0]).toLocaleString()} (over ${recoveryYears[0]} years)
+- Home modifications: $${homeModifications.toLocaleString()}
+- Debt payment assistance: $${debtPayment.toLocaleString()}
+- Emergency fund: $${emergencyFund.toLocaleString()}
+
+**Coverage Analysis:**
+You currently have $${currentCoverage.toLocaleString()} in critical illness coverage, representing ${coveragePercentage.toFixed(1)}% of your calculated need. This analysis reveals a ${coverageStatus}. ${shortage > 0 ? `Additional coverage would help ensure financial stability during a critical illness recovery period.` : surplus > 0 ? `Your current coverage exceeds your calculated needs, providing substantial financial protection.` : `Your current coverage aligns well with your calculated needs.`}
+
+**Recommendations:**
+${shortage > 0 ? `Consider increasing your critical illness coverage to provide comprehensive financial protection. Focus on coverage that pays a lump sum benefit to provide flexibility in how funds are used during recovery.` : `Review your coverage annually to ensure it continues to meet your evolving financial situation and healthcare needs.`}`;
+  };
 
   const needsBreakdown = [
     { label: "Medical Treatment", amount: medicalExpenses * recoveryYears[0], color: "bg-red-500" },
@@ -36,6 +65,34 @@ export const CriticalIllnessCalculator = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header with Get Write Up Button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Critical Illness Calculator</h2>
+        <Button 
+          onClick={() => setShowWriteUp(!showWriteUp)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          Get Write Up
+        </Button>
+      </div>
+
+      {showWriteUp && (
+        <Card className="bg-red-50 border-red-200">
+          <CardHeader>
+            <CardTitle className="text-lg">Client Report</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={generateWriteUp()}
+              readOnly
+              className="min-h-[300px] text-sm"
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <Card>

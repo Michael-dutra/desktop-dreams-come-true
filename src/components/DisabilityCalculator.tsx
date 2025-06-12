@@ -1,21 +1,53 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Shield } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Shield, FileText } from "lucide-react";
 import { useState } from "react";
 
 export const DisabilityCalculator = () => {
   const [monthlyIncome, setMonthlyIncome] = useState(7500);
   const [currentCoverage, setCurrentCoverage] = useState(3000);
   const [monthlyExpenses, setMonthlyExpenses] = useState(5500);
+  const [showWriteUp, setShowWriteUp] = useState(false);
 
   // Calculate disability needs
   const recommendedCoverage = Math.min(monthlyIncome * 0.7, monthlyExpenses); // 70% of income or total expenses, whichever is lower
   const coverageGap = Math.max(0, recommendedCoverage - currentCoverage);
   const replacementRatio = (currentCoverage / monthlyIncome) * 100;
+
+  const generateWriteUp = () => {
+    const coverageStatus = coverageGap > 0 ? `shortfall of $${coverageGap.toLocaleString()}` : 'adequate coverage';
+    
+    return `Disability Insurance Analysis Summary
+
+Based on our comprehensive analysis of your disability insurance needs, here are the key findings:
+
+**Income Protection Assessment:**
+Your monthly income of $${monthlyIncome.toLocaleString()} supports your current lifestyle and financial obligations. In the event of a disability, maintaining financial stability becomes crucial for covering your monthly expenses of $${monthlyExpenses.toLocaleString()}.
+
+**Coverage Recommendations:**
+We recommend disability coverage of $${recommendedCoverage.toLocaleString()} monthly, which represents the lesser of:
+- 70% of your monthly income: $${(monthlyIncome * 0.7).toLocaleString()}
+- Your total monthly expenses: $${monthlyExpenses.toLocaleString()}
+
+This approach ensures you can maintain your standard of living while preventing over-insurance beyond your actual financial needs.
+
+**Current Coverage Analysis:**
+You currently have $${currentCoverage.toLocaleString()} in monthly disability coverage, providing a ${replacementRatio.toFixed(1)}% income replacement ratio. ${coverageGap > 0 ? `This analysis reveals a ${coverageStatus} per month. Additional coverage would help bridge this gap and provide more comprehensive income protection.` : `Your current coverage meets or exceeds your calculated needs, providing solid financial protection in case of disability.`}
+
+**Key Benefits of Adequate Coverage:**
+- Maintains your ability to pay mortgage, rent, and other fixed expenses
+- Protects your family's standard of living during recovery
+- Prevents the need to dip into retirement savings or emergency funds
+- Provides peace of mind knowing your income is protected
+
+**Next Steps:**
+${coverageGap > 0 ? `Consider securing additional disability insurance to ensure comprehensive income protection. Look for policies with features like cost-of-living adjustments and partial disability benefits.` : `Review your coverage annually to ensure it keeps pace with any income increases or changes in your financial obligations.`}`;
+  };
 
   // Chart data
   const coverageComparison = [
@@ -30,6 +62,34 @@ export const DisabilityCalculator = () => {
 
   return (
     <div className="space-y-6">
+      {/* Header with Get Write Up Button */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-xl font-semibold">Disability Calculator</h2>
+        <Button 
+          onClick={() => setShowWriteUp(!showWriteUp)}
+          variant="outline"
+          className="flex items-center gap-2"
+        >
+          <FileText className="h-4 w-4" />
+          Get Write Up
+        </Button>
+      </div>
+
+      {showWriteUp && (
+        <Card className="bg-orange-50 border-orange-200">
+          <CardHeader>
+            <CardTitle className="text-lg">Client Report</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Textarea
+              value={generateWriteUp()}
+              readOnly
+              className="min-h-[300px] text-sm"
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>

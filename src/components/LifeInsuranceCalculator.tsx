@@ -1,10 +1,11 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Calculator, DollarSign } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
+import { Calculator, DollarSign, FileText } from "lucide-react";
 
 export const LifeInsuranceCalculator = () => {
   const [income, setIncome] = useState(75000);
@@ -16,12 +17,41 @@ export const LifeInsuranceCalculator = () => {
   const [charitableDonations, setCharitableDonations] = useState(10000);
   const [finalExpenses, setFinalExpenses] = useState(15000);
   const [other, setOther] = useState(20000);
+  const [showWriteUp, setShowWriteUp] = useState(false);
 
   // Calculate total need
   const incomeNeed = income * yearsCovered[0];
   const totalNeed = incomeNeed + mortgage + otherDebts + kidsEducation + charitableDonations + finalExpenses + other;
   const shortage = Math.max(0, totalNeed - currentCoverage);
   const surplus = Math.max(0, currentCoverage - totalNeed);
+
+  const generateWriteUp = () => {
+    const coverageStatus = shortage > 0 ? `shortfall of ${formatCurrency(shortage)}` : 
+                          surplus > 0 ? `surplus of ${formatCurrency(surplus)}` : 'adequate coverage';
+    
+    return `Life Insurance Analysis Summary
+
+Based on our comprehensive analysis of your financial situation, here are the key findings:
+
+**Current Financial Profile:**
+Your annual income of ${formatCurrency(income)} supports your family's lifestyle and financial goals. We've calculated your insurance needs based on ${yearsCovered[0]} years of income replacement, which amounts to ${formatCurrency(incomeNeed)}.
+
+**Total Protection Needs:**
+Your total life insurance need is ${formatCurrency(totalNeed)}, which includes:
+- Income replacement: ${formatCurrency(incomeNeed)}
+- Mortgage balance: ${formatCurrency(mortgage)}
+- Other debts: ${formatCurrency(otherDebts)}
+- Children's education: ${formatCurrency(kidsEducation)}
+- Final expenses: ${formatCurrency(finalExpenses)}
+- Charitable giving: ${formatCurrency(charitableDonations)}
+- Other financial needs: ${formatCurrency(other)}
+
+**Coverage Analysis:**
+You currently have ${formatCurrency(currentCoverage)} in life insurance coverage. This analysis reveals a ${coverageStatus}. ${shortage > 0 ? `We recommend securing additional coverage to ensure your family's financial security.` : surplus > 0 ? `Your current coverage exceeds your calculated needs, providing extra financial security.` : `Your current coverage aligns well with your calculated needs.`}
+
+**Next Steps:**
+${shortage > 0 ? `Consider reviewing term life insurance options to bridge the coverage gap efficiently and cost-effectively.` : `Review your coverage annually to ensure it continues to meet your family's evolving needs.`}`;
+  };
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -56,12 +86,37 @@ export const LifeInsuranceCalculator = () => {
   return (
     <Card className="w-full max-w-4xl mx-auto">
       <CardHeader>
-        <CardTitle className="flex items-center text-xl">
-          <Calculator className="h-6 w-6 mr-2" />
-          Life Insurance Calculator
-        </CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle className="flex items-center text-xl">
+            <Calculator className="h-6 w-6 mr-2" />
+            Life Insurance Calculator
+          </CardTitle>
+          <Button 
+            onClick={() => setShowWriteUp(!showWriteUp)}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            <FileText className="h-4 w-4" />
+            Get Write Up
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-6">
+        {showWriteUp && (
+          <Card className="bg-blue-50 border-blue-200">
+            <CardHeader>
+              <CardTitle className="text-lg">Client Report</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Textarea
+                value={generateWriteUp()}
+                readOnly
+                className="min-h-[300px] text-sm"
+              />
+            </CardContent>
+          </Card>
+        )}
+
         {/* Income and Years Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-2">
