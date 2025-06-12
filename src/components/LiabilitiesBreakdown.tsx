@@ -13,13 +13,13 @@ const LiabilitiesBreakdown = () => {
   const liabilities = [
     { name: "Mortgage", amount: "$420,000", value: 420000, color: "#ef4444" },
     { name: "Car Loan", amount: "$18,000", value: 18000, color: "#f97316" },
-    { name: "Credit Card", amount: "$7,500", value: 7500, color: "#eab308" },
+    { name: "Credit Cards", amount: "$7,500", value: 7500, color: "#eab308" },
   ];
 
   const chartConfig = {
     mortgage: { label: "Mortgage", color: "#ef4444" },
     carLoan: { label: "Car Loan", color: "#f97316" },
-    creditCard: { label: "Credit Card", color: "#eab308" },
+    creditCards: { label: "Credit Cards", color: "#eab308" },
   };
 
   return (
@@ -55,7 +55,7 @@ const LiabilitiesBreakdown = () => {
             <div className="border-t pt-3">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium">Monthly Payments</span>
-                <span className="text-sm font-semibold">$2,750</span>
+                <span className="text-sm font-semibold">$7,500</span>
               </div>
             </div>
             

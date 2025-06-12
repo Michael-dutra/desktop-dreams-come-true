@@ -3,12 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Home, CreditCard, Car, Plus, Lightbulb } from "lucide-react";
+import { Home, CreditCard, Car, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
 interface Liability {
@@ -27,51 +25,86 @@ interface LiabilitiesDetailDialogProps {
 export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: LiabilitiesDetailDialogProps) => {
   // Individual debt strategy controls
   const [mortgageExtraPayment, setMortgageExtraPayment] = useState([0]);
+  const [mortgageNewRate, setMortgageNewRate] = useState([4.5]);
+  const [mortgagePayoffGoal, setMortgagePayoffGoal] = useState([25]);
+
   const [carExtraPayment, setCarExtraPayment] = useState([0]);
+  const [carNewRate, setCarNewRate] = useState([6.2]);
+  const [carPayoffGoal, setCarPayoffGoal] = useState([3]);
+
   const [creditExtraPayment, setCreditExtraPayment] = useState([0]);
+  const [creditNewRate, setCreditNewRate] = useState([19.5]);
+  const [creditPayoffGoal, setCreditPayoffGoal] = useState([2]);
 
-  // Editable mortgage fields
-  const [mortgageAmount, setMortgageAmount] = useState(420000);
-  const [mortgagePayment, setMortgagePayment] = useState(2100);
-  const [mortgageFrequency, setMortgageFrequency] = useState("Monthly");
-  const [mortgageRate, setMortgageRate] = useState(4.5);
+  // Detailed liability data
+  const mortgageDetails = {
+    principal: 420000,
+    currentBalance: 285000,
+    interestRate: 4.5,
+    originalTerm: 30,
+    remainingTerm: 18,
+    monthlyPayment: 1800,
+    monthlyPrincipal: 743,
+    monthlyInterest: 1057,
+    totalPaid: 216000,
+    totalInterestPaid: 136000,
+    propertyValue: 620000,
+    loanToValue: 46,
+  };
 
-  // Editable car loan fields
-  const [carBalance, setCarBalance] = useState(18000);
-  const [carRate, setCarRate] = useState(6.2);
-  const [carPayment, setCarPayment] = useState(425);
-  const [carFrequency, setCarFrequency] = useState("Monthly");
+  const carLoanDetails = {
+    principal: 25000,
+    currentBalance: 18000,
+    interestRate: 6.2,
+    remainingTerm: 3.5,
+    monthlyPayment: 425,
+    monthlyPrincipal: 293,
+    monthlyInterest: 132,
+    totalPaid: 10200,
+    vehicleValue: 22000,
+    loanToValue: 82,
+  };
 
-  // Editable credit card fields
-  const [creditBalance, setCreditBalance] = useState(7500);
-  const [creditRate, setCreditRate] = useState(18.9);
-  const [creditPayment, setCreditPayment] = useState(225);
+  const creditCardDetails = {
+    totalBalance: 7500,
+    averageRate: 19.5,
+    minimumPayment: 225,
+    totalCreditLimit: 25000,
+    utilizationRate: 30,
+    monthlyInterest: 122,
+    cards: [
+      { name: "Visa", balance: 4500, rate: 18.9, limit: 15000 },
+      { name: "Mastercard", balance: 3000, rate: 20.5, limit: 10000 }
+    ]
+  };
 
-  // debt-free date calculation and chart data generation functions
+  // Debt-free date calculation
   const calculateDebtFreeDate = (balance: number, payment: number, rate: number) => {
     const monthlyRate = rate / 100 / 12;
     if (monthlyRate === 0) return balance / payment;
     return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
   };
 
-  const mortgageNewPayment = mortgagePayment + mortgageExtraPayment[0];
-  const mortgageCurrentPayoff = calculateDebtFreeDate(mortgageAmount, mortgagePayment, mortgageRate);
-  const mortgageNewPayoff = calculateDebtFreeDate(mortgageAmount, mortgageNewPayment, mortgageRate);
+  // Calculate individual debt scenarios
+  const mortgageNewPayment = mortgageDetails.monthlyPayment + mortgageExtraPayment[0];
+  const mortgageCurrentPayoff = calculateDebtFreeDate(mortgageDetails.currentBalance, mortgageDetails.monthlyPayment, mortgageDetails.interestRate);
+  const mortgageNewPayoff = calculateDebtFreeDate(mortgageDetails.currentBalance, mortgageNewPayment, mortgageNewRate[0]);
   const mortgageMonthsSaved = mortgageCurrentPayoff - mortgageNewPayoff;
-  const mortgageInterestSaved = (mortgageCurrentPayoff * mortgagePayment) - (mortgageNewPayoff * mortgageNewPayment);
+  const mortgageInterestSaved = (mortgageCurrentPayoff * mortgageDetails.monthlyPayment) - (mortgageNewPayoff * mortgageNewPayment);
 
-  const carNewPayment = carPayment + carExtraPayment[0];
-  const carCurrentPayoff = calculateDebtFreeDate(carBalance, carPayment, carRate);
-  const carNewPayoff = calculateDebtFreeDate(carBalance, carNewPayment, carRate);
+  const carNewPayment = carLoanDetails.monthlyPayment + carExtraPayment[0];
+  const carCurrentPayoff = calculateDebtFreeDate(carLoanDetails.currentBalance, carLoanDetails.monthlyPayment, carLoanDetails.interestRate);
+  const carNewPayoff = calculateDebtFreeDate(carLoanDetails.currentBalance, carNewPayment, carNewRate[0]);
   const carMonthsSaved = carCurrentPayoff - carNewPayoff;
-  const carInterestSaved = (carCurrentPayoff * carPayment) - (carNewPayoff * carNewPayment);
+  const carInterestSaved = (carCurrentPayoff * carLoanDetails.monthlyPayment) - (carNewPayoff * carNewPayment);
 
-  const creditNewPayment = creditPayment + creditExtraPayment[0];
-  const creditCurrentPayoff = calculateDebtFreeDate(creditBalance, creditPayment, creditRate);
-  const creditNewPayoff = calculateDebtFreeDate(creditBalance, creditNewPayment, creditRate);
+  const creditNewPayment = creditCardDetails.minimumPayment + creditExtraPayment[0];
+  const creditCurrentPayoff = calculateDebtFreeDate(creditCardDetails.totalBalance, creditCardDetails.minimumPayment, creditCardDetails.averageRate);
+  const creditNewPayoff = calculateDebtFreeDate(creditCardDetails.totalBalance, creditNewPayment, creditNewRate[0]);
   const creditMonthsSaved = creditCurrentPayoff - creditNewPayoff;
-  const creditInterestSaved = (creditCurrentPayoff * creditPayment) - (creditNewPayoff * creditNewPayment);
+  const creditInterestSaved = (creditCurrentPayoff * creditCardDetails.minimumPayment) - (creditNewPayoff * creditNewPayment);
 
+  // Generate combined payoff data for charts
   const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
     const data = [];
     let currentBalance = balance;
@@ -91,12 +124,14 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
         optimized: Math.max(0, optimizedBalance)
       });
       
+      // Calculate current strategy
       if (currentBalance > 0) {
         const currentInterestPayment = currentBalance * currentMonthlyRate;
         const currentPrincipalPayment = Math.min(currentPayment - currentInterestPayment, currentBalance);
         currentBalance -= currentPrincipalPayment;
       }
       
+      // Calculate optimized strategy
       if (optimizedBalance > 0) {
         const optimizedInterestPayment = optimizedBalance * newMonthlyRate;
         const optimizedPrincipalPayment = Math.min(newPayment - optimizedInterestPayment, optimizedBalance);
@@ -107,29 +142,29 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   };
 
   const mortgageChartData = generateCombinedPayoffData(
-    mortgageAmount, 
-    mortgagePayment, 
-    mortgageRate,
+    mortgageDetails.currentBalance, 
+    mortgageDetails.monthlyPayment, 
+    mortgageDetails.interestRate,
     mortgageNewPayment,
-    mortgageRate,
+    mortgageNewRate[0],
     240
   );
 
   const carChartData = generateCombinedPayoffData(
-    carBalance,
-    carPayment,
-    carRate,
+    carLoanDetails.currentBalance,
+    carLoanDetails.monthlyPayment,
+    carLoanDetails.interestRate,
     carNewPayment,
-    carRate,
+    carNewRate[0],
     60
   );
 
   const creditChartData = generateCombinedPayoffData(
-    creditBalance,
-    creditPayment,
-    creditRate,
+    creditCardDetails.totalBalance,
+    creditCardDetails.minimumPayment,
+    creditCardDetails.averageRate,
     creditNewPayment,
-    creditRate,
+    creditNewRate[0],
     60
   );
 
@@ -155,7 +190,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Debt</p>
                 <p className="font-bold text-2xl text-red-600">
-                  ${(mortgageAmount + carBalance + creditBalance).toLocaleString()}
+                  ${(mortgageDetails.currentBalance + carLoanDetails.currentBalance + creditCardDetails.totalBalance).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
@@ -188,7 +223,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Home className="w-6 h-6" />
-                Mortgage
+                Mortgage Strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -196,50 +231,22 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 {/* Current Mortgage Details */}
                 <div className="space-y-3 p-4 rounded-lg bg-gray-50">
                   <h4 className="font-semibold mb-3">Current Mortgage Details</h4>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <Label htmlFor="mortgageAmount" className="text-xs">Balance</Label>
-                      <Input
-                        id="mortgageAmount"
-                        type="number"
-                        value={mortgageAmount}
-                        onChange={(e) => setMortgageAmount(Number(e.target.value))}
-                        className="h-8 text-sm"
-                      />
+                  <div className="space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Current Mortgage Amount:</span>
+                      <span className="font-medium">${mortgageDetails.currentBalance.toLocaleString()}</span>
                     </div>
-                    <div>
-                      <Label htmlFor="mortgageRate" className="text-xs">Interest Rate (%)</Label>
-                      <Input
-                        id="mortgageRate"
-                        type="number"
-                        step="0.1"
-                        value={mortgageRate}
-                        onChange={(e) => setMortgageRate(Number(e.target.value))}
-                        className="h-8 text-sm"
-                      />
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Mortgage Payment:</span>
+                      <span className="font-medium">${mortgageDetails.monthlyPayment.toLocaleString()}</span>
                     </div>
-                    <div>
-                      <Label htmlFor="mortgagePayment" className="text-xs">Payment</Label>
-                      <Input
-                        id="mortgagePayment"
-                        type="number"
-                        value={mortgagePayment}
-                        onChange={(e) => setMortgagePayment(Number(e.target.value))}
-                        className="h-8 text-sm"
-                      />
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Frequency:</span>
+                      <span className="font-medium">Monthly</span>
                     </div>
-                    <div>
-                      <Label htmlFor="mortgageFrequency" className="text-xs">Frequency</Label>
-                      <Select value={mortgageFrequency} onValueChange={setMortgageFrequency}>
-                        <SelectTrigger className="h-8 text-sm">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Monthly">Monthly</SelectItem>
-                          <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                          <SelectItem value="Weekly">Weekly</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex justify-between">
+                      <span className="text-sm text-muted-foreground">Interest Rate:</span>
+                      <span className="font-medium">{mortgageDetails.interestRate}%</span>
                     </div>
                   </div>
                   
@@ -252,6 +259,17 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                         max={2000}
                         min={0}
                         step={50}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">New Interest Rate: {mortgageNewRate[0]}%</label>
+                      <Slider
+                        value={mortgageNewRate}
+                        onValueChange={setMortgageNewRate}
+                        max={8}
+                        min={2}
+                        step={0.1}
                         className="w-full"
                       />
                     </div>
@@ -314,82 +332,44 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Car className="w-6 h-6" />
-                Car Loan
+                Car Loan Strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Editable Fields */}
+              {/* Strategy Controls */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="carBalance" className="text-xs">Balance</Label>
-                    <Input
-                      id="carBalance"
-                      type="number"
-                      value={carBalance}
-                      onChange={(e) => setCarBalance(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="carRate" className="text-xs">Interest Rate (%)</Label>
-                    <Input
-                      id="carRate"
-                      type="number"
-                      step="0.1"
-                      value={carRate}
-                      onChange={(e) => setCarRate(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="carPayment" className="text-xs">Payment</Label>
-                    <Input
-                      id="carPayment"
-                      type="number"
-                      value={carPayment}
-                      onChange={(e) => setCarPayment(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="carFrequency" className="text-xs">Frequency</Label>
-                    <Select value={carFrequency} onValueChange={setCarFrequency}>
-                      <SelectTrigger className="h-8 text-sm">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Monthly">Monthly</SelectItem>
-                        <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
-                        <SelectItem value="Weekly">Weekly</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${carExtraPayment[0]}</label>
+                  <Slider
+                    value={carExtraPayment}
+                    onValueChange={setCarExtraPayment}
+                    max={500}
+                    min={0}
+                    step={25}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">New Interest Rate: {carNewRate[0]}%</label>
+                  <Slider
+                    value={carNewRate}
+                    onValueChange={setCarNewRate}
+                    max={12}
+                    min={2}
+                    step={0.1}
+                    className="w-full"
+                  />
                 </div>
 
-                <div className="border-t pt-3">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${carExtraPayment[0]}</label>
-                    <Slider
-                      value={carExtraPayment}
-                      onValueChange={setCarExtraPayment}
-                      max={500}
-                      min={0}
-                      step={25}
-                      className="w-full"
-                    />
+                {/* Results */}
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div className="p-3 rounded-lg bg-green-50">
+                    <p className="text-sm font-medium text-green-800">Time Saved</p>
+                    <p className="text-lg font-bold text-green-600">{Math.round(carMonthsSaved)} months</p>
                   </div>
-
-                  {/* Results */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="p-3 rounded-lg bg-green-50">
-                      <p className="text-sm font-medium text-green-800">Time Saved</p>
-                      <p className="text-lg font-bold text-green-600">{Math.round(carMonthsSaved)} months</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-blue-50">
-                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                      <p className="text-lg font-bold text-blue-600">${Math.round(carInterestSaved).toLocaleString()}</p>
-                    </div>
+                  <div className="p-3 rounded-lg bg-blue-50">
+                    <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                    <p className="text-lg font-bold text-blue-600">${Math.round(carInterestSaved).toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -432,81 +412,56 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             </CardContent>
           </Card>
 
-          {/* Credit Card Details */}
+          {/* Credit Cards Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <CreditCard className="w-6 h-6" />
-                Credit Card
+                Credit Cards Strategy
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Editable Fields */}
+              {/* Strategy Controls */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label htmlFor="creditBalance" className="text-xs">Balance</Label>
-                    <Input
-                      id="creditBalance"
-                      type="number"
-                      value={creditBalance}
-                      onChange={(e) => setCreditBalance(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="creditRate" className="text-xs">Interest Rate (%)</Label>
-                    <Input
-                      id="creditRate"
-                      type="number"
-                      step="0.1"
-                      value={creditRate}
-                      onChange={(e) => setCreditRate(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
-                  <div className="col-span-2">
-                    <Label htmlFor="creditPayment" className="text-xs">Monthly Payment</Label>
-                    <Input
-                      id="creditPayment"
-                      type="number"
-                      value={creditPayment}
-                      onChange={(e) => setCreditPayment(Number(e.target.value))}
-                      className="h-8 text-sm"
-                    />
-                  </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${creditExtraPayment[0]}</label>
+                  <Slider
+                    value={creditExtraPayment}
+                    onValueChange={setCreditExtraPayment}
+                    max={1000}
+                    min={0}
+                    step={25}
+                    className="w-full"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-2 block">New Avg Rate: {creditNewRate[0]}%</label>
+                  <Slider
+                    value={creditNewRate}
+                    onValueChange={setCreditNewRate}
+                    max={25}
+                    min={10}
+                    step={0.1}
+                    className="w-full"
+                  />
                 </div>
 
-                <div className="border-t pt-3">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${creditExtraPayment[0]}</label>
-                    <Slider
-                      value={creditExtraPayment}
-                      onValueChange={setCreditExtraPayment}
-                      max={1000}
-                      min={0}
-                      step={25}
-                      className="w-full"
-                    />
+                {/* Results */}
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                  <div className="p-3 rounded-lg bg-green-50">
+                    <p className="text-sm font-medium text-green-800">Time Saved</p>
+                    <p className="text-lg font-bold text-green-600">{Math.round(creditMonthsSaved)} months</p>
                   </div>
-
-                  {/* Results */}
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                    <div className="p-3 rounded-lg bg-green-50">
-                      <p className="text-sm font-medium text-green-800">Time Saved</p>
-                      <p className="text-lg font-bold text-green-600">{Math.round(creditMonthsSaved)} months</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-blue-50">
-                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                      <p className="text-lg font-bold text-blue-600">${Math.round(creditInterestSaved).toLocaleString()}</p>
-                    </div>
+                  <div className="p-3 rounded-lg bg-blue-50">
+                    <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                    <p className="text-lg font-bold text-blue-600">${Math.round(creditInterestSaved).toLocaleString()}</p>
                   </div>
                 </div>
               </div>
 
               {/* Payoff Chart */}
               <div>
-                <h4 className="font-semibold mb-3">Credit Card Payoff Chart</h4>
+                <h4 className="font-semibold mb-3">Credit Cards Payoff Chart</h4>
                 <ChartContainer config={chartConfig} className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={creditChartData}>
@@ -538,6 +493,24 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
+              </div>
+
+              <div className="border-t pt-4">
+                <h4 className="font-medium mb-3">Card Breakdown</h4>
+                <div className="space-y-3">
+                  {creditCardDetails.cards.map((card, index) => (
+                    <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-gray-50">
+                      <div>
+                        <p className="font-medium">{card.name}</p>
+                        <p className="text-sm text-muted-foreground">Limit: ${card.limit.toLocaleString()}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-red-600">${card.balance.toLocaleString()}</p>
+                        <p className="text-sm text-muted-foreground">{card.rate}% APR</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -577,32 +550,6 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             </CardContent>
           </Card>
         </div>
-
-        {/* AI Guidance Section */}
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-xl">
-              <Lightbulb className="w-6 h-6 text-yellow-500" />
-              AI Guidance for Liabilities
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                <h4 className="font-semibold text-blue-800 mb-2">Debt Snowball Strategy</h4>
-                <p className="text-sm text-blue-700">Focus on paying off your smallest debt first while making minimum payments on others. This builds momentum and motivation.</p>
-              </div>
-              <div className="p-4 rounded-lg bg-green-50 border border-green-200">
-                <h4 className="font-semibold text-green-800 mb-2">Mortgage Optimization</h4>
-                <p className="text-sm text-green-700">Consider refinancing if rates have dropped. Even a 0.5% reduction can save thousands over the loan term.</p>
-              </div>
-              <div className="p-4 rounded-lg bg-purple-50 border border-purple-200">
-                <h4 className="font-semibold text-purple-800 mb-2">Credit Card Balance Transfer</h4>
-                <p className="text-sm text-purple-700">Look for 0% APR balance transfer offers to reduce interest payments while you pay down the principal.</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </DialogContent>
     </Dialog>
   );

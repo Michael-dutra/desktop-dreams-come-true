@@ -1,11 +1,24 @@
+
+import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Shield, Eye, Lightbulb } from "lucide-react";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
+import { useState } from "react";
 
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+
+  const coverageData = [
+    { category: "Current Coverage", amount: 320000, color: "#3b82f6" },
+    { category: "Recommended Need", amount: 640000, color: "#ef4444" },
+  ];
+
+  const chartConfig = {
+    current: { label: "Current Coverage", color: "#3b82f6" },
+    recommended: { label: "Recommended Need", color: "#ef4444" },
+  };
 
   return (
     <>
@@ -13,7 +26,7 @@ const InsuranceCard = () => {
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-lg flex items-center space-x-2">
             <Shield className="h-5 w-5" />
-            <span>Insurance Coverage</span>
+            <span>Insurance</span>
           </CardTitle>
           <Button 
             variant="outline" 
@@ -28,48 +41,41 @@ const InsuranceCard = () => {
         <CardContent>
           <div className="space-y-4">
             <div>
-              <p className="text-2xl font-bold text-blue-600">$1.2M</p>
-              <p className="text-sm text-muted-foreground">Total Coverage</p>
+              <p className="text-2xl font-bold text-foreground">$2,400/year</p>
+              <p className="text-sm text-muted-foreground">Total Premiums</p>
             </div>
             
             <div className="space-y-2">
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Life Insurance</span>
-                <span className="text-sm font-medium">$500K</span>
+                <span className="text-sm font-medium">$1,200/year</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Home Insurance</span>
-                <span className="text-sm font-medium">$400K</span>
+                <span className="text-sm font-medium">$800/year</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-sm text-muted-foreground">Auto Insurance</span>
-                <span className="text-sm font-medium">$300K</span>
+                <span className="text-sm font-medium">$400/year</span>
               </div>
             </div>
             
-            <div className="border-t pt-2">
-              <div className="flex justify-between">
-                <span className="text-sm font-medium">Monthly Premiums</span>
-                <span className="text-sm font-semibold text-blue-600">$485</span>
+            <div className="border-t pt-3 space-y-3">
+              <div>
+                <h4 className="text-sm font-medium mb-2">Life Insurance Coverage</h4>
+                <ChartContainer config={chartConfig} className="h-32">
+                  <BarChart data={coverageData} layout="horizontal">
+                    <XAxis type="number" tick={{ fontSize: 10 }} />
+                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={80} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="amount" fill="#3b82f6" radius={[0, 4, 4, 0]} />
+                  </BarChart>
+                </ChartContainer>
               </div>
-            </div>
-
-            {/* AI Guidance */}
-            <div className="border-t pt-4">
-              <div className="flex items-center gap-2 mb-3">
-                <Lightbulb className="h-4 w-4 text-yellow-500" />
-                <span className="text-sm font-medium">AI Insurance Tips</span>
-              </div>
-              <div className="space-y-2">
-                <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs">
-                  <p className="text-blue-800">Consider umbrella insurance for additional liability protection beyond your current coverage limits.</p>
-                </div>
-                <div className="p-2 bg-green-50 border border-green-200 rounded text-xs">
-                  <p className="text-green-800">Review your life insurance needs annually. Your current coverage may need adjustment based on income changes.</p>
-                </div>
-                <div className="p-2 bg-purple-50 border border-purple-200 rounded text-xs">
-                  <p className="text-purple-800">Bundle home and auto insurance with the same provider to potentially save 10-25% on premiums.</p>
-                </div>
+              
+              <div className="flex items-center space-x-1 text-orange-600">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium">Coverage gap: $320K</span>
               </div>
             </div>
           </div>
