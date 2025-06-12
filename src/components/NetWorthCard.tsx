@@ -75,7 +75,7 @@ const NetWorthCard = () => {
                     axisLine={{ stroke: 'white', strokeWidth: 1 }}
                     tickLine={{ stroke: 'white' }}
                     tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    width={50}
+                    width={60}
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent 
