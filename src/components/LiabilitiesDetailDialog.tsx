@@ -1,15 +1,15 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Home, CreditCard, Car, Plus, Building, GraduationCap, User, X, FileText } from "lucide-react";
+import { Home, CreditCard, Car, Plus, Building, GraduationCap, User, X, FileText, Edit, Save, Cancel } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
 
@@ -49,6 +49,10 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     interestSaved: number;
     newPayment: number;
   } | null>(null);
+
+  // Edit mode state for write-up
+  const [isEditingWriteUp, setIsEditingWriteUp] = useState(false);
+  const [editableWriteUp, setEditableWriteUp] = useState("");
 
   // Original liability details
   const [mortgageDetails, setMortgageDetails] = useState({
@@ -198,6 +202,21 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     const monthsSaved = currentPayoff - newPayoff;
     const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
 
+    // Generate initial write-up content
+    const initialWriteUp = `Your ${liability.type} currently has a balance of $${liability.currentBalance.toLocaleString()} and is projected to be paid off in ${Math.round(currentPayoff)} months with current payments.
+
+Current Balance: $${liability.currentBalance.toLocaleString()}
+Interest Rate: ${liability.interestRate}%
+Monthly Payment: $${liability.monthlyPayment.toLocaleString()}${liability.extraPayment > 0 ? `\nExtra Payment: $${liability.extraPayment.toLocaleString()}` : ''}
+Payoff Timeline: ${Math.round(currentPayoff)} months${liability.newRate !== liability.interestRate ? `\nOptimized Rate: ${liability.newRate}%` : ''}
+Time Saved: ${Math.round(monthsSaved)} months
+Interest Saved: $${Math.round(interestSaved).toLocaleString()}
+
+${monthsSaved > 0 ? `With the proposed optimizations, you could save ${Math.round(monthsSaved)} months and $${Math.round(interestSaved).toLocaleString()} in interest payments.` : 'This debt is currently on track for optimal payoff with the current payment structure.'}
+
+This projection assumes consistent payment performance. Actual results may vary based on payment timing, rate changes, and other financial factors.`;
+
+    setEditableWriteUp(initialWriteUp);
     setSelectedLiabilitySummary({
       liability,
       currentPayoff,
@@ -207,6 +226,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
       newPayment
     });
     setSummaryDialogOpen(true);
+    setIsEditingWriteUp(false);
+  };
+
+  const handleSaveWriteUp = () => {
+    setIsEditingWriteUp(false);
+    toast({
+      title: "Write-up saved",
+      description: "Your liability report has been updated successfully.",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingWriteUp(false);
+    // Reset to original content if needed
+    if (selectedLiabilitySummary) {
+      generateLiabilitySummary(selectedLiabilitySummary.liability);
+    }
   };
 
   const renderLiabilityCard = (liability: LiabilityDetails) => {
@@ -601,53 +637,87 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
         </DialogContent>
       </Dialog>
 
-      {/* Liability Write-up Dialog */}
+      {/* Enhanced Liability Write-up Dialog */}
       <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="pb-4 border-b">
-            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
-              <FileText className="w-5 h-5 text-blue-600" />
-              {selectedLiabilitySummary?.liability.type} Report
+            <DialogTitle className="text-xl font-semibold flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FileText className="w-5 h-5 text-blue-600" />
+                {selectedLiabilitySummary?.liability.type} Report
+              </div>
+              <div className="flex items-center gap-2">
+                {!isEditingWriteUp ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsEditingWriteUp(true)}
+                    className="text-blue-600 hover:bg-blue-50"
+                  >
+                    <Edit className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                ) : (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleSaveWriteUp}
+                      className="text-green-600 hover:bg-green-50"
+                    >
+                      <Save className="w-4 h-4 mr-1" />
+                      Save
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCancelEdit}
+                      className="text-gray-600 hover:bg-gray-50"
+                    >
+                      <X className="w-4 h-4 mr-1" />
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </div>
             </DialogTitle>
           </DialogHeader>
           
           {selectedLiabilitySummary && (
-            <div className="space-y-4 text-sm">
-              <div className="space-y-3">
-                <p className="text-gray-700">
-                  Your {selectedLiabilitySummary.liability.type} currently has a balance of ${selectedLiabilitySummary.liability.currentBalance.toLocaleString()} and is projected to be paid off in {Math.round(selectedLiabilitySummary.currentPayoff)} months with current payments.
-                </p>
-                
-                <div className="space-y-2 font-mono text-gray-600">
-                  <div>Current Balance: ${selectedLiabilitySummary.liability.currentBalance.toLocaleString()}</div>
-                  <div>Interest Rate: {selectedLiabilitySummary.liability.interestRate}%</div>
-                  <div>Monthly Payment: ${selectedLiabilitySummary.liability.monthlyPayment.toLocaleString()}</div>
-                  {selectedLiabilitySummary.liability.extraPayment > 0 && (
-                    <div>Extra Payment: ${selectedLiabilitySummary.liability.extraPayment.toLocaleString()}</div>
-                  )}
-                  <div>Payoff Timeline: {Math.round(selectedLiabilitySummary.currentPayoff)} months</div>
-                  {selectedLiabilitySummary.liability.newRate !== selectedLiabilitySummary.liability.interestRate && (
-                    <div>Optimized Rate: {selectedLiabilitySummary.liability.newRate}%</div>
-                  )}
-                  <div>Time Saved: {Math.round(selectedLiabilitySummary.monthsSaved)} months</div>
-                  <div>Interest Saved: ${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()}</div>
+            <div className="space-y-4">
+              {!isEditingWriteUp ? (
+                <div className="p-4 bg-gray-50 rounded-lg">
+                  <pre className="whitespace-pre-wrap text-sm font-mono text-gray-700 leading-relaxed">
+                    {editableWriteUp}
+                  </pre>
                 </div>
+              ) : (
+                <div className="space-y-4">
+                  <Label htmlFor="writeup-editor" className="text-sm font-medium">
+                    Edit Report Content
+                  </Label>
+                  <Textarea
+                    id="writeup-editor"
+                    value={editableWriteUp}
+                    onChange={(e) => setEditableWriteUp(e.target.value)}
+                    className="min-h-[400px] font-mono text-sm"
+                    placeholder="Enter your liability report content here..."
+                  />
+                </div>
+              )}
 
-                <p className="text-gray-700">
-                  {selectedLiabilitySummary.monthsSaved > 0 ? (
-                    `With the proposed optimizations, you could save ${Math.round(selectedLiabilitySummary.monthsSaved)} months and $${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()} in interest payments.`
-                  ) : (
-                    "This debt is currently on track for optimal payoff with the current payment structure."
-                  )}
-                </p>
-
-                <p className="text-gray-700 text-xs">
-                  This projection assumes consistent payment performance. Actual results may vary based on payment timing, rate changes, and other financial factors.
-                </p>
-              </div>
-
-              <div className="flex justify-end pt-4 border-t">
-                <Button onClick={() => setSummaryDialogOpen(false)}>
+              <div className="flex justify-end pt-4 border-t gap-2">
+                {!isEditingWriteUp && (
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingWriteUp(true)}
+                    className="mr-auto"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    Edit Report
+                  </Button>
+                )}
+                <Button variant="outline" onClick={() => setSummaryDialogOpen(false)}>
                   Close
                 </Button>
               </div>
