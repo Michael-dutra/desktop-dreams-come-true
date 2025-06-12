@@ -33,6 +33,18 @@ interface DynamicAsset {
   rate: number[];
   annualContribution: number;
   color: string;
+  // Real Estate specific fields
+  purchasePrice?: number;
+  purchaseYear?: number;
+  improvements?: number;
+  mortgageBalance?: number;
+  address?: string;
+  // RRSP/TFSA specific fields
+  availableRoom?: number;
+  ytdGrowth?: number;
+  monthlyContribution?: number;
+  // Non-Registered specific fields
+  unrealizedGains?: number;
 }
 
 // Stable data generation function
@@ -116,7 +128,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     const usedColors = [...assets.map(a => a.color), ...dynamicAssets.map(a => a.color)];
     const availableColor = colors.find(color => !usedColors.includes(color)) || colors[0];
 
-    const newAsset: DynamicAsset = {
+    const baseAsset = {
       id: Date.now().toString(),
       name: sourceAsset ? `${sourceAsset.name} (Copy)` : type,
       type: type,
@@ -126,6 +138,54 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       annualContribution: 1000,
       color: availableColor
     };
+
+    let newAsset: DynamicAsset;
+
+    switch (type) {
+      case "Real Estate":
+        newAsset = {
+          ...baseAsset,
+          purchasePrice: sourceAsset ? sourceAsset.value - 100000 : 480000,
+          purchaseYear: 2019,
+          improvements: 35000,
+          mortgageBalance: sourceAsset ? Math.floor(sourceAsset.value * 0.45) : 285000,
+          address: "123 Main Street, City, Province",
+          rate: [4.2],
+          annualContribution: 0
+        };
+        break;
+      case "RRSP":
+        newAsset = {
+          ...baseAsset,
+          availableRoom: 18500,
+          ytdGrowth: 8.2,
+          monthlyContribution: 500,
+          rate: [7.0],
+          annualContribution: 6000
+        };
+        break;
+      case "TFSA":
+        newAsset = {
+          ...baseAsset,
+          availableRoom: 8500,
+          ytdGrowth: 6.1,
+          monthlyContribution: 417,
+          rate: [6.5],
+          annualContribution: 5000
+        };
+        break;
+      case "Non-Registered":
+        newAsset = {
+          ...baseAsset,
+          unrealizedGains: 3200,
+          monthlyContribution: 167,
+          rate: [8.0],
+          annualContribution: 2000
+        };
+        break;
+      default:
+        newAsset = baseAsset;
+    }
 
     setDynamicAssets(prev => [...prev, newAsset]);
   };
@@ -169,12 +229,312 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
   }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
 
-  // Dynamic Asset Card Component
+  // Dynamic Asset Card Component with type-specific fields
   const DynamicAssetCard = ({ asset }: { asset: DynamicAsset }) => {
     const futureValue = calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution);
     const chartData = useMemo(() => {
       return generateStableChartData(asset.currentValue, futureValue, asset.years[0], asset.rate[0]);
     }, [asset.currentValue, futureValue, asset.years[0], asset.rate[0]]);
+
+    // Editable field component for dynamic assets
+    const DynamicEditableField = ({ 
+      fieldKey, 
+      value, 
+      label, 
+      isEditable = true, 
+      prefix = "$",
+      isAutoCalculated = false,
+      tip
+    }: { 
+      fieldKey: string; 
+      value: number; 
+      label: string; 
+      isEditable?: boolean;
+      prefix?: string;
+      isAutoCalculated?: boolean;
+      tip?: string;
+    }) => {
+      const [isEditing, setIsEditing] = useState(false);
+      const [tempValue, setTempValue] = useState("");
+
+      const startEdit = () => {
+        setIsEditing(true);
+        setTempValue(value.toString());
+      };
+
+      const cancelEdit = () => {
+        setIsEditing(false);
+        setTempValue("");
+      };
+
+      const saveEdit = () => {
+        const numericValue = parseFloat(tempValue);
+        if (!isNaN(numericValue)) {
+          updateDynamicAsset(asset.id, { [fieldKey]: numericValue });
+        }
+        setIsEditing(false);
+        setTempValue("");
+      };
+
+      return (
+        <div className="relative">
+          <p className="text-sm text-muted-foreground">{label}</p>
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <Input
+                value={tempValue}
+                onChange={(e) => setTempValue(e.target.value)}
+                className="text-lg font-semibold"
+                type="number"
+                autoFocus
+              />
+              <Button size="sm" variant="ghost" onClick={saveEdit}>
+                <Check className="w-4 h-4 text-green-600" />
+              </Button>
+              <Button size="sm" variant="ghost" onClick={cancelEdit}>
+                <X className="w-4 h-4 text-red-600" />
+              </Button>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between">
+              <div className="flex-1">
+                <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
+                  {prefix}{value.toLocaleString()}
+                </p>
+                {tip && (
+                  <p className="text-xs text-muted-foreground/80 mt-1 italic">
+                    💡 {tip}
+                  </p>
+                )}
+              </div>
+              {isEditable && !isAutoCalculated && (
+                <Button 
+                  size="sm" 
+                  variant="ghost" 
+                  onClick={startEdit}
+                  className="opacity-50 hover:opacity-100"
+                >
+                  <Edit2 className="w-3 h-3" />
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const renderAssetSpecificFields = () => {
+      const assumedAnnualIncome = 80000;
+
+      switch (asset.type) {
+        case "Real Estate":
+          const netEquity = asset.currentValue - (asset.mortgageBalance || 0);
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicEditableField 
+                fieldKey="currentValue" 
+                value={asset.currentValue} 
+                label="Current FMV" 
+              />
+              <DynamicEditableField 
+                fieldKey="futureValue" 
+                value={Math.round(futureValue)} 
+                label={`Future Value (${asset.years[0]} years)`} 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="purchasePrice" 
+                value={asset.purchasePrice || 0} 
+                label="Purchase Price" 
+              />
+              <DynamicEditableField 
+                fieldKey="projectedGrowth" 
+                value={Math.round(futureValue - asset.currentValue)} 
+                label="Projected Growth" 
+                prefix="+$"
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="mortgageBalance" 
+                value={asset.mortgageBalance || 0} 
+                label="Mortgage Balance" 
+              />
+              <DynamicEditableField 
+                fieldKey="netEquity" 
+                value={netEquity} 
+                label="Net Equity" 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+            </div>
+          );
+
+        case "RRSP":
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicEditableField 
+                fieldKey="currentValue" 
+                value={asset.currentValue} 
+                label="Current Value" 
+              />
+              <DynamicEditableField 
+                fieldKey="futureValue" 
+                value={Math.round(futureValue)} 
+                label={`Future Value (${asset.years[0]} years)`} 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="projectedGrowth" 
+                value={Math.round(futureValue - asset.currentValue)} 
+                label="Projected Growth" 
+                prefix="+$"
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="availableRoom" 
+                value={asset.availableRoom || 0} 
+                label="Available Room" 
+                tip={`If maxed out, worth $${Math.round((asset.availableRoom || 0) * Math.pow(1.07, 10)).toLocaleString()} in 10 years at 7%`}
+              />
+              <DynamicEditableField 
+                fieldKey="annualContribution" 
+                value={asset.annualContribution} 
+                label="Annual Contribution" 
+                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+              />
+              <DynamicEditableField 
+                fieldKey="monthlyContribution" 
+                value={asset.monthlyContribution || 0} 
+                label="Monthly Contribution" 
+                tip={`${(((asset.monthlyContribution || 0) * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+              />
+            </div>
+          );
+
+        case "TFSA":
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicEditableField 
+                fieldKey="currentValue" 
+                value={asset.currentValue} 
+                label="Current Value" 
+              />
+              <DynamicEditableField 
+                fieldKey="futureValue" 
+                value={Math.round(futureValue)} 
+                label={`Future Value (${asset.years[0]} years)`} 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="projectedGrowth" 
+                value={Math.round(futureValue - asset.currentValue)} 
+                label="Projected Growth" 
+                prefix="+$"
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="availableRoom" 
+                value={asset.availableRoom || 0} 
+                label="Available Room" 
+                tip={`If maxed out, worth $${Math.round((asset.availableRoom || 0) * Math.pow(1.065, 10)).toLocaleString()} in 10 years at 6.5%`}
+              />
+              <DynamicEditableField 
+                fieldKey="annualContribution" 
+                value={asset.annualContribution} 
+                label="Annual Contribution" 
+                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+              />
+              <DynamicEditableField 
+                fieldKey="monthlyContribution" 
+                value={asset.monthlyContribution || 0} 
+                label="Monthly Contribution" 
+                tip={`${(((asset.monthlyContribution || 0) * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+              />
+            </div>
+          );
+
+        case "Non-Registered":
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicEditableField 
+                fieldKey="currentValue" 
+                value={asset.currentValue} 
+                label="Current Value" 
+              />
+              <DynamicEditableField 
+                fieldKey="futureValue" 
+                value={Math.round(futureValue)} 
+                label={`Future Value (${asset.years[0]} years)`} 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="unrealizedGains" 
+                value={asset.unrealizedGains || 0} 
+                label="Unrealized Gains" 
+                prefix="+$"
+                tip={`${(((asset.unrealizedGains || 0) / asset.currentValue) * 100).toFixed(1)}% of total value`}
+              />
+              <DynamicEditableField 
+                fieldKey="projectedGrowth" 
+                value={Math.round(futureValue - asset.currentValue)} 
+                label="Projected Growth" 
+                prefix="+$"
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="annualContribution" 
+                value={asset.annualContribution} 
+                label="Annual Contribution" 
+                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+              />
+              <DynamicEditableField 
+                fieldKey="monthlyContribution" 
+                value={asset.monthlyContribution || 0} 
+                label="Monthly Contribution" 
+              />
+            </div>
+          );
+
+        default:
+          return (
+            <div className="grid grid-cols-2 gap-4">
+              <DynamicEditableField 
+                fieldKey="currentValue" 
+                value={asset.currentValue} 
+                label="Current Value" 
+              />
+              <DynamicEditableField 
+                fieldKey="futureValue" 
+                value={Math.round(futureValue)} 
+                label={`Future Value (${asset.years[0]} years)`} 
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+              <DynamicEditableField 
+                fieldKey="annualContribution" 
+                value={asset.annualContribution} 
+                label="Annual Contribution" 
+              />
+              <DynamicEditableField 
+                fieldKey="projectedGrowth" 
+                value={Math.round(futureValue - asset.currentValue)} 
+                label="Projected Growth" 
+                prefix="+$"
+                isAutoCalculated={true}
+                isEditable={false}
+              />
+            </div>
+          );
+      }
+    };
 
     return (
       <Card>
@@ -230,38 +590,24 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Current Value</p>
-              <Input
-                type="number"
-                value={asset.currentValue}
-                onChange={(e) => updateDynamicAsset(asset.id, { currentValue: Number(e.target.value) })}
-                className="text-lg font-semibold"
-              />
+          {/* Asset-specific fields */}
+          {renderAssetSpecificFields()}
+          
+          {/* Additional asset-specific info */}
+          {asset.type === "Real Estate" && asset.address && (
+            <div className="pt-2">
+              <p className="text-xs text-muted-foreground mb-1">Address: {asset.address}</p>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Future Value ({asset.years[0]} years)</p>
-              <p className="text-lg font-semibold text-blue-600">
-                ${Math.round(futureValue).toLocaleString()}
-              </p>
+          )}
+          
+          {(asset.type === "RRSP" || asset.type === "TFSA" || asset.type === "Non-Registered") && (
+            <div className="pt-2">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="w-4 h-4 text-green-600" />
+                <span className="text-sm">Rate: <span className="font-semibold">{asset.rate[0]}%</span> annually</span>
+              </div>
             </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Annual Contribution</p>
-              <Input
-                type="number"
-                value={asset.annualContribution}
-                onChange={(e) => updateDynamicAsset(asset.id, { annualContribution: Number(e.target.value) })}
-                className="text-lg font-semibold"
-              />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Projected Growth</p>
-              <p className="text-lg font-semibold text-green-600">
-                +${Math.round(futureValue - asset.currentValue).toLocaleString()}
-              </p>
-            </div>
-          </div>
+          )}
         </CardContent>
       </Card>
     );
