@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, TrendingUp } from "lucide-react";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -28,7 +28,12 @@ const AssetsBreakdown = () => {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-lg">Assets</CardTitle>
+          <CardTitle className="text-xl flex items-center space-x-3">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <TrendingUp className="h-6 w-6 text-blue-600" />
+            </div>
+            <span>Assets</span>
+          </CardTitle>
           <Button 
             variant="outline" 
             size="sm"
@@ -47,22 +52,22 @@ const AssetsBreakdown = () => {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-sm font-medium">{asset.name}</span>
+                    <span className="text-base font-medium">{asset.name}</span>
                   </div>
-                  <span className="text-sm font-semibold">{asset.amount}</span>
+                  <span className="text-base font-semibold">{asset.amount}</span>
                 </div>
               ))}
             </div>
             
             {/* Chart */}
-            <ChartContainer config={chartConfig} className="h-48">
+            <ChartContainer config={chartConfig} className="h-56">
               <PieChart>
                 <Pie
                   data={assets}
                   cx="50%"
                   cy="50%"
-                  innerRadius={30}
-                  outerRadius={70}
+                  innerRadius={35}
+                  outerRadius={80}
                   paddingAngle={2}
                   dataKey="value"
                 >

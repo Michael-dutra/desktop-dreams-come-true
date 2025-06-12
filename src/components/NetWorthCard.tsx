@@ -22,8 +22,10 @@ const NetWorthCard = () => {
     <Card className="bg-gradient-to-br from-blue-500 to-purple-600 border-none text-white">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center space-x-2 text-white">
-            <DollarSign className="h-5 w-5" />
+          <CardTitle className="text-xl flex items-center space-x-3 text-white">
+            <div className="p-2 bg-white/20 rounded-lg">
+              <DollarSign className="h-6 w-6" />
+            </div>
             <span>Net Worth</span>
           </CardTitle>
         </div>
@@ -31,27 +33,27 @@ const NetWorthCard = () => {
       <CardContent>
         <div className="space-y-4">
           <div>
-            <p className="text-3xl font-bold text-white">$287,500</p>
+            <p className="text-4xl font-bold text-white">$287,500</p>
             <div className="flex items-center space-x-1 text-green-300">
-              <TrendingUp className="h-4 w-4" />
-              <span className="text-sm font-medium text-white">+$32,500 this month</span>
+              <TrendingUp className="h-5 w-5" />
+              <span className="text-base font-medium text-white">+$32,500 this month</span>
             </div>
           </div>
           
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div>
-              <p className="text-sm text-white opacity-80">Total Assets</p>
-              <p className="text-lg font-semibold text-white">$735,000</p>
+              <p className="text-base text-white opacity-80">Total Assets</p>
+              <p className="text-xl font-semibold text-white">$735,000</p>
             </div>
             <div>
-              <p className="text-sm text-white opacity-80">Total Liabilities</p>
-              <p className="text-lg font-semibold text-white">$447,500</p>
+              <p className="text-base text-white opacity-80">Total Liabilities</p>
+              <p className="text-xl font-semibold text-white">$447,500</p>
             </div>
           </div>
           
           <div className="border-t border-white/20 pt-3">
-            <h4 className="text-sm font-medium mb-2 text-white">5-Year Projection</h4>
-            <ChartContainer config={chartConfig} className="h-32">
+            <h4 className="text-base font-medium mb-2 text-white">5-Year Projection</h4>
+            <ChartContainer config={chartConfig} className="h-40">
               <AreaChart data={projectionData}>
                 <defs>
                   <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
@@ -61,12 +63,12 @@ const NetWorthCard = () => {
                 </defs>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 10, fill: 'white' }}
+                  tick={{ fontSize: 12, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 10, fill: 'white' }}
+                  tick={{ fontSize: 12, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
@@ -92,7 +94,7 @@ const NetWorthCard = () => {
                 />
               </AreaChart>
             </ChartContainer>
-            <p className="text-xs text-white mt-1">
+            <p className="text-sm text-white mt-1">
               Projected to reach $530K by 2029
             </p>
           </div>

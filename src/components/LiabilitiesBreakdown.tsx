@@ -50,25 +50,25 @@ const LiabilitiesBreakdown = () => {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: liability.color }}></div>
-                    <span className="text-sm font-medium">{liability.name}</span>
+                    <span className="text-base font-medium">{liability.name}</span>
                   </div>
-                  <span className="text-sm font-semibold text-red-600">{liability.amount}</span>
+                  <span className="text-base font-semibold text-red-600">{liability.amount}</span>
                 </div>
               ))}
             </div>
             
             <div className="border-t pt-3">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Monthly Payments</span>
-                <span className="text-sm font-semibold">$7,500</span>
+                <span className="text-base font-medium">Monthly Payments</span>
+                <span className="text-base font-semibold">$7,500</span>
               </div>
             </div>
             
             {/* Chart */}
-            <ChartContainer config={chartConfig} className="h-48">
+            <ChartContainer config={chartConfig} className="h-56">
               <BarChart data={liabilities}>
-                <XAxis dataKey="name" tick={{ fontSize: 10 }} />
-                <YAxis tick={{ fontSize: 10 }} />
+                <XAxis dataKey="name" tick={{ fontSize: 12 }} />
+                <YAxis tick={{ fontSize: 12 }} />
                 <ChartTooltip content={<ChartTooltipContent />} />
                 <Bar dataKey="value" fill="#ef4444" radius={[4, 4, 0, 0]} />
               </BarChart>
