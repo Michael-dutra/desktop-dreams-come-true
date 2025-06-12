@@ -6,6 +6,7 @@ import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer }
 import { Shield, AlertTriangle, CheckCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 
 interface InsuranceDetailDialogProps {
@@ -268,11 +269,13 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                       />
                     </div>
                     <div>
-                      <label className="text-sm font-medium mb-2 block">Income Multiplier</label>
-                      <Input
-                        type="number"
-                        value={incomeMultiplier}
-                        onChange={(e) => setIncomeMultiplier(Number(e.target.value))}
+                      <label className="text-sm font-medium mb-2 block">Income Multiplier: {incomeMultiplier}x</label>
+                      <Slider
+                        value={[incomeMultiplier]}
+                        onValueChange={(value) => setIncomeMultiplier(value[0])}
+                        max={20}
+                        min={1}
+                        step={1}
                         className="w-full"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
