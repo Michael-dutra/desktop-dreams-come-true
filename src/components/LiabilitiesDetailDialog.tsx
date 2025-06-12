@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
@@ -72,16 +71,15 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
 
   // New liabilities state
   const [customLiabilities, setCustomLiabilities] = useState<LiabilityDetails[]>([]);
-  const [newLiabilityType, setNewLiabilityType] = useState("");
 
-  // Add new liability functionality
-  const handleAddLiability = () => {
-    if (!newLiabilityType) return;
+  // Add new liability functionality - automatically triggered on selection
+  const handleLiabilityTypeSelect = (liabilityType: string) => {
+    if (!liabilityType) return;
 
     const newId = `custom-${Date.now()}`;
     const newLiability: LiabilityDetails = {
       id: newId,
-      type: newLiabilityType,
+      type: liabilityType,
       currentBalance: 10000,
       interestRate: 5.0,
       monthlyPayment: 200,
@@ -91,7 +89,6 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     };
 
     setCustomLiabilities([...customLiabilities, newLiability]);
-    setNewLiabilityType("");
   };
 
   const updateCustomLiability = (id: string, updates: Partial<LiabilityDetails>) => {
@@ -472,7 +469,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <div className="space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Liability Type</label>
-                  <Select value={newLiabilityType} onValueChange={setNewLiabilityType}>
+                  <Select value="" onValueChange={handleLiabilityTypeSelect}>
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder="Select liability type" />
                     </SelectTrigger>
@@ -485,16 +482,6 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                     </SelectContent>
                   </Select>
                 </div>
-                
-                <Button 
-                  className="w-full" 
-                  variant="outline"
-                  onClick={handleAddLiability}
-                  disabled={!newLiabilityType}
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Liability
-                </Button>
               </div>
             </CardContent>
           </Card>
