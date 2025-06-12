@@ -177,6 +177,27 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
       60
     );
 
+    // Calculate amortization for mortgage
+    const calculateAmortization = () => {
+      if (liability.type !== "Mortgage") return null;
+      
+      const monthlyRate = liability.interestRate / 100 / 12;
+      const numPayments = currentPayoff;
+      
+      if (monthlyRate === 0) return { principal: liability.monthlyPayment, interest: 0 };
+      
+      const totalInterest = (liability.monthlyPayment * numPayments) - liability.currentBalance;
+      const principalPayment = liability.currentBalance / numPayments;
+      const interestPayment = totalInterest / numPayments;
+      
+      return {
+        principal: principalPayment,
+        interest: interestPayment
+      };
+    };
+
+    const amortization = calculateAmortization();
+
     const chartConfig = {
       current: { label: "Current", color: "#ef4444" },
       optimized: { label: "Optimized", color: "#10b981" }
@@ -295,6 +316,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               </div>
             </div>
 
+            {/* Amortization section for mortgage */}
+            {liability.type === "Mortgage" && amortization && (
+              <div className="border-t pt-3 space-y-3">
+                <h5 className="font-medium text-sm">Monthly Payment Breakdown</h5>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-blue-50">
+                    <p className="text-sm font-medium text-blue-800">Principal</p>
+                    <p className="text-lg font-bold text-blue-600">${Math.round(amortization.principal).toLocaleString()}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-orange-50">
+                    <p className="text-sm font-medium text-orange-800">Interest</p>
+                    <p className="text-lg font-bold text-orange-600">${Math.round(amortization.interest).toLocaleString()}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="border-t pt-3 space-y-3">
               <div>
                 <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${liability.extraPayment}</label>
@@ -410,7 +448,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-bold">Liabilities Analysis & Debt Paydown Strategies</DialogTitle>
+          <DialogTitle className="text-3xl font-bold">Liabilities</DialogTitle>
         </DialogHeader>
 
         {/* Debt Summary */}
