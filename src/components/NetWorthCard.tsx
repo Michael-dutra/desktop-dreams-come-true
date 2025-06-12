@@ -52,53 +52,52 @@ const NetWorthCard = () => {
           </div>
           
           <div className="border-t border-white/20 pt-3">
-            <div className="text-center mb-4">
+            <div className="text-center mb-3">
               <h4 className="text-lg font-medium text-white">5-Year Projection</h4>
             </div>
-            <div className="flex justify-center">
-              <div className="w-full max-w-md">
-                <ChartContainer config={chartConfig} className="h-64">
-                  <AreaChart data={projectionData}>
-                    <defs>
-                      <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis 
-                      dataKey="year" 
-                      tick={{ fontSize: 14, fill: 'white' }}
-                      axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                      tickLine={{ stroke: 'white' }}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 14, fill: 'white' }}
-                      axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                      tickLine={{ stroke: 'white' }}
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent 
-                        formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
-                        labelStyle={{ color: 'black' }}
-                        contentStyle={{ 
-                          backgroundColor: 'white', 
-                          border: '1px solid #ccc',
-                          color: 'black'
-                        }}
-                      />} 
-                    />
-                    <Area 
-                      type="monotone" 
-                      dataKey="netWorth" 
-                      stroke="#10b981" 
-                      strokeWidth={3}
-                      fill="url(#netWorthGradient)"
-                      dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
-                    />
-                  </AreaChart>
-                </ChartContainer>
-              </div>
+            <div className="w-full overflow-hidden">
+              <ChartContainer config={chartConfig} className="h-48 w-full">
+                <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                  <defs>
+                    <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="year" 
+                    tick={{ fontSize: 12, fill: 'white' }}
+                    axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                    tickLine={{ stroke: 'white' }}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12, fill: 'white' }}
+                    axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                    tickLine={{ stroke: 'white' }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    width={50}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
+                      labelStyle={{ color: 'black' }}
+                      contentStyle={{ 
+                        backgroundColor: 'white', 
+                        border: '1px solid #ccc',
+                        color: 'black'
+                      }}
+                    />} 
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="netWorth" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    fill="url(#netWorthGradient)"
+                    dot={{ fill: "#10b981", strokeWidth: 2, r: 4, stroke: "white" }}
+                  />
+                </AreaChart>
+              </ChartContainer>
             </div>
             <div className="text-center mt-2">
               <p className="text-sm text-white">
