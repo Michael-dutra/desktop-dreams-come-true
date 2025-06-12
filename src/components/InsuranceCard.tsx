@@ -1,24 +1,12 @@
 
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
 import { useState } from "react";
 
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-
-  const coverageData = [
-    { category: "Current Coverage", amount: 320000, color: "#3b82f6" },
-    { category: "Recommended Need", amount: 640000, color: "#ef4444" },
-  ];
-
-  const chartConfig = {
-    current: { label: "Current Coverage", color: "#3b82f6" },
-    recommended: { label: "Recommended Need", color: "#ef4444" },
-  };
 
   return (
     <>
@@ -42,40 +30,56 @@ const InsuranceCard = () => {
           <div className="space-y-4">
             <div>
               <p className="text-2xl font-bold text-foreground">$2,400/year</p>
-              <p className="text-sm text-muted-foreground">Total Premiums</p>
+              <p className="text-sm text-muted-foreground">Total Coverage Cost</p>
             </div>
             
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Life Insurance</span>
-                <span className="text-sm font-medium">$1,200/year</span>
+            <div className="space-y-3">
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">Life Insurance</p>
+                    <p className="text-xs text-blue-700">$320K Coverage</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-blue-600">$1,200/year</p>
+                    <div className="flex items-center text-xs text-orange-600">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>Gap: $320K</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Home Insurance</span>
-                <span className="text-sm font-medium">$800/year</span>
+
+              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium text-green-900">Critical Illness</p>
+                    <p className="text-xs text-green-700">$50K Coverage</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-green-600">$400/year</p>
+                    <div className="flex items-center text-xs text-red-600">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>Gap: $100K</span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="flex justify-between">
-                <span className="text-sm text-muted-foreground">Auto Insurance</span>
-                <span className="text-sm font-medium">$400/year</span>
-              </div>
-            </div>
-            
-            <div className="border-t pt-3 space-y-3">
-              <div>
-                <h4 className="text-sm font-medium mb-2">Life Insurance Coverage</h4>
-                <ChartContainer config={chartConfig} className="h-32">
-                  <BarChart data={coverageData} layout="horizontal">
-                    <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={80} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="amount" fill="#3b82f6" radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ChartContainer>
-              </div>
-              
-              <div className="flex items-center space-x-1 text-orange-600">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">Coverage gap: $320K</span>
+
+              <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                <div className="flex justify-between items-center">
+                  <div>
+                    <p className="text-sm font-medium text-purple-900">Disability Insurance</p>
+                    <p className="text-xs text-purple-700">$3K/month Coverage</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-sm font-bold text-purple-600">$800/year</p>
+                    <div className="flex items-center text-xs text-yellow-600">
+                      <TrendingUp className="h-3 w-3 mr-1" />
+                      <span>Gap: $1.5K/mo</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
