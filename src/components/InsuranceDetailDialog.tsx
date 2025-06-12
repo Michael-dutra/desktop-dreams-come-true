@@ -115,10 +115,32 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     }
   ];
 
+  // Prepare chart data
+  const chartData = [
+    {
+      name: "Life Insurance",
+      current: currentCoverage.life,
+      recommended: recommendedCoverage.life,
+      gap: Math.max(0, coverageGaps.life)
+    },
+    {
+      name: "Critical Illness",
+      current: currentCoverage.criticalIllness,
+      recommended: recommendedCoverage.criticalIllness,
+      gap: Math.max(0, coverageGaps.criticalIllness)
+    },
+    {
+      name: "Disability",
+      current: currentCoverage.disability,
+      recommended: recommendedCoverage.disability,
+      gap: Math.max(0, coverageGaps.disability)
+    }
+  ];
+
   const chartConfig = {
     current: { label: "Current Coverage", color: "#3b82f6" },
-    recommended: { label: "Recommended Coverage", color: "#ef4444" },
-    gap: { label: "Coverage Gap", color: "#f59e0b" }
+    recommended: { label: "Recommended Coverage", color: "#10b981" },
+    gap: { label: "Coverage Gap", color: "#ef4444" }
   };
 
   const formatCurrency = (amount: number) => {
@@ -164,6 +186,72 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                 <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                   <h4 className="font-semibold text-red-900 mb-2">Coverage Gap</h4>
                   <p className="text-2xl font-bold text-red-700">{formatCurrency(coverageGap)}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Insurance Coverage Visualization Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5" />
+                Insurance Coverage Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={chartConfig} className="h-80">
+                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fontSize: 12 }}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    tick={{ fontSize: 12 }}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent />}
+                    formatter={(value: number) => [formatCurrency(value), ""]}
+                  />
+                  <Bar 
+                    dataKey="current" 
+                    fill="var(--color-current)" 
+                    name="Current Coverage"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="recommended" 
+                    fill="var(--color-recommended)" 
+                    name="Recommended Coverage"
+                    radius={[4, 4, 0, 0]}
+                  />
+                  <Bar 
+                    dataKey="gap" 
+                    fill="var(--color-gap)" 
+                    name="Coverage Gap"
+                    radius={[4, 4, 0, 0]}
+                  />
+                </BarChart>
+              </ChartContainer>
+              
+              {/* Legend */}
+              <div className="flex justify-center gap-6 mt-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
+                  <span className="text-sm">Current Coverage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-green-500 rounded"></div>
+                  <span className="text-sm">Recommended Coverage</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 bg-red-500 rounded"></div>
+                  <span className="text-sm">Coverage Gap</span>
                 </div>
               </div>
             </CardContent>
