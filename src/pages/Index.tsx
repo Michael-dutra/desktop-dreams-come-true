@@ -15,6 +15,7 @@ import RecentGuidance from "@/components/RecentGuidance";
 import FinancialVault from "@/components/FinancialVault";
 import ReportsSection from "@/components/ReportsSection";
 import FloatingChatBar from "@/components/FloatingChatBar";
+import { LifeInsuranceCalculator } from "@/components/LifeInsuranceCalculator";
 
 const Index = () => {
   return (
@@ -25,6 +26,9 @@ const Index = () => {
         <div className="space-y-6">
           {/* Client Information Header */}
           <ClientInfo />
+          
+          {/* Life Insurance Calculator */}
+          <LifeInsuranceCalculator />
           
           {/* First Row - Net Worth, Assets, and Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
