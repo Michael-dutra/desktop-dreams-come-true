@@ -28,7 +28,7 @@ const AssetsBreakdown = () => {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between pb-3">
-          <CardTitle className="text-xl flex items-center space-x-3">
+          <CardTitle className="text-2xl flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
               <TrendingUp className="h-6 w-6 text-blue-600" />
             </div>
@@ -41,7 +41,7 @@ const AssetsBreakdown = () => {
             className="flex items-center gap-2"
           >
             <Eye className="w-4 h-4" />
-            View Details
+            Details
           </Button>
         </CardHeader>
         <CardContent>
@@ -52,22 +52,22 @@ const AssetsBreakdown = () => {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-base font-medium">{asset.name}</span>
+                    <span className="text-lg font-medium">{asset.name}</span>
                   </div>
-                  <span className="text-base font-semibold">{asset.amount}</span>
+                  <span className="text-lg font-semibold">{asset.amount}</span>
                 </div>
               ))}
             </div>
             
             {/* Chart */}
-            <ChartContainer config={chartConfig} className="h-56">
+            <ChartContainer config={chartConfig} className="h-64">
               <PieChart>
                 <Pie
                   data={assets}
                   cx="50%"
                   cy="50%"
-                  innerRadius={35}
-                  outerRadius={80}
+                  innerRadius={40}
+                  outerRadius={90}
                   paddingAngle={2}
                   dataKey="value"
                 >

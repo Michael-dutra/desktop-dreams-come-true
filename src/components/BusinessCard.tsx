@@ -1,5 +1,5 @@
 
-import { Briefcase, TrendingUp, DollarSign, Building2 } from "lucide-react";
+import { Briefcase, TrendingUp, DollarSign, Building2, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -32,7 +32,8 @@ const BusinessCard = () => {
           size="sm"
           className="flex items-center gap-2 hover:bg-blue-50"
         >
-          View Details
+          <Eye className="w-4 h-4" />
+          Details
         </Button>
       </CardHeader>
       <CardContent className="space-y-5">
@@ -73,7 +74,7 @@ const BusinessCard = () => {
         {/* Business Growth Chart */}
         <div className="p-5 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-xl">
           <h4 className="text-lg font-semibold text-indigo-900 mb-3">Revenue Growth</h4>
-          <ChartContainer config={chartConfig} className="h-32">
+          <ChartContainer config={chartConfig} className="h-40">
             <LineChart data={growthData}>
               <XAxis 
                 dataKey="year" 

@@ -26,7 +26,7 @@ const LiabilitiesBreakdown = () => {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-xl flex items-center space-x-3">
+          <CardTitle className="text-2xl flex items-center space-x-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <CreditCard className="h-6 w-6 text-red-600" />
             </div>
@@ -39,7 +39,7 @@ const LiabilitiesBreakdown = () => {
             className="flex items-center gap-2"
           >
             <Eye className="w-4 h-4" />
-            View Details
+            Details
           </Button>
         </CardHeader>
         <CardContent>
@@ -50,22 +50,22 @@ const LiabilitiesBreakdown = () => {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: liability.color }}></div>
-                    <span className="text-base font-medium">{liability.name}</span>
+                    <span className="text-lg font-medium">{liability.name}</span>
                   </div>
-                  <span className="text-base font-semibold text-red-600">{liability.amount}</span>
+                  <span className="text-lg font-semibold text-red-600">{liability.amount}</span>
                 </div>
               ))}
             </div>
             
             <div className="border-t pt-3">
               <div className="flex items-center justify-between">
-                <span className="text-base font-medium">Monthly Payments</span>
-                <span className="text-base font-semibold">$7,500</span>
+                <span className="text-lg font-medium">Monthly Payments</span>
+                <span className="text-lg font-semibold">$7,500</span>
               </div>
             </div>
             
             {/* Chart */}
-            <ChartContainer config={chartConfig} className="h-56">
+            <ChartContainer config={chartConfig} className="h-64">
               <BarChart data={liabilities}>
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />

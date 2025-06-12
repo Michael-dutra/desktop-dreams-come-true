@@ -1,5 +1,5 @@
 
-import { Crown, FileText, Shield, AlertTriangle } from "lucide-react";
+import { Crown, FileText, Shield, AlertTriangle, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
@@ -19,7 +19,8 @@ const EstateCard = () => {
           size="sm"
           className="flex items-center gap-2 hover:bg-amber-50"
         >
-          View Details
+          <Eye className="w-4 h-4" />
+          Details
         </Button>
       </CardHeader>
       <CardContent className="space-y-5">
