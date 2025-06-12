@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Download, Calendar, TrendingUp, PieChart, BarChart3 } from "lucide-react";
+import { FileText, TrendingUp, PieChart, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
@@ -30,30 +30,6 @@ const ReportsSection = () => {
     { key: "actionItems", label: "Action Items", icon: <FileText className="h-4 w-4" /> }
   ];
 
-  const recentReports = [
-    {
-      icon: <PieChart className="h-4 w-4" />,
-      title: "Portfolio Performance Report",
-      description: "Q4 2024 detailed analysis",
-      date: "Generated Dec 15, 2024",
-      color: "text-blue-600",
-    },
-    {
-      icon: <BarChart3 className="h-4 w-4" />,
-      title: "Tax Optimization Summary",
-      description: "2024 tax year recommendations",
-      date: "Generated Dec 10, 2024",
-      color: "text-green-600",
-    },
-    {
-      icon: <TrendingUp className="h-4 w-4" />,
-      title: "Net Worth Projection",
-      description: "5-year financial forecast",
-      date: "Generated Dec 8, 2024",
-      color: "text-purple-600",
-    }
-  ];
-
   const handleSelectionChange = (section: string, checked: boolean) => {
     setSelections(prev => ({ ...prev, [section]: checked }));
   };
@@ -72,62 +48,30 @@ const ReportsSection = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-6">
-          {/* Report Generation Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium">Generate Custom Report</h3>
-            <div className="space-y-3">
-              {reportSections.map((section) => (
-                <div key={section.key} className="flex items-center space-x-3">
-                  <Checkbox 
-                    id={section.key}
-                    checked={selections[section.key as keyof typeof selections]}
-                    onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
-                  />
-                  <div className="flex items-center space-x-2 flex-1">
-                    <div className="text-muted-foreground">
-                      {section.icon}
-                    </div>
-                    <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
-                      {section.label}
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <Button onClick={handleGenerateReport} className="w-full">
-              Generate Report
-            </Button>
-          </div>
-
-          {/* Divider */}
-          <div className="border-t" />
-
-          {/* Recent Reports Section */}
+        <div className="space-y-4">
+          <h3 className="text-sm font-medium">Generate Custom Report</h3>
           <div className="space-y-3">
-            <h3 className="text-sm font-medium">Recent Reports</h3>
-            {recentReports.map((report, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-                <div className="flex items-center space-x-3">
-                  <div className={`${report.color}`}>
-                    {report.icon}
+            {reportSections.map((section) => (
+              <div key={section.key} className="flex items-center space-x-3">
+                <Checkbox 
+                  id={section.key}
+                  checked={selections[section.key as keyof typeof selections]}
+                  onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
+                />
+                <div className="flex items-center space-x-2 flex-1">
+                  <div className="text-muted-foreground">
+                    {section.icon}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium">{report.title}</p>
-                    <p className="text-xs text-muted-foreground">{report.description}</p>
-                    <p className="text-xs text-muted-foreground flex items-center space-x-1 mt-1">
-                      <Calendar className="h-3 w-3" />
-                      <span>{report.date}</span>
-                    </p>
-                  </div>
+                  <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
+                    {section.label}
+                  </label>
                 </div>
-                <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                  <Download className="h-4 w-4" />
-                  <span>Download</span>
-                </Button>
               </div>
             ))}
           </div>
+          <Button onClick={handleGenerateReport} className="w-full">
+            Generate Report
+          </Button>
         </div>
       </CardContent>
     </Card>
