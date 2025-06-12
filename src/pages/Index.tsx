@@ -14,6 +14,7 @@ import ActionItems from "@/components/ActionItems";
 import RecentGuidance from "@/components/RecentGuidance";
 import FinancialVault from "@/components/FinancialVault";
 import ReportsSection from "@/components/ReportsSection";
+import NotesSection from "@/components/NotesSection";
 import FloatingChatBar from "@/components/FloatingChatBar";
 
 const Index = () => {
@@ -55,8 +56,9 @@ const Index = () => {
             <ActionItems />
           </div>
           
-          {/* Sixth Row - Reports and Financial Vault */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Sixth Row - Notes, Reports and Financial Vault */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <NotesSection />
             <ReportsSection />
             <FinancialVault />
           </div>

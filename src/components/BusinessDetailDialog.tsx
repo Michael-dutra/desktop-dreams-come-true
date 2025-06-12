@@ -55,13 +55,13 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   const [newRevenueName, setNewRevenueName] = useState("");
   const [newRevenueValue, setNewRevenueValue] = useState(0);
 
-  // Financial Data State
+  // Financial Data State - Updated to show future projections from 2025-2029
   const [financialData, setFinancialData] = useState<FinancialData[]>([
-    { year: "2020", valuation: 150000, revenue: 280000, profit: 45000, expenses: 235000 },
-    { year: "2021", valuation: 180000, revenue: 320000, profit: 58000, expenses: 262000 },
-    { year: "2022", valuation: 220000, revenue: 385000, profit: 72000, expenses: 313000 },
-    { year: "2023", valuation: 275000, revenue: 450000, profit: 89000, expenses: 361000 },
-    { year: "2024", valuation: 325000, revenue: 485000, profit: 105000, expenses: 380000 },
+    { year: "2025", valuation: 384000, revenue: 572000, profit: 131000, expenses: 441000 },
+    { year: "2026", valuation: 453000, revenue: 675000, profit: 155000, expenses: 520000 },
+    { year: "2027", valuation: 535000, revenue: 797000, profit: 183000, expenses: 614000 },
+    { year: "2028", valuation: 632000, revenue: 940000, profit: 216000, expenses: 724000 },
+    { year: "2029", valuation: 746000, revenue: 1109000, profit: 255000, expenses: 854000 },
   ]);
 
   const [isEditingFinancials, setIsEditingFinancials] = useState(false);
@@ -183,7 +183,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                   <CardTitle className="flex items-center justify-between">
                     <div className="flex items-center space-x-2">
                       <TrendingUp className="h-5 w-5" />
-                      <span>Business Valuation Growth</span>
+                      <span>Business Valuation Projections (2025-2029)</span>
                     </div>
                   </CardTitle>
                 </CardHeader>
