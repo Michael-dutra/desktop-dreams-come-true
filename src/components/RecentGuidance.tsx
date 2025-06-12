@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Brain, TrendingUp, AlertTriangle, CheckCircle, DollarSign, Shield, Trash2, Bookmark } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -122,9 +121,6 @@ const RecentGuidance = () => {
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-4">
-                    <Button variant="outline" size="sm">
-                      {item.action}
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -206,9 +202,6 @@ const RecentGuidance = () => {
                         </p>
                       </div>
                     </div>
-                    <Button variant="outline" size="sm">
-                      {item.action}
-                    </Button>
                   </div>
                 </div>
               ))
