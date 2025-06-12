@@ -35,10 +35,10 @@ const InsuranceCard = () => {
             <div className="flex justify-between items-center">
               <div className="space-y-1">
                 <p className="text-lg font-semibold text-blue-900">Life Insurance</p>
-                <p className="text-sm text-blue-700">$320K Coverage</p>
+                <p className="text-sm text-blue-700">Total Benefit</p>
               </div>
               <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-blue-600">$1,200/year</p>
+                <p className="text-xl font-bold text-blue-600">$320K</p>
                 <div className="flex items-center text-sm text-orange-600">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   <span>Gap: $320K</span>
@@ -52,10 +52,10 @@ const InsuranceCard = () => {
             <div className="flex justify-between items-center">
               <div className="space-y-1">
                 <p className="text-lg font-semibold text-green-900">Critical Illness</p>
-                <p className="text-sm text-green-700">$50K Coverage</p>
+                <p className="text-sm text-green-700">Total Benefit</p>
               </div>
               <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-green-600">$400/year</p>
+                <p className="text-xl font-bold text-green-600">$50K</p>
                 <div className="flex items-center text-sm text-red-600">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   <span>Gap: $100K</span>
@@ -69,10 +69,10 @@ const InsuranceCard = () => {
             <div className="flex justify-between items-center">
               <div className="space-y-1">
                 <p className="text-lg font-semibold text-purple-900">Disability Insurance</p>
-                <p className="text-sm text-purple-700">$3K/month Coverage</p>
+                <p className="text-sm text-purple-700">Total Benefit</p>
               </div>
               <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-purple-600">$800/year</p>
+                <p className="text-xl font-bold text-purple-600">$3K/month</p>
                 <div className="flex items-center text-sm text-yellow-600">
                   <TrendingUp className="h-4 w-4 mr-1" />
                   <span>Gap: $1.5K/mo</span>
