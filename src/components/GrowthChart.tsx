@@ -33,12 +33,7 @@ export const GrowthChart = ({ data, title }: GrowthChartProps) => {
 
   const formatYAxisTick = (value: number) => {
     if (value >= 999000) {
-      const millions = value / 1000000;
-      if (millions >= 10) {
-        return `${millions.toFixed(0)}M`;
-      } else {
-        return `${millions.toFixed(2)}M`;
-      }
+      return `${(value / 1000000).toFixed(2)}M`;
     }
     return `${(value / 1000).toFixed(0)}K`;
   };
@@ -48,7 +43,7 @@ export const GrowthChart = ({ data, title }: GrowthChartProps) => {
     const minValue = Math.min(...data.map(d => Math.min(d.baseline, d.optimized)));
     
     if (maxValue >= 999000) {
-      // For values in millions, create ticks in increments
+      // For values in millions, create ticks in 0.01M increments
       const maxM = maxValue / 1000000;
       const minM = minValue / 1000000;
       const ticks = [];
@@ -56,13 +51,8 @@ export const GrowthChart = ({ data, title }: GrowthChartProps) => {
       let start = Math.floor(minM * 100) / 100; // Round down to nearest 0.01M
       let end = Math.ceil(maxM * 100) / 100; // Round up to nearest 0.01M
       
-      // Generate ticks in 0.01M increments for smaller ranges, or larger for bigger ranges
-      const range = end - start;
-      let increment = 0.01;
-      if (range > 1) increment = 0.1;
-      if (range > 10) increment = 1;
-      
-      for (let i = start; i <= end; i += increment) {
+      // Generate ticks in 0.01M increments
+      for (let i = start; i <= end; i += 0.01) {
         ticks.push(Math.round(i * 1000000));
       }
       
