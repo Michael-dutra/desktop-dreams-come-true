@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -71,7 +72,9 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     
     // If custom breakdown exists, use it
     if (customLifeBreakdown) {
-      const totalNeed = Object.values(customLifeBreakdown).reduce((sum: number, value: any) => sum + (value || 0), 0);
+      const totalNeed = Object.values(customLifeBreakdown).reduce((sum: number, value: unknown) => {
+        return sum + (typeof value === 'number' ? value : 0);
+      }, 0);
       return {
         totalNeed: Math.round(totalNeed),
         breakdown: customLifeBreakdown
