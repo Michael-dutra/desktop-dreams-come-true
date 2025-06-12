@@ -1,10 +1,9 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
-import { Home, CreditCard, Car, Plus, Building, GraduationCap, User, X, FileText, Edit, Save } from "lucide-react";
+import { Home, CreditCard, Car, Plus, Building, GraduationCap, User, X, FileText, Edit, Save, Copy } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
@@ -193,6 +192,22 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
       console.log("Cannot remove default credit card");
     } else {
       removeCustomLiability(liabilityId);
+    }
+  };
+
+  const handleCopyReport = async () => {
+    try {
+      await navigator.clipboard.writeText(editableWriteUp);
+      toast({
+        title: "Report copied",
+        description: "The liability report has been copied to your clipboard.",
+      });
+    } catch (err) {
+      toast({
+        title: "Copy failed",
+        description: "Unable to copy the report to clipboard.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -649,15 +664,26 @@ This projection assumes consistent payment performance. Actual results may vary 
               </div>
               <div className="flex items-center gap-2">
                 {!isEditingWriteUp ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditingWriteUp(true)}
-                    className="text-blue-600 hover:bg-blue-50"
-                  >
-                    <Edit className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={handleCopyReport}
+                      className="text-gray-600 hover:bg-gray-50"
+                    >
+                      <Copy className="w-4 h-4 mr-1" />
+                      Copy
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setIsEditingWriteUp(true)}
+                      className="text-blue-600 hover:bg-blue-50"
+                    >
+                      <Edit className="w-4 h-4 mr-1" />
+                      Edit
+                    </Button>
+                  </>
                 ) : (
                   <div className="flex gap-2">
                     <Button
@@ -709,14 +735,23 @@ This projection assumes consistent payment performance. Actual results may vary 
 
               <div className="flex justify-end pt-4 border-t gap-2">
                 {!isEditingWriteUp && (
-                  <Button
-                    variant="outline"
-                    onClick={() => setIsEditingWriteUp(true)}
-                    className="mr-auto"
-                  >
-                    <Edit className="w-4 h-4 mr-2" />
-                    Edit Report
-                  </Button>
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={handleCopyReport}
+                      className="mr-auto"
+                    >
+                      <Copy className="w-4 h-4 mr-2" />
+                      Copy Report
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => setIsEditingWriteUp(true)}
+                    >
+                      <Edit className="w-4 h-4 mr-2" />
+                      Edit Report
+                    </Button>
+                  </>
                 )}
                 <Button variant="outline" onClick={() => setSummaryDialogOpen(false)}>
                   Close
