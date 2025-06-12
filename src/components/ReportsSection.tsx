@@ -2,20 +2,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { FileText, Download, Calendar, TrendingUp, PieChart, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 
 const ReportsSection = () => {
   const [selections, setSelections] = useState({
-    netWorth: "",
-    assets: "",
-    liabilities: "",
-    cashFlow: "",
-    insurance: "",
-    retirement: "",
-    aiGuidance: "",
-    goals: "",
-    actionItems: ""
+    netWorth: false,
+    assets: false,
+    liabilities: false,
+    cashFlow: false,
+    insurance: false,
+    retirement: false,
+    aiGuidance: false,
+    goals: false,
+    actionItems: false
   });
 
   const reportSections = [
@@ -54,8 +54,8 @@ const ReportsSection = () => {
     }
   ];
 
-  const handleSelectionChange = (section: string, value: string) => {
-    setSelections(prev => ({ ...prev, [section]: value }));
+  const handleSelectionChange = (section: string, checked: boolean) => {
+    setSelections(prev => ({ ...prev, [section]: checked }));
   };
 
   const handleGenerateReport = () => {
@@ -79,25 +79,19 @@ const ReportsSection = () => {
             <div className="space-y-3">
               {reportSections.map((section) => (
                 <div key={section.key} className="flex items-center space-x-3">
+                  <Checkbox 
+                    id={section.key}
+                    checked={selections[section.key as keyof typeof selections]}
+                    onCheckedChange={(checked) => handleSelectionChange(section.key, checked as boolean)}
+                  />
                   <div className="flex items-center space-x-2 flex-1">
                     <div className="text-muted-foreground">
                       {section.icon}
                     </div>
-                    <span className="text-sm font-medium min-w-0 flex-1">{section.label}</span>
+                    <label htmlFor={section.key} className="text-sm font-medium cursor-pointer">
+                      {section.label}
+                    </label>
                   </div>
-                  <Select 
-                    value={selections[section.key as keyof typeof selections]} 
-                    onValueChange={(value) => handleSelectionChange(section.key, value)}
-                  >
-                    <SelectTrigger className="w-32">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="summary">Summary</SelectItem>
-                      <SelectItem value="detailed">Detailed</SelectItem>
-                      <SelectItem value="analysis">Analysis</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               ))}
             </div>
