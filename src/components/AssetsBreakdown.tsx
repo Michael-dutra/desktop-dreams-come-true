@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
@@ -145,10 +146,6 @@ This projection assumes consistent market performance and regular contributions.
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
         assets={assets}
-        onDocumentClick={(asset) => {
-          setSelectedAsset(asset);
-          setReportModalOpen(true);
-        }}
       />
     </>
   );
