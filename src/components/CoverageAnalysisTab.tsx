@@ -2,6 +2,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { InsuranceAnalysisCard } from "./InsuranceAnalysisCard";
 import { RecommendationsCard } from "./RecommendationsCard";
+import { LifeInsuranceMathCard } from "./LifeInsuranceMathCard";
 
 interface CoverageAnalysisTabProps {
   currentCoverage: {
@@ -29,6 +30,8 @@ interface CoverageAnalysisTabProps {
   disabilityGap: number;
   disabilityReplacementRate: number;
   onLifeBreakdownChange?: (breakdown: any) => void;
+  financialDetails: any;
+  coverageFactors: any;
 }
 
 export const CoverageAnalysisTab = ({
@@ -41,9 +44,11 @@ export const CoverageAnalysisTab = ({
   criticalGap,
   disabilityGap,
   disabilityReplacementRate,
-  onLifeBreakdownChange
+  onLifeBreakdownChange,
+  financialDetails,
+  coverageFactors
 }: CoverageAnalysisTabProps) => {
-  // Chart data
+  // Chart data with better visual colors
   const lifeInsuranceData = [
     { category: "Current Coverage", amount: currentCoverage.life[0], fill: "#3b82f6" },
     { category: "Calculated Need", amount: lifeAnalysis.totalNeed, fill: "#ef4444" },
@@ -115,6 +120,14 @@ export const CoverageAnalysisTab = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Life Insurance Math Breakdown */}
+      <LifeInsuranceMathCard
+        financialDetails={financialDetails}
+        coverageFactors={coverageFactors}
+        lifeAnalysis={lifeAnalysis}
+        onBreakdownChange={onLifeBreakdownChange}
+      />
 
       {/* Life Insurance Analysis */}
       <InsuranceAnalysisCard

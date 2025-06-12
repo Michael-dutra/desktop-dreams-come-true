@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Shield, Edit } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Input } from "@/components/ui/input";
@@ -150,14 +150,37 @@ export const InsuranceAnalysisCard = ({
             </div>
           </div>
           
-          <ChartContainer config={chartConfig} className="h-64">
-            <BarChart data={chartData} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={120} />
-              <ChartTooltip content={<ChartTooltipContent />} />
-              <Bar dataKey="amount" radius={[0, 4, 4, 0]} />
-            </BarChart>
-          </ChartContainer>
+          <div className="space-y-4">
+            <h4 className="font-medium text-center">Coverage Comparison</h4>
+            <ChartContainer config={chartConfig} className="h-80">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={chartData} layout="horizontal" margin={{ top: 20, right: 30, left: 80, bottom: 20 }}>
+                  <XAxis 
+                    type="number" 
+                    tick={{ fontSize: 12 }} 
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  />
+                  <YAxis 
+                    dataKey="category" 
+                    type="category" 
+                    tick={{ fontSize: 11 }} 
+                    width={75}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value) => [`$${Number(value).toLocaleString()}${unit}`, "Amount"]}
+                    />} 
+                  />
+                  <Bar 
+                    dataKey="amount" 
+                    radius={[0, 4, 4, 0]}
+                    strokeWidth={1}
+                    stroke="#ffffff"
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -5,7 +5,7 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp } from "lucide-react";
+import { Eye, TrendingUp, Brain, Lightbulb } from "lucide-react";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -23,6 +23,33 @@ const AssetsBreakdown = () => {
     tfsa: { label: "TFSA", color: "#8b5cf6" },
     nonRegistered: { label: "Non-Registered", color: "#f59e0b" },
   };
+
+  const aiGuidanceTips = [
+    {
+      icon: TrendingUp,
+      title: "Diversification Opportunity",
+      tip: "Your portfolio is heavily weighted in real estate (84%). Consider increasing liquid investments to reduce concentration risk.",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200"
+    },
+    {
+      icon: Brain,
+      title: "Tax Optimization",
+      tip: "Maximize your TFSA contributions first ($38K current vs $88K+ limit), then focus on RRSP to reduce taxable income.",
+      color: "text-blue-600", 
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
+    },
+    {
+      icon: Lightbulb,
+      title: "Emergency Fund Strategy",
+      tip: "Consider keeping 3-6 months of expenses in high-interest savings. Your current liquid assets may not provide adequate emergency coverage.",
+      color: "text-green-600",
+      bgColor: "bg-green-50", 
+      borderColor: "border-green-200"
+    }
+  ];
 
   return (
     <>
@@ -79,6 +106,25 @@ const AssetsBreakdown = () => {
                   <ChartTooltip content={<ChartTooltipContent />} />
                 </PieChart>
               </ChartContainer>
+            </div>
+
+            {/* AI Guidance Tips */}
+            <div className="space-y-3">
+              <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                <Brain className="w-4 h-4" />
+                AI Guidance Tips
+              </h4>
+              {aiGuidanceTips.map((tip, index) => (
+                <div key={index} className={`p-3 rounded-lg border ${tip.bgColor} ${tip.borderColor}`}>
+                  <div className="flex items-start gap-3">
+                    <tip.icon className={`w-4 h-4 mt-0.5 ${tip.color}`} />
+                    <div>
+                      <h5 className={`font-medium ${tip.color} mb-1`}>{tip.title}</h5>
+                      <p className="text-sm text-gray-700">{tip.tip}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </CardContent>
