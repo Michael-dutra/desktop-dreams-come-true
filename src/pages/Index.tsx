@@ -26,40 +26,36 @@ const Index = () => {
           {/* Client Information Header */}
           <ClientInfo />
           
-          {/* First Row - Net Worth and Assets */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* First Row - Net Worth, Assets, and Liabilities */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <NetWorthCard />
             <AssetsBreakdown />
+            <LiabilitiesBreakdown />
           </div>
           
-          {/* Second Row - Liabilities and Cash Flow */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <LiabilitiesBreakdown />
+          {/* Second Row - Cash Flow, Insurance, and Retirement */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <MonthlyCashFlow />
-          </div>
-
-          {/* Third Row - Insurance and Retirement Planning */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InsuranceCard />
             <RetirementCard />
           </div>
 
-          {/* Fourth Row - Business and Estate Planning */}
+          {/* Third Row - Business and Estate Planning */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <BusinessCard />
             <EstateCard />
           </div>
           
-          {/* Fifth Row - Recent AI Guidance (wide) */}
+          {/* Fourth Row - Recent AI Guidance (wide) */}
           <RecentGuidance />
           
-          {/* Sixth Row - Goals and Action Items */}
+          {/* Fifth Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
           </div>
           
-          {/* Seventh Row - Reports and Financial Vault */}
+          {/* Sixth Row - Reports and Financial Vault */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <ReportsSection />
             <FinancialVault />
