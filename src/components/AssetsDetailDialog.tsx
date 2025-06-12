@@ -39,6 +39,11 @@ interface DynamicAsset {
   improvements?: number;
   mortgageBalance?: number;
   address?: string;
+  // Secondary Property specific fields
+  originalPurchasePrice?: number;
+  capitalImprovements?: number;
+  inclusionRate?: number;
+  taxRate?: number;
   // RRSP/TFSA specific fields
   availableRoom?: number;
   ytdGrowth?: number;
@@ -47,7 +52,6 @@ interface DynamicAsset {
   unrealizedGains?: number;
 }
 
-// Stable data generation function
 const generateStableChartData = (currentValue: number, futureValue: number, years: number, rate: number) => {
   const points = [];
   const steps = 10;
@@ -142,7 +146,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     let newAsset: DynamicAsset;
 
     switch (type) {
-      case "Real Estate":
+      case "Primary Residence":
         newAsset = {
           ...baseAsset,
           purchasePrice: sourceAsset ? sourceAsset.value - 100000 : 480000,
@@ -150,6 +154,18 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           improvements: 35000,
           mortgageBalance: sourceAsset ? Math.floor(sourceAsset.value * 0.45) : 285000,
           address: "123 Main Street, City, Province",
+          rate: [4.2],
+          annualContribution: 0
+        };
+        break;
+      case "Secondary Property":
+        newAsset = {
+          ...baseAsset,
+          originalPurchasePrice: sourceAsset ? sourceAsset.value - 150000 : 350000,
+          capitalImprovements: 25000,
+          inclusionRate: 50,
+          taxRate: 25,
+          address: "456 Investment Lane, City, Province",
           rate: [4.2],
           annualContribution: 0
         };
@@ -200,7 +216,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     ));
   };
 
-  // FV calculations
   const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
     const fvCurrentValue = currentValue * Math.pow(1 + rate / 100, years);
     const fvContributions = annualContribution * (Math.pow(1 + rate / 100, years) - 1) / (rate / 100);
@@ -212,7 +227,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
   const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
 
-  // Generate stable chart data using useMemo
   const realEstateChartData = useMemo(() => {
     return generateStableChartData(realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]);
   }, [realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]]);
@@ -229,20 +243,19 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
   }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
 
-  // Dynamic Asset Card Component with type-specific fields
   const DynamicAssetCard = ({ asset }: { asset: DynamicAsset }) => {
     const futureValue = calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution);
     const chartData = useMemo(() => {
       return generateStableChartData(asset.currentValue, futureValue, asset.years[0], asset.rate[0]);
     }, [asset.currentValue, futureValue, asset.years[0], asset.rate[0]]);
 
-    // Editable field component for dynamic assets
     const DynamicEditableField = ({ 
       fieldKey, 
       value, 
       label, 
       isEditable = true, 
       prefix = "$",
+      suffix = "",
       isAutoCalculated = false,
       tip
     }: { 
@@ -251,6 +264,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       label: string; 
       isEditable?: boolean;
       prefix?: string;
+      suffix?: string;
       isAutoCalculated?: boolean;
       tip?: string;
     }) => {
@@ -299,13 +313,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <div className="flex items-center justify-between">
               <div className="flex-1">
                 <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-                  {prefix}{value.toLocaleString()}
+                  {prefix}{value.toLocaleString()}{suffix}
                 </p>
-                {tip && (
-                  <p className="text-xs text-muted-foreground/80 mt-1 italic">
-                    💡 {tip}
-                  </p>
-                )}
               </div>
               {isEditable && !isAutoCalculated && (
                 <Button 
@@ -327,7 +336,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       const assumedAnnualIncome = 80000;
 
       switch (asset.type) {
-        case "Real Estate":
+        case "Primary Residence":
           const netEquity = asset.currentValue - (asset.mortgageBalance || 0);
           return (
             <div className="grid grid-cols-2 gap-4">
@@ -371,6 +380,73 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </div>
           );
 
+        case "Secondary Property":
+          const capitalGain = asset.currentValue - ((asset.originalPurchasePrice || 0) + (asset.capitalImprovements || 0));
+          const estimatedCapitalGainsTax = capitalGain * ((asset.inclusionRate || 50) / 100) * ((asset.taxRate || 25) / 100);
+          
+          return (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <DynamicEditableField 
+                  fieldKey="currentValue" 
+                  value={asset.currentValue} 
+                  label="Current FMV" 
+                />
+                <DynamicEditableField 
+                  fieldKey="futureValue" 
+                  value={Math.round(futureValue)} 
+                  label={`Future Value (${asset.years[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <DynamicEditableField 
+                  fieldKey="originalPurchasePrice" 
+                  value={asset.originalPurchasePrice || 0} 
+                  label="Original Purchase Price" 
+                />
+                <DynamicEditableField 
+                  fieldKey="capitalImprovements" 
+                  value={asset.capitalImprovements || 0} 
+                  label="Capital Improvements" 
+                />
+              </div>
+              
+              <div className="bg-muted/20 p-4 rounded-lg space-y-3">
+                <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <DynamicEditableField 
+                    fieldKey="capitalGain" 
+                    value={Math.round(capitalGain)} 
+                    label="Capital Gain" 
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                  <DynamicEditableField 
+                    fieldKey="inclusionRate" 
+                    value={asset.inclusionRate || 50} 
+                    label="Inclusion Rate" 
+                    prefix=""
+                    suffix="%"
+                  />
+                  <DynamicEditableField 
+                    fieldKey="taxRate" 
+                    value={asset.taxRate || 25} 
+                    label="Tax Rate" 
+                    prefix=""
+                    suffix="%"
+                  />
+                  <DynamicEditableField 
+                    fieldKey="estimatedCapitalGainsTax" 
+                    value={Math.round(estimatedCapitalGainsTax)} 
+                    label="Estimated Capital Gains Tax" 
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                </div>
+              </div>
+            </div>
+          );
+
         case "RRSP":
           return (
             <div className="grid grid-cols-2 gap-4">
@@ -398,19 +474,16 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 fieldKey="availableRoom" 
                 value={asset.availableRoom || 0} 
                 label="Available Room" 
-                tip={`If maxed out, worth $${Math.round((asset.availableRoom || 0) * Math.pow(1.07, 10)).toLocaleString()} in 10 years at 7%`}
               />
               <DynamicEditableField 
                 fieldKey="annualContribution" 
                 value={asset.annualContribution} 
                 label="Annual Contribution" 
-                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
               />
               <DynamicEditableField 
                 fieldKey="monthlyContribution" 
                 value={asset.monthlyContribution || 0} 
                 label="Monthly Contribution" 
-                tip={`${(((asset.monthlyContribution || 0) * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
               />
             </div>
           );
@@ -442,19 +515,16 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 fieldKey="availableRoom" 
                 value={asset.availableRoom || 0} 
                 label="Available Room" 
-                tip={`If maxed out, worth $${Math.round((asset.availableRoom || 0) * Math.pow(1.065, 10)).toLocaleString()} in 10 years at 6.5%`}
               />
               <DynamicEditableField 
                 fieldKey="annualContribution" 
                 value={asset.annualContribution} 
                 label="Annual Contribution" 
-                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
               />
               <DynamicEditableField 
                 fieldKey="monthlyContribution" 
                 value={asset.monthlyContribution || 0} 
                 label="Monthly Contribution" 
-                tip={`${(((asset.monthlyContribution || 0) * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
               />
             </div>
           );
@@ -479,7 +549,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 value={asset.unrealizedGains || 0} 
                 label="Unrealized Gains" 
                 prefix="+$"
-                tip={`${(((asset.unrealizedGains || 0) / asset.currentValue) * 100).toFixed(1)}% of total value`}
               />
               <DynamicEditableField 
                 fieldKey="projectedGrowth" 
@@ -493,7 +562,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 fieldKey="annualContribution" 
                 value={asset.annualContribution} 
                 label="Annual Contribution" 
-                tip={`${(asset.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
               />
               <DynamicEditableField 
                 fieldKey="monthlyContribution" 
@@ -594,7 +662,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           {renderAssetSpecificFields()}
           
           {/* Additional asset-specific info */}
-          {asset.type === "Real Estate" && asset.address && (
+          {(asset.type === "Primary Residence" || asset.type === "Secondary Property") && asset.address && (
             <div className="pt-2">
               <p className="text-xs text-muted-foreground mb-1">Address: {asset.address}</p>
             </div>
@@ -618,10 +686,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     future: { label: "Future Value", color: "#10b981" }
   };
 
-  // Assumed annual income for calculations (in a real app, this would come from user data)
   const assumedAnnualIncome = 80000;
 
-  // Edit handlers
   const startEdit = (fieldId: string, currentValue: number | string) => {
     setEditingField(fieldId);
     setTempValue(currentValue.toString());
@@ -660,7 +726,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     setTempValue("");
   };
 
-  // Editable field component with tips
   const EditableField = ({ 
     fieldId, 
     value, 
@@ -727,7 +792,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Simplified Growth Visualization Chart Component - now receives stable data
   const GrowthChart = ({ 
     data, 
     currentValue, 
@@ -871,7 +935,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           <DialogTitle className="text-3xl font-bold">Assets</DialogTitle>
         </DialogHeader>
 
-        {/* Portfolio Summary & Key Metrics */}
         <Card className="mb-6">
           <CardHeader>
             <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
@@ -906,20 +969,17 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </CardContent>
         </Card>
 
-        {/* Assets Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           
-          {/* Real Estate */}
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Real Estate", { name: "Real Estate", value: realEstateDetails.currentFMV, amount: `$${realEstateDetails.currentFMV.toLocaleString()}`, color: "#f59e0b" })}>
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Primary Residence", { name: "Primary Residence", value: realEstateDetails.currentFMV, amount: `$${realEstateDetails.currentFMV.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Home className="w-6 h-6" />
-                Real Estate
+                Primary Residence
                 <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Growth Visualization */}
               <GrowthChart 
                 data={realEstateChartData}
                 currentValue={realEstateDetails.currentFMV}
@@ -928,7 +988,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 color="#f59e0b"
               />
 
-              {/* Real Estate Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Growth Rate: {realEstateRate[0]}%</label>
@@ -1000,7 +1059,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
 
-          {/* RRSP */}
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("RRSP", { name: "RRSP", value: rrspDetails.currentValue, amount: `$${rrspDetails.currentValue.toLocaleString()}`, color: "#10b981" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -1010,7 +1068,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Growth Visualization */}
               <GrowthChart 
                 data={rrspChartData}
                 currentValue={rrspDetails.currentValue}
@@ -1019,7 +1076,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 color="#8b5cf6"
               />
 
-              {/* RRSP Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Growth Rate: {rrspRate[0]}%</label>
@@ -1095,7 +1151,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
 
-          {/* TFSA */}
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("TFSA", { name: "TFSA", value: tfsaDetails.currentValue, amount: `$${tfsaDetails.currentValue.toLocaleString()}`, color: "#8b5cf6" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -1105,7 +1160,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Growth Visualization */}
               <GrowthChart 
                 data={tfsaChartData}
                 currentValue={tfsaDetails.currentValue}
@@ -1114,7 +1168,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 color="#06b6d4"
               />
 
-              {/* TFSA Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Growth Rate: {tfsaRate[0]}%</label>
@@ -1190,7 +1243,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
 
-          {/* Non-Registered */}
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Non-Registered", { name: "Non-Registered", value: nonRegisteredDetails.totalValue, amount: `$${nonRegisteredDetails.totalValue.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
@@ -1200,7 +1252,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Growth Visualization */}
               <GrowthChart 
                 data={nonRegChartData}
                 currentValue={nonRegisteredDetails.totalValue}
@@ -1209,7 +1260,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 color="#ef4444"
               />
 
-              {/* Non-Registered Controls */}
               <div className="bg-muted/30 p-4 rounded-lg space-y-3">
                 <div>
                   <label className="text-sm font-medium mb-2 block">Growth Rate: {nonRegRate[0]}%</label>
@@ -1285,12 +1335,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
 
-          {/* Dynamic Asset Cards */}
           {dynamicAssets.map((asset) => (
             <DynamicAssetCard key={asset.id} asset={asset} />
           ))}
 
-          {/* Add Asset Card */}
           <Card className="border-dashed border-2 border-muted-foreground/30">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
@@ -1307,7 +1355,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                       <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Real Estate">Real Estate</SelectItem>
+                      <SelectItem value="Primary Residence">Primary Residence</SelectItem>
+                      <SelectItem value="Secondary Property">Secondary Property</SelectItem>
                       <SelectItem value="RRSP">RRSP</SelectItem>
                       <SelectItem value="RRIF">RRIF</SelectItem>
                       <SelectItem value="TFSA">TFSA</SelectItem>
@@ -1327,7 +1376,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           </Card>
         </div>
 
-        {/* AI Guidance Tips at the bottom */}
         <Card className="mt-6">
           <CardHeader>
             <CardTitle className="text-xl flex items-center gap-2">
