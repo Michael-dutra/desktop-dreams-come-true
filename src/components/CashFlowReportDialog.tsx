@@ -143,11 +143,13 @@ export const CashFlowReportDialog = ({
                       {bracket.range === currentBracket.range && (
                         <Check className="h-4 w-4 text-green-600" />
                       )}
-                      <strong>{bracket.status} ({bracket.range}):</strong> 
-                      {bracket.status === 'Excellent' && ' Exceptional debt management'}
-                      {bracket.status === 'Good' && ' Healthy debt levels, within recommended range'}
-                      {bracket.status === 'Fair' && ' Moderate risk, consider debt reduction'}
-                      {bracket.status === 'Poor' && ' High risk, immediate action required'}
+                      <span className="flex-1">
+                        <strong>{bracket.status} ({bracket.range}):</strong> 
+                        {bracket.status === 'Excellent' && ' Exceptional debt management'}
+                        {bracket.status === 'Good' && ' Healthy debt levels, within recommended range'}
+                        {bracket.status === 'Fair' && ' Moderate risk, consider debt reduction'}
+                        {bracket.status === 'Poor' && ' High risk, immediate action required'}
+                      </span>
                     </li>
                   ))}
                 </ul>
