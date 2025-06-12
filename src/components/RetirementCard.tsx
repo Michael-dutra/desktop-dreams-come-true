@@ -1,12 +1,24 @@
+
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
 import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const readinessScore = 78; // Percentage
+  
+  // Retirement calculations
+  const retirementAge = 65;
+  const netMonthlyIncomeNeeded = 4500;
+  const totalRetirementSavings = 90000;
+  const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
+  const lifeExpectancy = 90;
+  const yearsInRetirement = lifeExpectancy - retirementAge;
+  const yearsIncomeWillLast = totalRetirementSavings / (netMonthlyIncomeNeeded * 12);
+  const coverageRatio = Math.min(1, yearsIncomeWillLast / yearsInRetirement);
 
   return (
     <>
@@ -45,22 +57,32 @@ const RetirementCard = () => {
             </div>
           
             <div className="border-t pt-3 space-y-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-sm text-muted-foreground">Retirement Age</p>
+                  <p className="text-lg font-semibold">{retirementAge}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Net Monthly Income Needed</p>
+                  <p className="text-lg font-semibold">${netMonthlyIncomeNeeded.toLocaleString()}</p>
+                </div>
+              </div>
+
               <div>
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium">Retirement Readiness</span>
-                  <span className="text-sm font-bold text-green-600">{readinessScore}%</span>
+                  <span className="text-sm font-medium">Income Coverage</span>
+                  <span className="text-sm font-bold">
+                    {yearsIncomeWillLast.toFixed(0)} of {yearsInRetirement} years
+                  </span>
                 </div>
-                <div className="w-full bg-muted rounded-full h-3">
-                  <div 
-                    className="bg-gradient-to-r from-green-500 to-green-600 h-3 rounded-full transition-all duration-300"
-                    style={{ width: `${readinessScore}%` }}
-                  ></div>
+                <Progress 
+                  value={coverageRatio * 100} 
+                  className="h-3"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>Years Needed: {yearsInRetirement}</span>
+                  <span>Years Covered: {yearsIncomeWillLast.toFixed(0)}</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {readinessScore >= 80 ? "Excellent progress" : 
-                   readinessScore >= 60 ? "Good progress" : 
-                   "Needs attention"}
-                </p>
               </div>
             
               <div className="flex items-center space-x-1 text-green-600">
