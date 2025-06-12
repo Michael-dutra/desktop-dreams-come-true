@@ -40,12 +40,12 @@ const NetWorthCard = () => {
           
           <div className="grid grid-cols-2 gap-4 pt-2">
             <div>
-              <p className="text-sm text-blue-100">Total Assets</p>
+              <p className="text-sm text-white opacity-80">Total Assets</p>
               <p className="text-lg font-semibold text-white">$735,000</p>
             </div>
             <div>
-              <p className="text-sm text-blue-100">Total Liabilities</p>
-              <p className="text-lg font-semibold text-red-300">$447,500</p>
+              <p className="text-sm text-white opacity-80">Total Liabilities</p>
+              <p className="text-lg font-semibold text-white">$447,500</p>
             </div>
           </div>
           
