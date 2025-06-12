@@ -230,7 +230,7 @@ Next Review: September 2024`);
                   <CardTitle>Portfolio Performance</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer className="h-80">
+                  <ChartContainer config={chartConfig} className="h-80">
                     <LineChart data={performanceData}>
                       <XAxis dataKey="month" />
                       <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
