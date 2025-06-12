@@ -9,12 +9,20 @@ import { Calendar } from "@/components/ui/calendar"
 import { CalendarIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
+interface Asset {
+  name: string;
+  amount: string;
+  value: number;
+  color: string;
+}
+
 interface AssetsDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
+  assets: Asset[];
 }
 
-export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
+export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
   const [address, setAddress] = useState("123 Main St, Anytown");
   const [currentFMV, setCurrentFMV] = useState(500000);
   const [futureValue, setFutureValue] = useState(600000);
