@@ -2,7 +2,7 @@
 import { TrendingUp, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from "recharts";
 
 const NetWorthCard = () => {
   const projectionData = [
@@ -52,16 +52,22 @@ const NetWorthCard = () => {
           <div className="border-t border-white/20 pt-3">
             <h4 className="text-sm font-medium mb-2 text-white">5-Year Projection</h4>
             <ChartContainer config={chartConfig} className="h-32">
-              <LineChart data={projectionData}>
+              <AreaChart data={projectionData}>
+                <defs>
+                  <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
                 <XAxis 
                   dataKey="year" 
                   tick={{ fontSize: 10, fill: 'white' }}
-                  axisLine={{ stroke: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
                   tick={{ fontSize: 10, fill: 'white' }}
-                  axisLine={{ stroke: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                 />
@@ -76,14 +82,15 @@ const NetWorthCard = () => {
                     }}
                   />} 
                 />
-                <Line 
+                <Area 
                   type="monotone" 
                   dataKey="netWorth" 
                   stroke="#10b981" 
-                  strokeWidth={2}
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 3 }}
+                  strokeWidth={3}
+                  fill="url(#netWorthGradient)"
+                  dot={{ fill: "#10b981", strokeWidth: 2, r: 4, stroke: "white" }}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
             <p className="text-xs text-white mt-1">
               Projected to reach $530K by 2029

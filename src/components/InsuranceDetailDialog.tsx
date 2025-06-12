@@ -112,7 +112,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
-            <span>Insurance Needs Analysis & Coverage Gaps</span>
+            <span>Insurance</span>
           </DialogTitle>
         </DialogHeader>
 

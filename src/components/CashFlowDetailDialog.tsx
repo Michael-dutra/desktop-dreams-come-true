@@ -129,7 +129,7 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2 text-2xl">
             <TrendingUp className="h-6 w-6" />
-            Monthly Cash Flow Analysis
+            Cash Flow Analysis
           </DialogTitle>
         </DialogHeader>
 
