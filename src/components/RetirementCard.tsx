@@ -3,20 +3,20 @@ import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [retirementAge, setRetirementAge] = useState([65]);
+  const [netMonthlyIncomeNeeded, setNetMonthlyIncomeNeeded] = useState([4500]);
   
-  // Retirement calculations
-  const retirementAge = 65;
-  const netMonthlyIncomeNeeded = 4500;
   const totalRetirementSavings = 90000;
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
-  const yearsInRetirement = lifeExpectancy - retirementAge;
-  const yearsIncomeWillLast = totalRetirementSavings / (netMonthlyIncomeNeeded * 12);
+  const yearsInRetirement = lifeExpectancy - retirementAge[0];
+  const yearsIncomeWillLast = totalRetirementSavings / (netMonthlyIncomeNeeded[0] * 12);
   const coverageRatio = Math.min(1, yearsIncomeWillLast / yearsInRetirement);
 
   return (
@@ -47,22 +47,39 @@ const RetirementCard = () => {
             <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
           
-          {/* Retirement Goals */}
+          {/* Retirement Controls - Same Line */}
           <div className="space-y-4 pt-2 border-t border-gray-200">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="flex items-center space-x-2 mb-1">
+            <div className="grid grid-cols-2 gap-6">
+              {/* Retirement Age with Slider */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 mb-2">
                   <Calendar className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-800">Retirement Age</span>
+                  <span className="text-sm font-medium text-orange-800">Retirement Age: {retirementAge[0]}</span>
                 </div>
-                <p className="text-lg font-bold text-orange-600">{retirementAge}</p>
+                <Slider
+                  value={retirementAge}
+                  onValueChange={setRetirementAge}
+                  max={70}
+                  min={55}
+                  step={1}
+                  className="w-full"
+                />
               </div>
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="flex items-center space-x-2 mb-1">
+              
+              {/* Monthly Income Needed */}
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2 mb-2">
                   <Target className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-emerald-800">Monthly Need</span>
+                  <span className="text-sm font-medium text-emerald-800">Monthly Need: ${netMonthlyIncomeNeeded[0].toLocaleString()}</span>
                 </div>
-                <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded.toLocaleString()}</p>
+                <Slider
+                  value={netMonthlyIncomeNeeded}
+                  onValueChange={setNetMonthlyIncomeNeeded}
+                  max={8000}
+                  min={2000}
+                  step={100}
+                  className="w-full"
+                />
               </div>
             </div>
 
@@ -87,7 +104,7 @@ const RetirementCard = () => {
               </div>
               <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
                 <TrendingUp className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">On track for retirement at 65</span>
+                <span className="text-sm font-semibold text-green-700">On track for retirement at {retirementAge[0]}</span>
               </div>
             </div>
           </div>
