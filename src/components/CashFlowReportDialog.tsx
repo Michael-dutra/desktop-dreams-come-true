@@ -1,7 +1,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, TrendingUp, TrendingDown, DollarSign } from "lucide-react";
+import { FileText, TrendingUp, TrendingDown, DollarSign, Check } from "lucide-react";
 
 interface CashFlowReportDialogProps {
   isOpen: boolean;
@@ -36,6 +36,13 @@ export const CashFlowReportDialog = ({
   const monthlyDebtPayments = 3500;
 
   const formatCurrency = (amount: number) => `$${amount.toLocaleString()}`;
+
+  const allBrackets = [
+    { range: "0-20%", status: "Excellent", color: "text-green-600" },
+    { range: "21-35%", status: "Good", color: "text-green-600" },
+    { range: "36-49%", status: "Fair", color: "text-orange-500" },
+    { range: "50%+", status: "Poor", color: "text-red-500" }
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -131,10 +138,18 @@ export const CashFlowReportDialog = ({
               <div className="not-prose">
                 <h5 className="font-medium mb-2">Industry Benchmarks:</h5>
                 <ul className="space-y-1 text-sm">
-                  <li><strong>Excellent (0-20%):</strong> Exceptional debt management</li>
-                  <li><strong>Good (21-35%):</strong> Healthy debt levels, within recommended range</li>
-                  <li><strong>Fair (36-49%):</strong> Moderate risk, consider debt reduction</li>
-                  <li><strong>Poor (50%+):</strong> High risk, immediate action required</li>
+                  {allBrackets.map((bracket) => (
+                    <li key={bracket.range} className="flex items-center gap-2">
+                      {bracket.range === currentBracket.range && (
+                        <Check className="h-4 w-4 text-green-600" />
+                      )}
+                      <strong>{bracket.status} ({bracket.range}):</strong> 
+                      {bracket.status === 'Excellent' && ' Exceptional debt management'}
+                      {bracket.status === 'Good' && ' Healthy debt levels, within recommended range'}
+                      {bracket.status === 'Fair' && ' Moderate risk, consider debt reduction'}
+                      {bracket.status === 'Poor' && ' High risk, immediate action required'}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </CardContent>
