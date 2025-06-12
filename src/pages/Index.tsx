@@ -38,10 +38,8 @@ const Index = () => {
             <RetirementCard />
           </div>
           
-          {/* Third Row - Recent AI Guidance (wide) */}
-          <div className="grid grid-cols-1 gap-6">
-            <RecentGuidance />
-          </div>
+          {/* Third Row - Recent AI Guidance and Saved AI Guidance (wide) */}
+          <RecentGuidance />
           
           {/* Fourth Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
