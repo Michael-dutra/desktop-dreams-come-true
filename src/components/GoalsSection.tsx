@@ -1,133 +1,147 @@
-
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Plus, Edit } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Button } from "@/components/ui/button";
+import { Target, Plus, Edit, Eye } from "lucide-react";
 import { AddGoalDialog } from "./AddGoalDialog";
 import { EditGoalDialog } from "./EditGoalDialog";
-import { useState } from "react";
+import { ViewGoalDialog } from "./ViewGoalDialog";
 
 const GoalsSection = () => {
-  const [showAddDialog, setShowAddDialog] = useState(false);
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [editingGoal, setEditingGoal] = useState<any>(null);
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
+  const [selectedGoal, setSelectedGoal] = useState(null);
+
   const [goals, setGoals] = useState([
     {
-      id: 1,
-      title: "RRSP vs TFSA: What's better for 2025?",
-      description: "Tax planning strategies for the upcoming year",
-      progress: 75,
-      status: "In Progress"
+      id: "1",
+      title: "Save for a Down Payment",
+      description: "Accumulate funds for a down payment on a new home.",
+      progress: 35,
     },
     {
-      id: 2,
-      title: "How to reduce your taxable income this year",
-      description: "Deduction opportunities and tax-efficient investing",
-      progress: 40,
-      status: "Research Phase"
+      id: "2",
+      title: "Pay off Credit Card Debt",
+      description: "Eliminate outstanding credit card balances.",
+      progress: 70,
     },
     {
-      id: 3,
-      title: "Debt avalanche vs snowball: Which fits your personality?",
-      description: "Personalized debt repayment strategies",
-      progress: 90,
-      status: "Almost Complete"
+      id: "3",
+      title: "Invest in Retirement",
+      description: "Contribute regularly to a retirement savings account.",
+      progress: 50,
     },
   ]);
 
   const handleAddGoal = (newGoal: any) => {
-    const goalWithId = { ...newGoal, id: Date.now() };
-    setGoals(prev => [...prev, goalWithId]);
+    setGoals(prevGoals => [...prevGoals, { ...newGoal, id: String(Date.now()) }]);
   };
 
   const handleEditGoal = (goal: any) => {
-    setEditingGoal(goal);
-    setShowEditDialog(true);
+    setSelectedGoal(goal);
+    setIsEditDialogOpen(true);
   };
 
   const handleUpdateGoal = (updatedGoal: any) => {
-    setGoals(prev => prev.map(goal => 
-      goal.id === updatedGoal.id ? updatedGoal : goal
-    ));
+    setGoals(prevGoals =>
+      prevGoals.map(goal => (goal.id === updatedGoal.id ? updatedGoal : goal))
+    );
+    setIsEditDialogOpen(false);
+  };
+
+  const handleViewGoal = (goal: any) => {
+    setSelectedGoal(goal);
+    setIsViewDialogOpen(true);
   };
 
   const getProgressColor = (progress: number) => {
-    if (progress >= 80) return "bg-green-500";
-    if (progress >= 50) return "bg-yellow-500";
-    return "bg-red-500";
+    // Create a gradient from red (0%) to green (100%)
+    const red = Math.max(0, 255 - (progress * 2.55));
+    const green = Math.min(255, progress * 2.55);
+    return `rgb(${red}, ${green}, 0)`;
   };
 
   return (
     <>
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
-          <CardTitle className="text-lg flex items-center space-x-2">
-            <Target className="h-5 w-5" />
-            <span>Goals</span>
-          </CardTitle>
-          <Button 
-            size="sm" 
-            className="flex items-center space-x-2"
-            onClick={() => setShowAddDialog(true)}
-          >
-            <Plus className="h-4 w-4" />
-            <span>Add Goal</span>
-          </Button>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center">
+              <Target className="h-5 w-5 mr-2" />
+              Goals
+            </CardTitle>
+            <Button onClick={() => setIsAddDialogOpen(true)} size="sm">
+              <Plus className="h-4 w-4 mr-2" />
+              Add Goal
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
-            {goals.map((goal, index) => (
-              <div key={goal.id} className="space-y-3">
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <h4 className="font-medium text-sm">{goal.title}</h4>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-xs text-muted-foreground font-medium">
-                        {goal.progress}%
-                      </span>
-                      <Button 
-                        variant="ghost" 
+          <div className="space-y-4">
+            {goals.map((goal) => (
+              <div key={goal.id} className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-medium text-sm">{goal.title}</h4>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-sm text-muted-foreground">{goal.progress}%</span>
+                    <div className="flex space-x-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleViewGoal(goal)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <Eye className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="ghost"
                         size="sm"
                         onClick={() => handleEditGoal(goal)}
+                        className="h-6 w-6 p-0"
                       >
-                        <Edit className="h-4 w-4" />
+                        <Edit className="h-3 w-3" />
                       </Button>
                     </div>
                   </div>
-                  <p className="text-xs text-muted-foreground">{goal.description}</p>
                 </div>
-                
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-muted-foreground">Progress</span>
-                    <span className="text-xs font-medium text-foreground">
-                      {goal.status}
-                    </span>
-                  </div>
+                <div className="relative">
                   <Progress 
                     value={goal.progress} 
                     className="h-2"
                   />
+                  <div 
+                    className="absolute top-0 left-0 h-2 rounded-full transition-all"
+                    style={{
+                      width: `${goal.progress}%`,
+                      backgroundColor: getProgressColor(goal.progress)
+                    }}
+                  />
                 </div>
-                
-                {index < goals.length - 1 && <div className="border-b"></div>}
+                <p className="text-xs text-muted-foreground">{goal.description}</p>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
 
-      <AddGoalDialog 
-        isOpen={showAddDialog}
-        onClose={() => setShowAddDialog(false)}
+      <AddGoalDialog
+        isOpen={isAddDialogOpen}
+        onClose={() => setIsAddDialogOpen(false)}
         onAdd={handleAddGoal}
       />
 
-      <EditGoalDialog 
-        isOpen={showEditDialog}
-        onClose={() => setShowEditDialog(false)}
-        goal={editingGoal}
+      <EditGoalDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        goal={selectedGoal}
         onUpdate={handleUpdateGoal}
+      />
+
+      <ViewGoalDialog
+        isOpen={isViewDialogOpen}
+        onClose={() => setIsViewDialogOpen(false)}
+        goal={selectedGoal}
       />
     </>
   );
