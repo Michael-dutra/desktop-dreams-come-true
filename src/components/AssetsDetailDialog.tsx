@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -284,7 +285,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                           </p>
                           {future && current && (
                             <p className="text-xs text-muted-foreground">
-                              Growth: +{(((future as number) / (current as number) - 1) * 100).toFixed(1)}%
+                              Difference: +${((future as number) - (current as number)).toLocaleString()}
                             </p>
                           )}
                         </div>
