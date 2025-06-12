@@ -474,7 +474,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               {/* Current Details */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
                 <h4 className="font-semibold mb-3">Current Details</h4>
-                <div className="grid grid-cols-1 gap-3">
+                <div className="grid grid-cols-1 gap-3 max-w-xs">
                   <div>
                     <Label className="text-sm font-medium">Balance</Label>
                     <Input
