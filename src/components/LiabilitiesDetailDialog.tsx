@@ -7,6 +7,8 @@ import { Home, CreditCard, Car, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useState } from "react";
 
 interface Liability {
@@ -26,57 +28,33 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   // Individual debt strategy controls
   const [mortgageExtraPayment, setMortgageExtraPayment] = useState([0]);
   const [mortgageNewRate, setMortgageNewRate] = useState([4.5]);
-  const [mortgagePayoffGoal, setMortgagePayoffGoal] = useState([25]);
 
   const [carExtraPayment, setCarExtraPayment] = useState([0]);
   const [carNewRate, setCarNewRate] = useState([6.2]);
-  const [carPayoffGoal, setCarPayoffGoal] = useState([3]);
 
   const [creditExtraPayment, setCreditExtraPayment] = useState([0]);
   const [creditNewRate, setCreditNewRate] = useState([19.5]);
-  const [creditPayoffGoal, setCreditPayoffGoal] = useState([2]);
 
-  // Detailed liability data
-  const mortgageDetails = {
-    principal: 420000,
+  // Editable debt details
+  const [mortgageDetails, setMortgageDetails] = useState({
     currentBalance: 285000,
     interestRate: 4.5,
-    originalTerm: 30,
-    remainingTerm: 18,
     monthlyPayment: 1800,
-    monthlyPrincipal: 743,
-    monthlyInterest: 1057,
-    totalPaid: 216000,
-    totalInterestPaid: 136000,
-    propertyValue: 620000,
-    loanToValue: 46,
-  };
+    paymentFrequency: "Monthly",
+  });
 
-  const carLoanDetails = {
-    principal: 25000,
+  const [carLoanDetails, setCarLoanDetails] = useState({
     currentBalance: 18000,
     interestRate: 6.2,
-    remainingTerm: 3.5,
     monthlyPayment: 425,
-    monthlyPrincipal: 293,
-    monthlyInterest: 132,
-    totalPaid: 10200,
-    vehicleValue: 22000,
-    loanToValue: 82,
-  };
+    paymentFrequency: "Monthly",
+  });
 
-  const creditCardDetails = {
-    totalBalance: 7500,
-    averageRate: 19.5,
-    minimumPayment: 225,
-    totalCreditLimit: 25000,
-    utilizationRate: 30,
-    monthlyInterest: 122,
-    cards: [
-      { name: "Visa", balance: 4500, rate: 18.9, limit: 15000 },
-      { name: "Mastercard", balance: 3000, rate: 20.5, limit: 10000 }
-    ]
-  };
+  const [creditCardDetails, setCreditCardDetails] = useState({
+    balance: 4500,
+    interestRate: 18.9,
+    monthlyPayment: 225,
+  });
 
   // Debt-free date calculation
   const calculateDebtFreeDate = (balance: number, payment: number, rate: number) => {
@@ -98,11 +76,11 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   const carMonthsSaved = carCurrentPayoff - carNewPayoff;
   const carInterestSaved = (carCurrentPayoff * carLoanDetails.monthlyPayment) - (carNewPayoff * carNewPayment);
 
-  const creditNewPayment = creditCardDetails.minimumPayment + creditExtraPayment[0];
-  const creditCurrentPayoff = calculateDebtFreeDate(creditCardDetails.totalBalance, creditCardDetails.minimumPayment, creditCardDetails.averageRate);
-  const creditNewPayoff = calculateDebtFreeDate(creditCardDetails.totalBalance, creditNewPayment, creditNewRate[0]);
+  const creditNewPayment = creditCardDetails.monthlyPayment + creditExtraPayment[0];
+  const creditCurrentPayoff = calculateDebtFreeDate(creditCardDetails.balance, creditCardDetails.monthlyPayment, creditCardDetails.interestRate);
+  const creditNewPayoff = calculateDebtFreeDate(creditCardDetails.balance, creditNewPayment, creditNewRate[0]);
   const creditMonthsSaved = creditCurrentPayoff - creditNewPayoff;
-  const creditInterestSaved = (creditCurrentPayoff * creditCardDetails.minimumPayment) - (creditNewPayoff * creditNewPayment);
+  const creditInterestSaved = (creditCurrentPayoff * creditCardDetails.monthlyPayment) - (creditNewPayoff * creditNewPayment);
 
   // Generate combined payoff data for charts
   const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
@@ -160,9 +138,9 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
   );
 
   const creditChartData = generateCombinedPayoffData(
-    creditCardDetails.totalBalance,
-    creditCardDetails.minimumPayment,
-    creditCardDetails.averageRate,
+    creditCardDetails.balance,
+    creditCardDetails.monthlyPayment,
+    creditCardDetails.interestRate,
     creditNewPayment,
     creditNewRate[0],
     60
@@ -190,7 +168,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Debt</p>
                 <p className="font-bold text-2xl text-red-600">
-                  ${(mortgageDetails.currentBalance + carLoanDetails.currentBalance + creditCardDetails.totalBalance).toLocaleString()}
+                  ${(mortgageDetails.currentBalance + carLoanDetails.currentBalance + creditCardDetails.balance).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
@@ -223,34 +201,59 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Home className="w-6 h-6" />
-                Mortgage Strategy
+                Mortgage
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Current Mortgage Details */}
                 <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                  <h4 className="font-semibold mb-3">Current Mortgage Details</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Current Mortgage Amount:</span>
-                      <span className="font-medium">${mortgageDetails.currentBalance.toLocaleString()}</span>
+                  <h4 className="font-semibold mb-3">Current Details</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label className="text-sm font-medium">Current Amount</Label>
+                      <Input
+                        type="number"
+                        value={mortgageDetails.currentBalance}
+                        onChange={(e) => setMortgageDetails(prev => ({...prev, currentBalance: Number(e.target.value)}))}
+                        className="mt-1"
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Mortgage Payment:</span>
-                      <span className="font-medium">${mortgageDetails.monthlyPayment.toLocaleString()}</span>
+                    <div>
+                      <Label className="text-sm font-medium">Monthly Payment</Label>
+                      <Input
+                        type="number"
+                        value={mortgageDetails.monthlyPayment}
+                        onChange={(e) => setMortgageDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
+                        className="mt-1"
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Frequency:</span>
-                      <span className="font-medium">Monthly</span>
+                    <div>
+                      <Label className="text-sm font-medium">Interest Rate (%)</Label>
+                      <Input
+                        type="number"
+                        step="0.1"
+                        value={mortgageDetails.interestRate}
+                        onChange={(e) => setMortgageDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
+                        className="mt-1"
+                      />
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm text-muted-foreground">Interest Rate:</span>
-                      <span className="font-medium">{mortgageDetails.interestRate}%</span>
+                    <div>
+                      <Label className="text-sm font-medium">Payment Frequency</Label>
+                      <Select value={mortgageDetails.paymentFrequency} onValueChange={(value) => setMortgageDetails(prev => ({...prev, paymentFrequency: value}))}>
+                        <SelectTrigger className="mt-1">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Monthly">Monthly</SelectItem>
+                          <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
+                          <SelectItem value="Weekly">Weekly</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                   
-                  <div className="border-t pt-3 mt-3">
+                  <div className="border-t pt-3 mt-3 space-y-3">
                     <div>
                       <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${mortgageExtraPayment[0]}</label>
                       <Slider
@@ -290,7 +293,7 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
 
                 {/* Payoff Chart */}
                 <div>
-                  <h4 className="font-semibold mb-3">Mortgage Payoff Chart</h4>
+                  <h4 className="font-semibold mb-3">Payoff Chart</h4>
                   <ChartContainer config={chartConfig} className="h-64">
                     <ResponsiveContainer width="100%" height="100%">
                       <LineChart data={mortgageChartData}>
@@ -332,51 +335,98 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <Car className="w-6 h-6" />
-                Car Loan Strategy
+                Car Loan
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Strategy Controls */}
+              {/* Current Details */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${carExtraPayment[0]}</label>
-                  <Slider
-                    value={carExtraPayment}
-                    onValueChange={setCarExtraPayment}
-                    max={500}
-                    min={0}
-                    step={25}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">New Interest Rate: {carNewRate[0]}%</label>
-                  <Slider
-                    value={carNewRate}
-                    onValueChange={setCarNewRate}
-                    max={12}
-                    min={2}
-                    step={0.1}
-                    className="w-full"
-                  />
+                <h4 className="font-semibold mb-3">Current Details</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-sm font-medium">Balance</Label>
+                    <Input
+                      type="number"
+                      value={carLoanDetails.currentBalance}
+                      onChange={(e) => setCarLoanDetails(prev => ({...prev, currentBalance: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Interest Rate (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={carLoanDetails.interestRate}
+                      onChange={(e) => setCarLoanDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Payment</Label>
+                    <Input
+                      type="number"
+                      value={carLoanDetails.monthlyPayment}
+                      onChange={(e) => setCarLoanDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Payment Frequency</Label>
+                    <Select value={carLoanDetails.paymentFrequency} onValueChange={(value) => setCarLoanDetails(prev => ({...prev, paymentFrequency: value}))}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Monthly">Monthly</SelectItem>
+                        <SelectItem value="Bi-weekly">Bi-weekly</SelectItem>
+                        <SelectItem value="Weekly">Weekly</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
-                {/* Results */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                  <div className="p-3 rounded-lg bg-green-50">
-                    <p className="text-sm font-medium text-green-800">Time Saved</p>
-                    <p className="text-lg font-bold text-green-600">{Math.round(carMonthsSaved)} months</p>
+                <div className="border-t pt-3 space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${carExtraPayment[0]}</label>
+                    <Slider
+                      value={carExtraPayment}
+                      onValueChange={setCarExtraPayment}
+                      max={500}
+                      min={0}
+                      step={25}
+                      className="w-full"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-blue-50">
-                    <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                    <p className="text-lg font-bold text-blue-600">${Math.round(carInterestSaved).toLocaleString()}</p>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">New Interest Rate: {carNewRate[0]}%</label>
+                    <Slider
+                      value={carNewRate}
+                      onValueChange={setCarNewRate}
+                      max={12}
+                      min={2}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Results */}
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div className="p-3 rounded-lg bg-green-50">
+                      <p className="text-sm font-medium text-green-800">Time Saved</p>
+                      <p className="text-lg font-bold text-green-600">{Math.round(carMonthsSaved)} months</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-blue-50">
+                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                      <p className="text-lg font-bold text-blue-600">${Math.round(carInterestSaved).toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Payoff Chart */}
               <div>
-                <h4 className="font-semibold mb-3">Car Loan Payoff Chart</h4>
+                <h4 className="font-semibold mb-3">Payoff Chart</h4>
                 <ChartContainer config={chartConfig} className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={carChartData}>
@@ -412,56 +462,90 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             </CardContent>
           </Card>
 
-          {/* Credit Cards Details */}
+          {/* Credit Card Details */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-xl">
                 <CreditCard className="w-6 h-6" />
-                Credit Cards Strategy
+                Credit Card
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {/* Strategy Controls */}
+              {/* Current Details */}
               <div className="space-y-3 p-4 rounded-lg bg-gray-50">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${creditExtraPayment[0]}</label>
-                  <Slider
-                    value={creditExtraPayment}
-                    onValueChange={setCreditExtraPayment}
-                    max={1000}
-                    min={0}
-                    step={25}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">New Avg Rate: {creditNewRate[0]}%</label>
-                  <Slider
-                    value={creditNewRate}
-                    onValueChange={setCreditNewRate}
-                    max={25}
-                    min={10}
-                    step={0.1}
-                    className="w-full"
-                  />
+                <h4 className="font-semibold mb-3">Current Details</h4>
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <Label className="text-sm font-medium">Balance</Label>
+                    <Input
+                      type="number"
+                      value={creditCardDetails.balance}
+                      onChange={(e) => setCreditCardDetails(prev => ({...prev, balance: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Interest Rate (%)</Label>
+                    <Input
+                      type="number"
+                      step="0.1"
+                      value={creditCardDetails.interestRate}
+                      onChange={(e) => setCreditCardDetails(prev => ({...prev, interestRate: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Monthly Payment</Label>
+                    <Input
+                      type="number"
+                      value={creditCardDetails.monthlyPayment}
+                      onChange={(e) => setCreditCardDetails(prev => ({...prev, monthlyPayment: Number(e.target.value)}))}
+                      className="mt-1"
+                    />
+                  </div>
                 </div>
 
-                {/* Results */}
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                  <div className="p-3 rounded-lg bg-green-50">
-                    <p className="text-sm font-medium text-green-800">Time Saved</p>
-                    <p className="text-lg font-bold text-green-600">{Math.round(creditMonthsSaved)} months</p>
+                <div className="border-t pt-3 space-y-3">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">Extra Monthly Payment: ${creditExtraPayment[0]}</label>
+                    <Slider
+                      value={creditExtraPayment}
+                      onValueChange={setCreditExtraPayment}
+                      max={1000}
+                      min={0}
+                      step={25}
+                      className="w-full"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-blue-50">
-                    <p className="text-sm font-medium text-blue-800">Interest Saved</p>
-                    <p className="text-lg font-bold text-blue-600">${Math.round(creditInterestSaved).toLocaleString()}</p>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block">New Rate: {creditNewRate[0]}%</label>
+                    <Slider
+                      value={creditNewRate}
+                      onValueChange={setCreditNewRate}
+                      max={25}
+                      min={10}
+                      step={0.1}
+                      className="w-full"
+                    />
+                  </div>
+
+                  {/* Results */}
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+                    <div className="p-3 rounded-lg bg-green-50">
+                      <p className="text-sm font-medium text-green-800">Time Saved</p>
+                      <p className="text-lg font-bold text-green-600">{Math.round(creditMonthsSaved)} months</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-blue-50">
+                      <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+                      <p className="text-lg font-bold text-blue-600">${Math.round(creditInterestSaved).toLocaleString()}</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
               {/* Payoff Chart */}
               <div>
-                <h4 className="font-semibold mb-3">Credit Cards Payoff Chart</h4>
+                <h4 className="font-semibold mb-3">Payoff Chart</h4>
                 <ChartContainer config={chartConfig} className="h-48">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={creditChartData}>
@@ -493,24 +577,6 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
-              </div>
-
-              <div className="border-t pt-4">
-                <h4 className="font-medium mb-3">Card Breakdown</h4>
-                <div className="space-y-3">
-                  {creditCardDetails.cards.map((card, index) => (
-                    <div key={index} className="flex justify-between items-center p-3 rounded-lg bg-gray-50">
-                      <div>
-                        <p className="font-medium">{card.name}</p>
-                        <p className="text-sm text-muted-foreground">Limit: ${card.limit.toLocaleString()}</p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-red-600">${card.balance.toLocaleString()}</p>
-                        <p className="text-sm text-muted-foreground">{card.rate}% APR</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
               </div>
             </CardContent>
           </Card>
