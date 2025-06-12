@@ -68,8 +68,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     ytdGrowth: 6.1,
     annualContribution: 5000,
     monthlyContribution: 417,
-    totalRoom: 88000,
-    taxFreeGrowth: 3000,
   });
 
   const [nonRegisteredDetails, setNonRegisteredDetails] = useState({
@@ -645,16 +643,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   tip={`If maxed out, worth $${Math.round(tfsaDetails.availableRoom * Math.pow(1.065, 10)).toLocaleString()} in 10 years at 6.5%`}
                 />
                 <EditableField 
-                  fieldId="tfsa.totalRoom" 
-                  value={tfsaDetails.totalRoom} 
-                  label="Total Room" 
-                />
-                <EditableField 
-                  fieldId="tfsa.taxFreeGrowth" 
-                  value={tfsaDetails.taxFreeGrowth} 
-                  label="Tax-Free Growth" 
-                />
-                <EditableField 
                   fieldId="tfsa.annualContribution" 
                   value={tfsaDetails.annualContribution} 
                   label="Annual Contribution" 
@@ -801,7 +789,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   <label className="text-sm font-medium mb-2 block">Asset Type</label>
                   <Select>
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select an asset type" />
+                      <SelectValue placeholder="Select" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="real-estate">Real Estate</SelectItem>
@@ -821,7 +809,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 
                 <Button className="w-full" variant="outline">
                   <Plus className="w-4 h-4 mr-2" />
-                  Add New Asset
+                  Add Asset
                 </Button>
               </div>
             </CardContent>
