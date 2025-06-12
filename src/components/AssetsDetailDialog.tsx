@@ -200,7 +200,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Growth Visualization Chart Component - Updated
+  // Growth Visualization Chart Component - Updated with subtle colors and smooth animations
   const GrowthChart = ({ 
     currentValue, 
     futureValue, 
@@ -237,10 +237,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     const data = generateDataPoints();
 
     return (
-      <div className="h-48 w-full bg-gray-900 rounded-lg p-4 border border-gray-700">
+      <div className="h-48 w-full bg-muted/20 rounded-lg p-4 border border-border/30">
         <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-gray-300 font-medium">Growth Projection</span>
-          <span className="text-xs text-purple-400 font-semibold">
+          <span className="text-xs text-muted-foreground font-medium">Growth Projection</span>
+          <span className="text-xs text-primary font-semibold">
             +{((futureValue / currentValue - 1) * 100).toFixed(1)}% over {years} years
           </span>
         </div>
@@ -253,15 +253,15 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             >
               <XAxis 
                 dataKey="yearLabel"
-                axisLine={{ stroke: '#a855f7', strokeWidth: 2 }}
-                tickLine={{ stroke: '#a855f7', strokeWidth: 1 }}
-                tick={{ fontSize: 10, fill: '#a855f7', fontWeight: 'bold' }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 'normal' }}
                 interval={0}
               />
               <YAxis 
-                axisLine={{ stroke: '#a855f7', strokeWidth: 2 }}
-                tickLine={{ stroke: '#a855f7', strokeWidth: 1 }}
-                tick={{ fontSize: 10, fill: '#a855f7', fontWeight: 'bold' }}
+                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
+                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 'normal' }}
                 tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
               />
               <ChartTooltip 
@@ -271,19 +271,19 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                     const future = payload.find(p => p.dataKey === 'future')?.value;
                     
                     return (
-                      <div className="bg-gray-800 border border-gray-600 rounded-lg p-3 shadow-xl">
-                        <p className="font-medium text-purple-300 mb-1">{label}</p>
+                      <div className="bg-background border border-border rounded-lg p-3 shadow-xl">
+                        <p className="font-medium text-foreground mb-1">{label}</p>
                         <div className="space-y-1">
                           <p className="text-sm">
-                            <span className="text-red-400">Current: </span>
-                            <span className="text-white font-semibold">${current?.toLocaleString()}</span>
+                            <span className="text-destructive">Current: </span>
+                            <span className="text-foreground font-semibold">${current?.toLocaleString()}</span>
                           </p>
                           <p className="text-sm">
-                            <span className="text-green-400">Future: </span>
-                            <span className="text-white font-semibold">${future?.toLocaleString()}</span>
+                            <span className="text-green-600">Future: </span>
+                            <span className="text-foreground font-semibold">${future?.toLocaleString()}</span>
                           </p>
                           {future && current && (
-                            <p className="text-xs text-purple-300">
+                            <p className="text-xs text-muted-foreground">
                               Growth: +{(((future as number) / (current as number) - 1) * 100).toFixed(1)}%
                             </p>
                           )}
@@ -299,11 +299,11 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               <Line 
                 type="monotone" 
                 dataKey="current" 
-                stroke="#ef4444" 
-                strokeWidth={3}
-                dot={{ fill: '#ef4444', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: '#ef4444', stroke: '#fff', strokeWidth: 2 }}
-                animationDuration={1000}
+                stroke="hsl(var(--destructive))" 
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: 'hsl(var(--destructive))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                animationDuration={800}
                 animationEasing="ease-out"
               />
               
@@ -312,10 +312,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 type="monotone" 
                 dataKey="future" 
                 stroke="#22c55e" 
-                strokeWidth={3}
-                dot={{ fill: '#22c55e', strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, fill: '#22c55e', stroke: '#fff', strokeWidth: 2 }}
-                animationDuration={1500}
+                strokeWidth={2}
+                dot={false}
+                activeDot={{ r: 4, fill: '#22c55e', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
+                animationDuration={1000}
                 animationEasing="ease-out"
               />
             </LineChart>
@@ -324,12 +324,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
         
         <div className="flex justify-between items-center mt-2 text-xs">
           <div className="flex items-center gap-1">
-            <div className="w-3 h-0.5 bg-red-400 rounded"></div>
-            <span className="text-red-300">Current Value</span>
+            <div className="w-3 h-0.5 bg-destructive rounded"></div>
+            <span className="text-muted-foreground">Current Value</span>
           </div>
           <div className="flex items-center gap-1">
-            <div className="w-3 h-0.5 bg-green-400 rounded"></div>
-            <span className="text-green-300">Future Value</span>
+            <div className="w-3 h-0.5 bg-green-600 rounded"></div>
+            <span className="text-muted-foreground">Future Value</span>
           </div>
         </div>
       </div>
