@@ -2,8 +2,10 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Shield } from "lucide-react";
+import { Shield, Edit } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
 
 interface InsuranceAnalysisCardProps {
   title: string;
@@ -23,6 +25,7 @@ interface InsuranceAnalysisCardProps {
     label: string;
     amount: number;
   }>;
+  onBreakdownChange?: (index: number, value: number) => void;
 }
 
 const chartConfig = {
@@ -39,8 +42,11 @@ export const InsuranceAnalysisCard = ({
   unit = "",
   maxSlider,
   stepSlider,
-  breakdown
+  breakdown,
+  onBreakdownChange
 }: InsuranceAnalysisCardProps) => {
+  const [editingBreakdown, setEditingBreakdown] = useState(false);
+
   const getGapColor = () => {
     if (gap > calculatedNeed * 0.5) return { bg: 'bg-red-50', border: 'border-red-200', text: 'text-red-900', textLight: 'text-red-700', accent: 'text-red-600' };
     if (gap > 0) return { bg: 'bg-orange-50', border: 'border-orange-200', text: 'text-orange-900', textLight: 'text-orange-700', accent: 'text-orange-600' };
@@ -48,6 +54,13 @@ export const InsuranceAnalysisCard = ({
   };
 
   const colors = getGapColor();
+
+  const handleBreakdownEdit = (index: number, value: string) => {
+    const numValue = parseInt(value.replace(/,/g, '')) || 0;
+    if (onBreakdownChange) {
+      onBreakdownChange(index, numValue);
+    }
+  };
 
   return (
     <Card>
@@ -103,12 +116,32 @@ export const InsuranceAnalysisCard = ({
 
               {breakdown && (
                 <div className="mt-4 pt-3 border-t">
-                  <h5 className="font-medium mb-2">Need Breakdown:</h5>
+                  <div className="flex items-center justify-between mb-2">
+                    <h5 className="font-medium">Need Breakdown:</h5>
+                    {onBreakdownChange && (
+                      <button
+                        onClick={() => setEditingBreakdown(!editingBreakdown)}
+                        className="p-1 hover:bg-gray-100 rounded"
+                        title={editingBreakdown ? "Done editing" : "Edit breakdown"}
+                      >
+                        <Edit className="w-3 h-3" />
+                      </button>
+                    )}
+                  </div>
                   <div className="space-y-1 text-xs">
                     {breakdown.map((item, index) => (
-                      <div key={index} className="flex justify-between">
+                      <div key={index} className="flex justify-between items-center">
                         <span>{item.label}:</span>
-                        <span>${item.amount.toLocaleString()}</span>
+                        {editingBreakdown && onBreakdownChange ? (
+                          <Input
+                            type="text"
+                            value={item.amount.toLocaleString()}
+                            onChange={(e) => handleBreakdownEdit(index, e.target.value)}
+                            className="w-20 h-6 text-xs text-right"
+                          />
+                        ) : (
+                          <span>${item.amount.toLocaleString()}</span>
+                        )}
                       </div>
                     ))}
                   </div>

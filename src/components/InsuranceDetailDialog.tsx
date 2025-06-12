@@ -60,31 +60,31 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     disability: [3000],
   });
 
+  // Custom breakdown state to allow manual editing
+  const [customLifeBreakdown, setCustomLifeBreakdown] = useState<any>(null);
+
   // Calculate comprehensive insurance needs
   const calculateLifeInsuranceNeed = () => {
     const { grossAnnualIncome, mortgageBalance, otherDebts, childrenEducationCost, 
             charitableDonations, finalExpenses, estateTaxes, emergencyFundMonths, 
             netAnnualIncome, incomeReplacementYears } = financialDetails;
     
-    // Income replacement need - now using the editable years
+    // If custom breakdown exists, use it
+    if (customLifeBreakdown) {
+      const totalNeed = Object.values(customLifeBreakdown).reduce((sum: number, value: any) => sum + (value || 0), 0);
+      return {
+        totalNeed: Math.round(totalNeed),
+        breakdown: customLifeBreakdown
+      };
+    }
+    
+    // Otherwise calculate from financial details
     const incomeReplacement = grossAnnualIncome * incomeReplacementYears;
-    
-    // Debt coverage need  
     const debtCoverage = (mortgageBalance + otherDebts) * (coverageFactors.debtCoverage[0] / 100);
-    
-    // Emergency fund need
     const emergencyNeed = (netAnnualIncome / 12) * emergencyFundMonths * (coverageFactors.emergencyMultiplier[0]);
-    
-    // Education costs
     const educationNeed = childrenEducationCost * (coverageFactors.educationCoverage[0] / 100);
-    
-    // Final expenses
     const finalExpenseNeed = finalExpenses * (coverageFactors.finalExpenseCoverage[0] / 100);
-    
-    // Charitable legacy
     const charitableNeed = charitableDonations * (coverageFactors.charitableMultiplier[0]);
-    
-    // Estate taxes
     const estateTaxNeed = estateTaxes;
     
     const totalNeed = incomeReplacement + debtCoverage + emergencyNeed + educationNeed + 
@@ -128,6 +128,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
   const lifeGap = Math.max(0, lifeAnalysis.totalNeed - currentCoverage.life[0]);
   const criticalGap = Math.max(0, criticalNeed - currentCoverage.critical[0]);
   const disabilityGap = Math.max(0, disabilityNeed - currentCoverage.disability[0]);
+
+  const handleLifeBreakdownChange = (newBreakdown: any) => {
+    setCustomLifeBreakdown(newBreakdown);
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -175,6 +179,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
               criticalGap={criticalGap}
               disabilityGap={disabilityGap}
               disabilityReplacementRate={incomeMultiples.disabilityReplacement[0]}
+              onLifeBreakdownChange={handleLifeBreakdownChange}
             />
           </TabsContent>
         </Tabs>

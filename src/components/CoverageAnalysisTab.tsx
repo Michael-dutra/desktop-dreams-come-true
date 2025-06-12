@@ -28,6 +28,7 @@ interface CoverageAnalysisTabProps {
   criticalGap: number;
   disabilityGap: number;
   disabilityReplacementRate: number;
+  onLifeBreakdownChange?: (breakdown: any) => void;
 }
 
 export const CoverageAnalysisTab = ({
@@ -39,7 +40,8 @@ export const CoverageAnalysisTab = ({
   lifeGap,
   criticalGap,
   disabilityGap,
-  disabilityReplacementRate
+  disabilityReplacementRate,
+  onLifeBreakdownChange
 }: CoverageAnalysisTabProps) => {
   // Chart data
   const lifeInsuranceData = [
@@ -69,6 +71,15 @@ export const CoverageAnalysisTab = ({
     { label: "Charitable Legacy", amount: lifeAnalysis.breakdown.charitableNeed },
     { label: "Estate Taxes", amount: lifeAnalysis.breakdown.estateTaxNeed },
   ];
+
+  const handleLifeBreakdownChange = (index: number, value: number) => {
+    if (onLifeBreakdownChange) {
+      const keys = ['incomeReplacement', 'debtCoverage', 'emergencyNeed', 'educationNeed', 'finalExpenseNeed', 'charitableNeed', 'estateTaxNeed'];
+      const newBreakdown = { ...lifeAnalysis.breakdown };
+      newBreakdown[keys[index] as keyof typeof newBreakdown] = value;
+      onLifeBreakdownChange(newBreakdown);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -116,6 +127,7 @@ export const CoverageAnalysisTab = ({
         maxSlider={2000000}
         stepSlider={25000}
         breakdown={lifeBreakdown}
+        onBreakdownChange={handleLifeBreakdownChange}
       />
 
       {/* Critical Illness Analysis */}
