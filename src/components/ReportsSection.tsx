@@ -52,9 +52,9 @@ const ReportsSection = () => {
       <CardContent>
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Generate Custom Report</h3>
-          <div className="space-y-3">
-            {/* First row - 5 items */}
-            <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-2 gap-6">
+            {/* First column - 5 items */}
+            <div className="space-y-3">
               {reportSections.slice(0, 5).map((section) => (
                 <div key={section.key} className="flex items-center space-x-3">
                   <Checkbox 
@@ -74,8 +74,8 @@ const ReportsSection = () => {
               ))}
             </div>
             
-            {/* Second row - 5 items */}
-            <div className="grid grid-cols-1 gap-3">
+            {/* Second column - 5 items */}
+            <div className="space-y-3">
               {reportSections.slice(5, 10).map((section) => (
                 <div key={section.key} className="flex items-center space-x-3">
                   <Checkbox 
