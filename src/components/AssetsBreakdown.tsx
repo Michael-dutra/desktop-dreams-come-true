@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-import { AssetsDetailDialog } from "./AssetsDetailDialog";
+import AssetsDetailDialog from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp, FileText } from "lucide-react";
 
