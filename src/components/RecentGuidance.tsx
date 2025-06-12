@@ -66,7 +66,7 @@ const RecentGuidance = () => {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="max-h-96 overflow-y-auto space-y-4 pr-2">
+        <div className="space-y-4">
           {guidanceItems.map((item, index) => (
             <div key={index} className={`p-4 rounded-lg ${item.bgColor} border-l-4 border-l-current ${item.color}`}>
               <div className="flex items-start justify-between">
