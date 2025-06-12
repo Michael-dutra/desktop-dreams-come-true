@@ -7,6 +7,8 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Calculator, Edit } from "lucide-react";
 import { useState } from "react";
+import { LifeInsuranceCalculator } from "./LifeInsuranceCalculator";
+import { CoverageAnalysisTab } from "./CoverageAnalysisTab";
 
 interface InsuranceDetailDialogProps {
   isOpen: boolean;
@@ -47,115 +49,6 @@ interface LifeAnalysis {
   };
 }
 
-const CoverageAnalysisTab = ({
-  financialDetails,
-  coverageFactors,
-  lifeAnalysis,
-  onBreakdownChange
-}: {
-  financialDetails: FinancialDetails;
-  coverageFactors: CoverageFactors;
-  lifeAnalysis: LifeAnalysis;
-  onBreakdownChange?: (breakdown: any) => void;
-}) => {
-  const [editingMode, setEditingMode] = useState(false);
-  const [localBreakdown, setLocalBreakdown] = useState(lifeAnalysis.breakdown);
-
-  const handleValueChange = (key: string, value: string) => {
-    const numValue = parseInt(value.replace(/,/g, '')) || 0;
-    const newBreakdown = { ...localBreakdown, [key]: numValue };
-    setLocalBreakdown(newBreakdown);
-
-    if (onBreakdownChange) {
-      onBreakdownChange(newBreakdown);
-    }
-  };
-
-  const mathFormulas = [
-    {
-      label: "Income Replacement",
-      formula: `$${financialDetails.grossAnnualIncome.toLocaleString()} × ${financialDetails.incomeReplacementYears} years`,
-      value: lifeAnalysis.breakdown.incomeReplacement,
-      key: "incomeReplacement"
-    },
-    {
-      label: "Debt Coverage",
-      formula: `($${financialDetails.mortgageBalance.toLocaleString()} + $${financialDetails.otherDebts.toLocaleString()}) × ${coverageFactors.debtCoverage[0]}%`,
-      value: lifeAnalysis.breakdown.debtCoverage,
-      key: "debtCoverage"
-    },
-    {
-      label: "Emergency Fund",
-      formula: `($${financialDetails.netAnnualIncome.toLocaleString()} ÷ 12) × ${financialDetails.emergencyFundMonths} months × ${coverageFactors.emergencyMultiplier[0]}`,
-      value: lifeAnalysis.breakdown.emergencyNeed,
-      key: "emergencyNeed"
-    },
-    {
-      label: "Education Costs",
-      formula: `$${financialDetails.childrenEducationCost.toLocaleString()} × ${coverageFactors.educationCoverage[0]}%`,
-      value: lifeAnalysis.breakdown.educationNeed,
-      key: "educationNeed"
-    },
-    {
-      label: "Final Expenses",
-      formula: `$${financialDetails.finalExpenses.toLocaleString()} × ${coverageFactors.finalExpenseCoverage[0]}%`,
-      value: lifeAnalysis.breakdown.finalExpenseNeed,
-      key: "finalExpenseNeed"
-    },
-    {
-      label: "Charitable Legacy",
-      formula: `$${financialDetails.charitableDonations.toLocaleString()} × ${coverageFactors.charitableMultiplier[0]}`,
-      value: lifeAnalysis.breakdown.charitableNeed,
-      key: "charitableNeed"
-    },
-    {
-      label: "Estate Taxes",
-      formula: `$${financialDetails.estateTaxes.toLocaleString()}`,
-      value: lifeAnalysis.breakdown.estateTaxNeed,
-      key: "estateTaxNeed"
-    }
-  ];
-
-  return (
-    <div className="space-y-4">
-      {mathFormulas.map((item, index) => (
-        <div key={index} className="p-4 bg-gray-50 rounded-lg">
-          <div className="flex justify-between items-start mb-2">
-            <div className="flex-1">
-              <h4 className="font-medium text-gray-900">{item.label}</h4>
-              <p className="text-sm text-gray-600 mt-1">{item.formula}</p>
-            </div>
-            <div className="text-right">
-              {editingMode ? (
-                <Input
-                  type="text"
-                  value={localBreakdown[item.key as keyof typeof localBreakdown]?.toLocaleString() || '0'}
-                  onChange={(e) => handleValueChange(item.key, e.target.value)}
-                  className="w-28 text-right"
-                />
-              ) : (
-                <p className="text-lg font-bold text-blue-600">
-                  ${localBreakdown[item.key as keyof typeof localBreakdown]?.toLocaleString() || '0'}
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      ))}
-
-      {/* Total */}
-      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <div className="flex justify-between items-center">
-          <h4 className="font-bold text-blue-900">Total Life Insurance Need</h4>
-          <p className="text-xl font-bold text-blue-600">
-            ${Object.values(localBreakdown).reduce((sum, val) => sum + (val || 0), 0).toLocaleString()}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-};
-
 export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialogProps) => {
   const [financialDetails, setFinancialDetails] = useState({
     grossAnnualIncome: 80000,
@@ -178,6 +71,12 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     charitableMultiplier: [5],
   });
 
+  const [currentCoverage, setCurrentCoverage] = useState({
+    life: [320000],
+    critical: [50000],
+    disability: [3000],
+  });
+
   const [lifeAnalysis, setLifeAnalysis] = useState({
     totalNeed: 750000,
     breakdown: {
@@ -195,7 +94,13 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     setLifeAnalysis(prev => ({ ...prev, breakdown: newBreakdown }));
   };
 
-  const totalNeed = Object.values(lifeAnalysis.breakdown).reduce((sum: number, val: number) => sum + (val || 0), 0);
+  // Calculate insurance needs
+  const criticalNeed = 150000;
+  const disabilityNeed = 4500;
+  const lifeGap = Math.max(0, lifeAnalysis.totalNeed - currentCoverage.life[0]);
+  const criticalGap = Math.max(0, criticalNeed - currentCoverage.critical[0]);
+  const disabilityGap = Math.max(0, disabilityNeed - currentCoverage.disability[0]);
+  const disabilityReplacementRate = (currentCoverage.disability[0] / financialDetails.netAnnualIncome) * 12 * 100;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -204,19 +109,32 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
           <DialogTitle>Insurance Details</DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="coverage" className="w-full">
+        <Tabs defaultValue="calculator" className="w-full">
           <TabsList>
+            <TabsTrigger value="calculator">Life Insurance Calculator</TabsTrigger>
             <TabsTrigger value="coverage">Coverage Analysis</TabsTrigger>
             <TabsTrigger value="details">Financial Details</TabsTrigger>
             <TabsTrigger value="factors">Coverage Factors</TabsTrigger>
           </TabsList>
 
+          <TabsContent value="calculator" className="space-y-6">
+            <LifeInsuranceCalculator />
+          </TabsContent>
+
           <TabsContent value="coverage" className="space-y-6">
             <CoverageAnalysisTab 
+              currentCoverage={currentCoverage}
+              setCurrentCoverage={setCurrentCoverage}
+              lifeAnalysis={lifeAnalysis}
+              criticalNeed={criticalNeed}
+              disabilityNeed={disabilityNeed}
+              lifeGap={lifeGap}
+              criticalGap={criticalGap}
+              disabilityGap={disabilityGap}
+              disabilityReplacementRate={disabilityReplacementRate}
+              onLifeBreakdownChange={handleBreakdownChange}
               financialDetails={financialDetails}
               coverageFactors={coverageFactors}
-              lifeAnalysis={lifeAnalysis}
-              onBreakdownChange={handleBreakdownChange}
             />
           </TabsContent>
 
