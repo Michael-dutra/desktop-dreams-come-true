@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Shield } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -28,6 +27,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     yearsToRetirement: 25,
     inflationRate: 3,
     investmentReturn: 7,
+    incomeReplacementYears: 10,
   });
 
   // Income multiple sliders for different insurance types
@@ -63,10 +63,11 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
   // Calculate comprehensive insurance needs
   const calculateLifeInsuranceNeed = () => {
     const { grossAnnualIncome, mortgageBalance, otherDebts, childrenEducationCost, 
-            charitableDonations, finalExpenses, estateTaxes, emergencyFundMonths, netAnnualIncome } = financialDetails;
+            charitableDonations, finalExpenses, estateTaxes, emergencyFundMonths, 
+            netAnnualIncome, incomeReplacementYears } = financialDetails;
     
-    // Income replacement need
-    const incomeReplacement = grossAnnualIncome * incomeMultiples.lifeInsurance[0];
+    // Income replacement need - now using the editable years
+    const incomeReplacement = grossAnnualIncome * incomeReplacementYears;
     
     // Debt coverage need  
     const debtCoverage = (mortgageBalance + otherDebts) * (coverageFactors.debtCoverage[0] / 100);
