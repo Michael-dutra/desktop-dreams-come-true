@@ -120,6 +120,16 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
   const totalExpenses = expensesData.reduce((sum, item) => sum + item.amount, 0);
   const netCashFlow = totalIncome - totalExpenses;
 
+  // Debt-to-Income Ratio Calculation
+  const monthlyDebtPayments = 3500; // Mortgage + car + other debt payments
+  const monthlyIncome = totalIncome;
+  const debtToIncomeRatio = (monthlyDebtPayments / monthlyIncome) * 100;
+  
+  const debtToIncomeData = [
+    { name: "Debt Payments", value: debtToIncomeRatio, color: "#ef4444" },
+    { name: "Available Income", value: 100 - debtToIncomeRatio, color: "#10b981" }
+  ];
+
   const incomeColors = ["#10b981", "#3b82f6", "#8b5cf6", "#f59e0b"];
   const expenseColors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#06b6d4", "#8b5cf6", "#ec4899", "#6366f1", "#f59e0b", "#10b981", "#64748b"];
 
@@ -135,7 +145,7 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
 
         <div className="space-y-6">
           {/* Summary Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
               <CardContent className="p-4">
                 <div className="flex items-center justify-between">
@@ -173,7 +183,96 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardContent className="p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground">Debt-to-Income</p>
+                    <p className="text-2xl font-bold text-green-600">{debtToIncomeRatio.toFixed(1)}%</p>
+                    <p className="text-xs text-green-600">Excellent</p>
+                  </div>
+                  <TrendingUp className="h-8 w-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
+
+          {/* Debt-to-Income Ratio Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="h-5 w-5" />
+                Debt-to-Income Ratio Analysis
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-2">Excellent Debt Management</h4>
+                    <p className="text-sm text-green-700 mb-3">
+                      Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% is excellent. Financial experts recommend keeping this ratio below 36%.
+                    </p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Monthly Debt Payments:</span>
+                        <span className="font-medium">${monthlyDebtPayments.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Monthly Income:</span>
+                        <span className="font-medium">${monthlyIncome.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold">Ratio:</span>
+                        <span className="font-bold text-green-600">{debtToIncomeRatio.toFixed(1)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Debt-to-Income Benchmarks:</h4>
+                    <div className="space-y-1 text-sm">
+                      <div className="flex justify-between">
+                        <span>Excellent (0-20%):</span>
+                        <span className="text-green-600 font-medium">✓ Your Range</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Good (21-35%):</span>
+                        <span className="text-gray-500">Above your level</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Fair (36-49%):</span>
+                        <span className="text-orange-500">Above your level</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Poor (50%+):</span>
+                        <span className="text-red-500">Well above your level</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <ChartContainer config={{}} className="h-64">
+                  <PieChart>
+                    <Pie
+                      data={debtToIncomeData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value.toFixed(1)}%`}
+                    >
+                      {debtToIncomeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                  </PieChart>
+                </ChartContainer>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* Income Sources */}
           <Card>
@@ -396,6 +495,13 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <p className="font-medium text-green-800">Positive Cash Flow</p>
                   <p className="text-sm text-green-600">You're maintaining a healthy positive cash flow of ${netCashFlow.toLocaleString()}/month.</p>
+                </div>
+
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <p className="font-medium text-green-800">Excellent Debt Management</p>
+                  <p className="text-sm text-green-600">
+                    Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% is excellent and well below the recommended 36% threshold.
+                  </p>
                 </div>
 
                 <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">

@@ -46,6 +46,12 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     disability: recommendedCoverage.disability - currentCoverage.disability
   };
 
+  // Needs vs Current Coverage Data for Pie Chart
+  const needsVsCoverageData = [
+    { name: "Current Coverage", value: currentCoverage.life, color: "#3b82f6" },
+    { name: "Coverage Gap", value: coverageGaps.life, color: "#ef4444" }
+  ];
+
   const lifeInsuranceBreakdown = [
     { category: "Income Replacement", amount: lifeInsuranceNeeds.incomeReplacement, color: "#3b82f6" },
     { category: "Outstanding Debts", amount: lifeInsuranceNeeds.debts, color: "#ef4444" },
@@ -149,6 +155,71 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
               </CardContent>
             </Card>
           </div>
+
+          {/* Life Insurance Needs vs Coverage Overview */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Shield className="h-5 w-5" />
+                Life Insurance: Needs vs Current Coverage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                    <h4 className="font-semibold text-red-900 mb-2">Coverage Gap Analysis</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Current Coverage:</span>
+                        <span className="font-medium">{formatCurrency(currentCoverage.life)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Recommended Need:</span>
+                        <span className="font-medium">{formatCurrency(recommendedCoverage.life)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-semibold text-red-900">Coverage Gap:</span>
+                        <span className="font-bold text-red-600">{formatCurrency(coverageGaps.life)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Coverage Ratio:</span>
+                        <span className="font-medium">{((currentCoverage.life / recommendedCoverage.life) * 100).toFixed(0)}%</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
+                    <p className="text-sm text-orange-800">
+                      <strong>Priority Action Required:</strong> You currently have only {((currentCoverage.life / recommendedCoverage.life) * 100).toFixed(0)}% of your recommended life insurance coverage.
+                    </p>
+                  </div>
+                </div>
+                
+                <ChartContainer config={{}} className="h-64">
+                  <PieChart>
+                    <Pie
+                      data={needsVsCoverageData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${formatCurrency(value)}`}
+                    >
+                      {needsVsCoverageData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <ChartTooltip 
+                      content={<ChartTooltipContent 
+                        formatter={(value) => [formatCurrency(Number(value)), ""]}
+                      />} 
+                    />
+                  </PieChart>
+                </ChartContainer>
+              </div>
+            </CardContent>
+          </Card>
 
           <Tabs defaultValue="life-analysis" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
