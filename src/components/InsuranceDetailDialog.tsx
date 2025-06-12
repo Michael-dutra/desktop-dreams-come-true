@@ -17,29 +17,41 @@ interface InsuranceDetailDialogProps {
 export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialogProps) => {
   // Life Insurance Data
   const lifeInsuranceData = [
-    { category: "Current Coverage", amount: 320000, color: "#3b82f6" },
-    { category: "Recommended Need", amount: 640000, color: "#ef4444" },
-    { category: "Coverage Gap", amount: 320000, color: "#f59e0b" },
+    { category: "Current Coverage", amount: 320000, fill: "#3b82f6" },
+    { category: "Recommended Need", amount: 640000, fill: "#ef4444" },
+    { category: "Coverage Gap", amount: 320000, fill: "#f59e0b" },
   ];
 
   // Critical Illness Data
   const criticalIllnessData = [
-    { category: "Current Coverage", amount: 50000, color: "#10b981" },
-    { category: "Recommended Need", amount: 150000, color: "#ef4444" },
-    { category: "Coverage Gap", amount: 100000, color: "#f59e0b" },
+    { category: "Current Coverage", amount: 50000, fill: "#10b981" },
+    { category: "Recommended Need", amount: 150000, fill: "#ef4444" },
+    { category: "Coverage Gap", amount: 100000, fill: "#f59e0b" },
   ];
 
   // Disability Insurance Data
   const disabilityInsuranceData = [
-    { category: "Current Coverage", amount: 3000, color: "#8b5cf6" },
-    { category: "Recommended Need", amount: 4500, color: "#ef4444" },
-    { category: "Coverage Gap", amount: 1500, color: "#f59e0b" },
+    { category: "Current Coverage", amount: 3000, fill: "#8b5cf6" },
+    { category: "Recommended Need", amount: 4500, fill: "#ef4444" },
+    { category: "Coverage Gap", amount: 1500, fill: "#f59e0b" },
   ];
 
-  const chartConfig = {
-    current: { label: "Current Coverage", color: "#3b82f6" },
-    recommended: { label: "Recommended Need", color: "#ef4444" },
-    gap: { label: "Coverage Gap", color: "#f59e0b" },
+  const lifeChartConfig = {
+    amount: {
+      label: "Amount",
+    },
+  };
+
+  const criticalChartConfig = {
+    amount: {
+      label: "Amount",
+    },
+  };
+
+  const disabilityChartConfig = {
+    amount: {
+      label: "Amount",
+    },
   };
 
   return (
@@ -119,10 +131,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                   </div>
                 </div>
                 
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={lifeInsuranceData} layout="horizontal">
+                <ChartContainer config={lifeChartConfig} className="h-64">
+                  <BarChart data={lifeInsuranceData} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={100} />
+                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={120} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="amount" radius={[0, 4, 4, 0]} />
                   </BarChart>
@@ -164,10 +176,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                   </div>
                 </div>
                 
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={criticalIllnessData} layout="horizontal">
+                <ChartContainer config={criticalChartConfig} className="h-64">
+                  <BarChart data={criticalIllnessData} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={100} />
+                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={120} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="amount" radius={[0, 4, 4, 0]} />
                   </BarChart>
@@ -209,10 +221,10 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                   </div>
                 </div>
                 
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={disabilityInsuranceData} layout="horizontal">
+                <ChartContainer config={disabilityChartConfig} className="h-64">
+                  <BarChart data={disabilityInsuranceData} layout="horizontal" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
                     <XAxis type="number" tick={{ fontSize: 10 }} />
-                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={100} />
+                    <YAxis dataKey="category" type="category" tick={{ fontSize: 9 }} width={120} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="amount" radius={[0, 4, 4, 0]} />
                   </BarChart>
