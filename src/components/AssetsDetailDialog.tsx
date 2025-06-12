@@ -212,7 +212,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     );
   };
 
-  // Growth Visualization Chart Component - Updated with subtle colors and smooth animations
+  // Growth Visualization Chart Component - Fixed to only animate lines
   const GrowthChart = ({ 
     currentValue, 
     futureValue, 
@@ -315,8 +315,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, fill: 'hsl(var(--destructive))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                animationDuration={800}
-                animationEasing="ease-out"
+                animationDuration={0}
+                isAnimationActive={false}
               />
               
               {/* Future value projection line (growing green line) */}
@@ -327,7 +327,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 strokeWidth={2}
                 dot={false}
                 activeDot={{ r: 4, fill: '#22c55e', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                animationDuration={1000}
+                animationDuration={500}
                 animationEasing="ease-out"
               />
             </LineChart>
@@ -352,7 +352,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-3xl font-bold">Assets Portfolio Details & Future Value Projections</DialogTitle>
+          <DialogTitle className="text-3xl font-bold">Assets</DialogTitle>
         </DialogHeader>
 
         {/* Portfolio Summary & Key Metrics */}
