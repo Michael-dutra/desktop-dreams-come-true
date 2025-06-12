@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -41,6 +42,59 @@ interface BusinessInsurance {
   insuredAmount?: number;
 }
 
+interface BusinessRegistration {
+  corporationNumber: string;
+  businessNumber: string;
+  taxYearEnd: string;
+  nextTaxReturnDue: string;
+}
+
+interface TaxAccount {
+  id: string;
+  name: string;
+  amount: string;
+  description: string;
+}
+
+interface Shareholder {
+  id: string;
+  name: string;
+  shareClass: string;
+  shares: number;
+  percentage: number;
+}
+
+interface ShareClass {
+  id: string;
+  name: string;
+  description: string;
+  outstanding: number;
+  votingRights: boolean;
+  dividendRights: string;
+}
+
+interface CorporateEntity {
+  id: string;
+  name: string;
+  type: string;
+  status: string;
+  ownership: string;
+}
+
+interface ImportantDate {
+  id: string;
+  name: string;
+  date: string;
+  type: string;
+}
+
+interface TaxOpportunity {
+  id: string;
+  title: string;
+  description: string;
+  type: string;
+}
+
 const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -82,6 +136,68 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     policyNumber: "",
     insuredAmount: 0
   });
+
+  // Business Registration State
+  const [businessRegistration, setBusinessRegistration] = useState<BusinessRegistration>({
+    corporationNumber: "123456789",
+    businessNumber: "987654321 RC0001",
+    taxYearEnd: "December 31",
+    nextTaxReturnDue: "June 30, 2025"
+  });
+
+  const [isEditingRegistration, setIsEditingRegistration] = useState(false);
+
+  // Tax Accounts State
+  const [taxAccounts, setTaxAccounts] = useState<TaxAccount[]>([
+    { id: "1", name: "Capital Dividend Account", amount: "$45,000", description: "Available for tax-free distribution" },
+    { id: "2", name: "Eligible LCGE Remaining", amount: "$971,190", description: "Lifetime Capital Gains Exemption" },
+    { id: "3", name: "LCGE Used to Date", amount: "$0", description: "" },
+  ]);
+
+  const [isEditingTaxAccounts, setIsEditingTaxAccounts] = useState(false);
+
+  // Shareholders State
+  const [shareholders, setShareholders] = useState<Shareholder[]>([
+    { id: "1", name: "John Smith", shareClass: "Class A Common", shares: 100, percentage: 60 },
+    { id: "2", name: "Jane Smith", shareClass: "Class A Common", shares: 67, percentage: 40 },
+  ]);
+
+  const [isEditingShareholders, setIsEditingShareholders] = useState(false);
+
+  // Share Classes State
+  const [shareClasses, setShareClasses] = useState<ShareClass[]>([
+    { id: "1", name: "Class A Common", description: "Voting common shares", outstanding: 167, votingRights: true, dividendRights: "Yes" },
+    { id: "2", name: "Class B Preferred", description: "Non-voting preferred shares", outstanding: 0, votingRights: false, dividendRights: "Fixed 5%" },
+  ]);
+
+  const [isEditingShareClasses, setIsEditingShareClasses] = useState(false);
+
+  // Corporate Structure State
+  const [corporateEntities, setCorporateEntities] = useState<CorporateEntity[]>([
+    { id: "1", name: "Smith Holdings Inc.", type: "Investment holding", status: "Active", ownership: "100%" },
+    { id: "2", name: "Family Trust Co.", type: "Estate planning", status: "Trust", ownership: "75%" },
+  ]);
+
+  const [isEditingCorporate, setIsEditingCorporate] = useState(false);
+
+  // Important Dates State
+  const [importantDates, setImportantDates] = useState<ImportantDate[]>([
+    { id: "1", name: "Corporate Tax Return", date: "June 30, 2025", type: "tax" },
+    { id: "2", name: "Annual Return", date: "March 31, 2025", type: "filing" },
+    { id: "3", name: "Payroll Remittance", date: "15th of each month", type: "payroll" },
+    { id: "4", name: "GST/HST Filing", date: "Quarterly", type: "tax" },
+  ]);
+
+  const [isEditingDates, setIsEditingDates] = useState(false);
+
+  // Tax Opportunities State
+  const [taxOpportunities, setTaxOpportunities] = useState<TaxOpportunity[]>([
+    { id: "1", title: "Capital Dividend Distribution", description: "$45,000 available for tax-free distribution", type: "green" },
+    { id: "2", title: "LCGE Planning", description: "$971,190 lifetime exemption available", type: "blue" },
+    { id: "3", title: "Income Splitting", description: "Consider family trust distributions", type: "purple" },
+  ]);
+
+  const [isEditingOpportunities, setIsEditingOpportunities] = useState(false);
 
   // Revenue Stream Functions
   const addRevenueStream = () => {
@@ -169,9 +285,8 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="financials">Financials</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
             <TabsTrigger value="important">Important</TabsTrigger>
           </TabsList>
@@ -322,9 +437,8 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="financials" className="space-y-6">
+            {/* Financials Section - Now part of Overview */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -631,89 +745,205 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Business Registration Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <FileText className="h-5 w-5" />
-                  <span>Business Registration</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5" />
+                    <span>Business Registration</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingRegistration(!isEditingRegistration)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <p className="text-sm text-muted-foreground">Corporation Number</p>
-                  <p className="text-lg font-bold">123456789</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Business Number</p>
-                  <p className="text-lg font-bold">987654321 RC0001</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Tax Year End</p>
-                  <p className="text-lg font-bold">December 31</p>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Next Tax Return Due</p>
-                  <p className="text-lg font-bold text-orange-600">June 30, 2025</p>
-                </div>
+              <CardContent>
+                {isEditingRegistration ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <Label className="text-sm font-medium">Corporation Number</Label>
+                      <Input
+                        value={businessRegistration.corporationNumber}
+                        onChange={(e) => setBusinessRegistration({...businessRegistration, corporationNumber: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Business Number</Label>
+                      <Input
+                        value={businessRegistration.businessNumber}
+                        onChange={(e) => setBusinessRegistration({...businessRegistration, businessNumber: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Tax Year End</Label>
+                      <Input
+                        value={businessRegistration.taxYearEnd}
+                        onChange={(e) => setBusinessRegistration({...businessRegistration, taxYearEnd: e.target.value})}
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Next Tax Return Due</Label>
+                      <Input
+                        value={businessRegistration.nextTaxReturnDue}
+                        onChange={(e) => setBusinessRegistration({...businessRegistration, nextTaxReturnDue: e.target.value})}
+                      />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Corporation Number</p>
+                      <p className="text-lg font-bold">{businessRegistration.corporationNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Business Number</p>
+                      <p className="text-lg font-bold">{businessRegistration.businessNumber}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Tax Year End</p>
+                      <p className="text-lg font-bold">{businessRegistration.taxYearEnd}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Next Tax Return Due</p>
+                      <p className="text-lg font-bold text-orange-600">{businessRegistration.nextTaxReturnDue}</p>
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Tax Planning Accounts Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <DollarSign className="h-5 w-5" />
-                  <span>Tax Planning Accounts</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <DollarSign className="h-5 w-5" />
+                    <span>Tax Planning Accounts</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingTaxAccounts(!isEditingTaxAccounts)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Capital Dividend Account</p>
-                    <p className="text-2xl font-bold text-green-600">$45,000</p>
-                    <p className="text-xs text-green-600">Available for tax-free distribution</p>
+                {isEditingTaxAccounts ? (
+                  <div className="space-y-4">
+                    {taxAccounts.map((account) => (
+                      <div key={account.id} className="grid grid-cols-3 gap-4 p-4 border rounded-lg">
+                        <div>
+                          <Label className="text-sm font-medium">Account Name</Label>
+                          <Input
+                            value={account.name}
+                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
+                              a.id === account.id ? {...a, name: e.target.value} : a
+                            ))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Amount</Label>
+                          <Input
+                            value={account.amount}
+                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
+                              a.id === account.id ? {...a, amount: e.target.value} : a
+                            ))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Description</Label>
+                          <Input
+                            value={account.description}
+                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
+                              a.id === account.id ? {...a, description: e.target.value} : a
+                            ))}
+                          />
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-muted-foreground">Eligible LCGE Remaining</p>
-                    <p className="text-2xl font-bold text-blue-600">$971,190</p>
-                    <p className="text-xs text-blue-600">Lifetime Capital Gains Exemption</p>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {taxAccounts.map((account) => (
+                      <div key={account.id} className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                        <p className="text-sm text-muted-foreground">{account.name}</p>
+                        <p className="text-2xl font-bold text-green-600">{account.amount}</p>
+                        <p className="text-xs text-green-600">{account.description}</p>
+                      </div>
+                    ))}
                   </div>
-                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                    <p className="text-sm text-muted-foreground">LCGE Used to Date</p>
-                    <p className="text-2xl font-bold">$0</p>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Shareholder Structure Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <span>Shareholder Structure</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Shareholder Structure</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingShareholders(!isEditingShareholders)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">John Smith</h4>
-                      <p className="text-sm text-muted-foreground">Class A Common</p>
+                  {shareholders.map((shareholder) => (
+                    <div key={shareholder.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {isEditingShareholders ? (
+                        <div className="grid grid-cols-4 gap-4 w-full">
+                          <Input
+                            value={shareholder.name}
+                            onChange={(e) => setShareholders(shareholders.map(s => 
+                              s.id === shareholder.id ? {...s, name: e.target.value} : s
+                            ))}
+                          />
+                          <Input
+                            value={shareholder.shareClass}
+                            onChange={(e) => setShareholders(shareholders.map(s => 
+                              s.id === shareholder.id ? {...s, shareClass: e.target.value} : s
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={shareholder.shares}
+                            onChange={(e) => setShareholders(shareholders.map(s => 
+                              s.id === shareholder.id ? {...s, shares: Number(e.target.value)} : s
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={shareholder.percentage}
+                            onChange={(e) => setShareholders(shareholders.map(s => 
+                              s.id === shareholder.id ? {...s, percentage: Number(e.target.value)} : s
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-medium">{shareholder.name}</h4>
+                            <p className="text-sm text-muted-foreground">{shareholder.shareClass}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">{shareholder.shares} shares</p>
+                            <p className="text-sm text-muted-foreground">{shareholder.percentage}%</p>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <p className="font-bold">100 shares</p>
-                      <p className="text-sm text-muted-foreground">60%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Jane Smith</h4>
-                      <p className="text-sm text-muted-foreground">Class A Common</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold">67 shares</p>
-                      <p className="text-sm text-muted-foreground">40%</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -721,49 +951,81 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Share Classes Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Share2 className="h-5 w-5" />
-                  <span>Share Classes</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Share2 className="h-5 w-5" />
+                    <span>Share Classes</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingShareClasses(!isEditingShareClasses)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium mb-2">Class A Common</h4>
-                    <p className="text-sm text-muted-foreground mb-2">Voting common shares</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Outstanding</p>
-                        <p className="font-bold">167</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Voting Rights</p>
-                        <Badge variant="secondary">Yes</Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Dividend Rights</p>
-                        <Badge variant="secondary">Yes</Badge>
-                      </div>
+                  {shareClasses.map((shareClass) => (
+                    <div key={shareClass.id} className="p-4 border rounded-lg">
+                      {isEditingShareClasses ? (
+                        <div className="space-y-4">
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium">Class Name</Label>
+                              <Input
+                                value={shareClass.name}
+                                onChange={(e) => setShareClasses(shareClasses.map(sc => 
+                                  sc.id === shareClass.id ? {...sc, name: e.target.value} : sc
+                                ))}
+                              />
+                            </div>
+                            <div>
+                              <Label className="text-sm font-medium">Outstanding Shares</Label>
+                              <Input
+                                type="number"
+                                value={shareClass.outstanding}
+                                onChange={(e) => setShareClasses(shareClasses.map(sc => 
+                                  sc.id === shareClass.id ? {...sc, outstanding: Number(e.target.value)} : sc
+                                ))}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label className="text-sm font-medium">Description</Label>
+                            <Input
+                              value={shareClass.description}
+                              onChange={(e) => setShareClasses(shareClasses.map(sc => 
+                                sc.id === shareClass.id ? {...sc, description: e.target.value} : sc
+                              ))}
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <h4 className="font-medium mb-2">{shareClass.name}</h4>
+                          <p className="text-sm text-muted-foreground mb-2">{shareClass.description}</p>
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <div>
+                              <p className="text-xs text-muted-foreground">Outstanding</p>
+                              <p className="font-bold">{shareClass.outstanding}</p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Voting Rights</p>
+                              <Badge variant={shareClass.votingRights ? "secondary" : "outline"}>
+                                {shareClass.votingRights ? "Yes" : "No"}
+                              </Badge>
+                            </div>
+                            <div>
+                              <p className="text-xs text-muted-foreground">Dividend Rights</p>
+                              <Badge variant="secondary">{shareClass.dividendRights}</Badge>
+                            </div>
+                          </div>
+                        </>
+                      )}
                     </div>
-                  </div>
-                  <div className="p-4 border rounded-lg">
-                    <h4 className="font-medium mb-2">Class B Preferred</h4>
-                    <p className="text-sm text-muted-foreground mb-2">Non-voting preferred shares</p>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Outstanding</p>
-                        <p className="font-bold">0</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Voting Rights</p>
-                        <Badge variant="outline">No</Badge>
-                      </div>
-                      <div>
-                        <p className="text-xs text-muted-foreground">Dividend Rights</p>
-                        <Badge variant="secondary">Fixed 5%</Badge>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -771,33 +1033,65 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Corporate Structure Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Building2 className="h-5 w-5" />
-                  <span>Corporate Structure</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Building2 className="h-5 w-5" />
+                    <span>Corporate Structure</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingCorporate(!isEditingCorporate)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Smith Holdings Inc.</h4>
-                      <p className="text-sm text-muted-foreground">Investment holding</p>
+                  {corporateEntities.map((entity) => (
+                    <div key={entity.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {isEditingCorporate ? (
+                        <div className="grid grid-cols-4 gap-4 w-full">
+                          <Input
+                            value={entity.name}
+                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
+                              ce.id === entity.id ? {...ce, name: e.target.value} : ce
+                            ))}
+                          />
+                          <Input
+                            value={entity.type}
+                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
+                              ce.id === entity.id ? {...ce, type: e.target.value} : ce
+                            ))}
+                          />
+                          <Input
+                            value={entity.status}
+                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
+                              ce.id === entity.id ? {...ce, status: e.target.value} : ce
+                            ))}
+                          />
+                          <Input
+                            value={entity.ownership}
+                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
+                              ce.id === entity.id ? {...ce, ownership: e.target.value} : ce
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-medium">{entity.name}</h4>
+                            <p className="text-sm text-muted-foreground">{entity.type}</p>
+                          </div>
+                          <div className="text-right">
+                            <Badge variant={entity.status === "Active" ? "secondary" : "outline"}>{entity.status}</Badge>
+                            <p className="text-sm text-muted-foreground mt-1">Ownership: {entity.ownership}</p>
+                          </div>
+                        </>
+                      )}
                     </div>
-                    <div className="text-right">
-                      <Badge variant="secondary">Active</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">Ownership: 100%</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between p-4 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">Family Trust Co.</h4>
-                      <p className="text-sm text-muted-foreground">Estate planning</p>
-                    </div>
-                    <div className="text-right">
-                      <Badge variant="outline">Trust</Badge>
-                      <p className="text-sm text-muted-foreground mt-1">Ownership: 75%</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -805,29 +1099,51 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Important Dates Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Calendar className="h-5 w-5" />
-                  <span>Important Dates</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>Important Dates</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingDates(!isEditingDates)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-3 border rounded-lg">
-                    <p className="font-medium">Corporate Tax Return</p>
-                    <p className="text-sm text-orange-600">June 30, 2025</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <p className="font-medium">Annual Return</p>
-                    <p className="text-sm text-blue-600">March 31, 2025</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <p className="font-medium">Payroll Remittance</p>
-                    <p className="text-sm text-green-600">15th of each month</p>
-                  </div>
-                  <div className="p-3 border rounded-lg">
-                    <p className="font-medium">GST/HST Filing</p>
-                    <p className="text-sm text-purple-600">Quarterly</p>
-                  </div>
+                  {importantDates.map((date) => (
+                    <div key={date.id} className="p-3 border rounded-lg">
+                      {isEditingDates ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={date.name}
+                            onChange={(e) => setImportantDates(importantDates.map(d => 
+                              d.id === date.id ? {...d, name: e.target.value} : d
+                            ))}
+                          />
+                          <Input
+                            value={date.date}
+                            onChange={(e) => setImportantDates(importantDates.map(d => 
+                              d.id === date.id ? {...d, date: e.target.value} : d
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <p className="font-medium">{date.name}</p>
+                          <p className={`text-sm ${
+                            date.type === 'tax' ? 'text-orange-600' : 
+                            date.type === 'filing' ? 'text-blue-600' : 
+                            date.type === 'payroll' ? 'text-green-600' : 'text-purple-600'
+                          }`}>{date.date}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -835,25 +1151,59 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Tax Planning Opportunities Section */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Target className="h-5 w-5" />
-                  <span>Tax Planning Opportunities</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-5 w-5" />
+                    <span>Tax Planning Opportunities</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingOpportunities(!isEditingOpportunities)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                    <h4 className="font-medium text-green-800">Capital Dividend Distribution</h4>
-                    <p className="text-sm text-green-600">$45,000 available for tax-free distribution</p>
-                  </div>
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <h4 className="font-medium text-blue-800">LCGE Planning</h4>
-                    <p className="text-sm text-blue-600">$971,190 lifetime exemption available</p>
-                  </div>
-                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                    <h4 className="font-medium text-purple-800">Income Splitting</h4>
-                    <p className="text-sm text-purple-600">Consider family trust distributions</p>
-                  </div>
+                  {taxOpportunities.map((opportunity) => (
+                    <div key={opportunity.id} className={`p-4 ${
+                      opportunity.type === 'green' ? 'bg-green-50 border border-green-200' :
+                      opportunity.type === 'blue' ? 'bg-blue-50 border border-blue-200' :
+                      'bg-purple-50 border border-purple-200'
+                    } rounded-lg`}>
+                      {isEditingOpportunities ? (
+                        <div className="space-y-2">
+                          <Input
+                            value={opportunity.title}
+                            onChange={(e) => setTaxOpportunities(taxOpportunities.map(to => 
+                              to.id === opportunity.id ? {...to, title: e.target.value} : to
+                            ))}
+                          />
+                          <Input
+                            value={opportunity.description}
+                            onChange={(e) => setTaxOpportunities(taxOpportunities.map(to => 
+                              to.id === opportunity.id ? {...to, description: e.target.value} : to
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <h4 className={`font-medium ${
+                            opportunity.type === 'green' ? 'text-green-800' :
+                            opportunity.type === 'blue' ? 'text-blue-800' :
+                            'text-purple-800'
+                          }`}>{opportunity.title}</h4>
+                          <p className={`text-sm ${
+                            opportunity.type === 'green' ? 'text-green-600' :
+                            opportunity.type === 'blue' ? 'text-blue-600' :
+                            'text-purple-600'
+                          }`}>{opportunity.description}</p>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
