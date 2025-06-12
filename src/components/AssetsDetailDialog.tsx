@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -153,7 +152,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       return;
     }
 
-    const [category, field] = fieldId.split('.');
+    const [category, field] = fieldId.split(".");
     
     switch (category) {
       case 'realEstate':
@@ -350,6 +349,33 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       </div>
     );
   };
+
+  const aiGuidanceTips = [
+    {
+      icon: TrendingUp,
+      title: "Diversification Opportunity",
+      tip: "Your portfolio is heavily weighted in real estate (84%). Consider increasing liquid investments to reduce concentration risk.",
+      color: "text-orange-600",
+      bgColor: "bg-orange-50",
+      borderColor: "border-orange-200"
+    },
+    {
+      icon: Brain,
+      title: "Tax Optimization",
+      tip: "Maximize your TFSA contributions first ($38K current vs $88K+ limit), then focus on RRSP to reduce taxable income.",
+      color: "text-blue-600", 
+      bgColor: "bg-blue-50",
+      borderColor: "border-blue-200"
+    },
+    {
+      icon: Lightbulb,
+      title: "Emergency Fund Strategy",
+      tip: "Consider keeping 3-6 months of expenses in high-interest savings. Your current liquid assets may not provide adequate emergency coverage.",
+      color: "text-green-600",
+      bgColor: "bg-green-50", 
+      borderColor: "border-green-200"
+    }
+  ];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -808,6 +834,31 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </CardContent>
           </Card>
         </div>
+
+        {/* AI Guidance Tips at the bottom */}
+        <Card className="mt-6">
+          <CardHeader>
+            <CardTitle className="text-xl flex items-center gap-2">
+              <Brain className="w-5 h-5" />
+              AI Guidance Tips
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {aiGuidanceTips.map((tip, index) => (
+                <div key={index} className={`p-3 rounded-lg border ${tip.bgColor} ${tip.borderColor}`}>
+                  <div className="flex items-start gap-3">
+                    <tip.icon className={`w-4 h-4 mt-0.5 ${tip.color}`} />
+                    <div>
+                      <h5 className={`font-medium ${tip.color} mb-1`}>{tip.title}</h5>
+                      <p className="text-sm text-gray-700">{tip.tip}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
       </DialogContent>
     </Dialog>
   );
