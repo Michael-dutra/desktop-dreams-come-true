@@ -84,8 +84,8 @@ export const IncomeTaxCalculator = () => {
     const afterTaxIncome = income - totalTax;
     const effectiveRate = (totalTax / income) * 100;
 
-    // For dividends, apply different treatment (simplified)
-    if (incomeType === "dividends") {
+    // For eligible dividends, apply different treatment (simplified)
+    if (incomeType === "eligible-dividends") {
       const grossedUpDividends = income * 1.38; // Gross-up factor
       const dividendTaxCredit = grossedUpDividends * 0.25; // Simplified credit
       const adjustedTax = Math.max(0, totalTax - dividendTaxCredit);
@@ -96,6 +96,21 @@ export const IncomeTaxCalculator = () => {
         effectiveRate: (adjustedTax / income) * 100,
         federalTax: federalTax * 0.75, // Approximation after credit
         provincialTax: provincialTax * 0.75
+      };
+    }
+
+    // For ineligible dividends, apply different treatment (simplified)
+    if (incomeType === "ineligible-dividends") {
+      const grossedUpDividends = income * 1.15; // Lower gross-up factor for ineligible
+      const dividendTaxCredit = grossedUpDividends * 0.11; // Lower credit
+      const adjustedTax = Math.max(0, totalTax - dividendTaxCredit);
+      
+      return {
+        totalTax: adjustedTax,
+        afterTaxIncome: income - adjustedTax,
+        effectiveRate: (adjustedTax / income) * 100,
+        federalTax: federalTax * 0.9, // Smaller credit adjustment
+        provincialTax: provincialTax * 0.9
       };
     }
 
@@ -156,7 +171,8 @@ export const IncomeTaxCalculator = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="salary">Salary/Employment</SelectItem>
-                  <SelectItem value="dividends">Eligible Dividends</SelectItem>
+                  <SelectItem value="eligible-dividends">Eligible Dividends</SelectItem>
+                  <SelectItem value="ineligible-dividends">Ineligible Dividends</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -221,7 +237,7 @@ export const IncomeTaxCalculator = () => {
                 <span className="text-sm">Provincial Tax</span>
                 <span className="font-semibold">${taxResults.provincialTax.toLocaleString(undefined, { maximumFractionDigits: 0 })}</span>
               </div>
-              {incomeType === "dividends" && (
+              {(incomeType === "eligible-dividends" || incomeType === "ineligible-dividends") && (
                 <div className="text-xs text-muted-foreground p-2 bg-blue-50 rounded">
                   * Dividend calculations include gross-up and tax credit approximations
                 </div>
