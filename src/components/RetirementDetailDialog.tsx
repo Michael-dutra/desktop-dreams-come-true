@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area, AreaChart } from "recharts";
-import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock } from "lucide-react";
+import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock, Plus, Minus } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 interface RetirementDetailDialogProps {
@@ -18,6 +18,8 @@ interface RetirementDetailDialogProps {
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [netMonthlyIncome, setNetMonthlyIncome] = useState([4500]);
+  const [cppAdjustment, setCppAdjustment] = useState(0); // Years adjustment from normal retirement
+  const [oasAdjustment, setOasAdjustment] = useState(0); // Years adjustment from normal retirement
 
   // Current data
   const currentAge = 35;
@@ -40,10 +42,13 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const inflationRate = 0.025;
   const investmentReturn = 0.07;
 
-  // CPP/OAS adjustments for early/late retirement
-  const cppAdjustmentFactor = retirementAge[0] < 65 ? 0.6 + (retirementAge[0] - 60) * 0.08 : 
-                             retirementAge[0] > 65 ? Math.min(1.42, 1 + (retirementAge[0] - 65) * 0.084) : 1;
-  const oasAdjustmentFactor = retirementAge[0] < 65 ? 0 : retirementAge[0] > 65 ? 1 + (retirementAge[0] - 65) * 0.06 : 1;
+  // CPP/OAS adjustments for early/late retirement AND manual adjustments
+  const actualCppAge = retirementAge[0] + cppAdjustment;
+  const actualOasAge = Math.max(65, retirementAge[0] + oasAdjustment); // OAS can't start before 65
+
+  const cppAdjustmentFactor = actualCppAge < 65 ? 0.6 + (actualCppAge - 60) * 0.08 : 
+                             actualCppAge > 65 ? Math.min(1.42, 1 + (actualCppAge - 65) * 0.084) : 1;
+  const oasAdjustmentFactor = actualOasAge < 65 ? 0 : actualOasAge > 65 ? 1 + (actualOasAge - 65) * 0.06 : 1;
 
   const adjustedCPP = projectedCPP * cppAdjustmentFactor;
   const adjustedOAS = projectedOAS * oasAdjustmentFactor;
@@ -629,14 +634,58 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         <span className="text-sm font-medium">${projectedCPP.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-muted-foreground">Retirement Age Factor</span>
+                        <span className="text-sm text-muted-foreground">Actual Start Age</span>
+                        <span className="text-sm font-medium">{actualCppAge}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Adjustment Factor</span>
                         <span className="text-sm font-medium">{(cppAdjustmentFactor * 100).toFixed(1)}%</span>
                       </div>
-                      <div className="flex justify-between font-medium">
+                      <div className="flex justify-between font-medium border-t pt-2">
                         <span className="text-sm">Adjusted CPP</span>
                         <span className="text-sm">${adjustedCPP.toLocaleString()}</span>
                       </div>
                     </div>
+
+                    {/* CPP Timing Adjustment Toggle */}
+                    <div className="mt-4 p-3 bg-blue-50 rounded-lg border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">CPP Timing Adjustment</span>
+                        <span className="text-xs text-muted-foreground">±5 years</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCppAdjustment(Math.max(-5, cppAdjustment - 1))}
+                          disabled={cppAdjustment <= -5}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <div className="text-center min-w-[100px]">
+                          <div className="text-lg font-bold">
+                            {cppAdjustment > 0 ? '+' : ''}{cppAdjustment} years
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Start at {actualCppAge}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setCppAdjustment(Math.min(5, cppAdjustment + 1))}
+                          disabled={cppAdjustment >= 5}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-center text-muted-foreground">
+                        {cppAdjustment < 0 ? 'Early start reduces benefits' : 
+                         cppAdjustment > 0 ? 'Delayed start increases benefits' : 
+                         'Normal retirement timing'}
+                      </div>
+                    </div>
+
                     <div className="text-xs text-muted-foreground">
                       CPP can start as early as 60 (reduced by 0.6% per month) or delayed to 70 (increased by 0.7% per month)
                     </div>
@@ -654,14 +703,58 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         <span className="text-sm font-medium">${projectedOAS.toLocaleString()}</span>
                       </div>
                       <div className="flex justify-between">
+                        <span className="text-sm text-muted-foreground">Actual Start Age</span>
+                        <span className="text-sm font-medium">{actualOasAge}</span>
+                      </div>
+                      <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Deferral Factor</span>
                         <span className="text-sm font-medium">{(oasAdjustmentFactor * 100).toFixed(1)}%</span>
                       </div>
-                      <div className="flex justify-between font-medium">
+                      <div className="flex justify-between font-medium border-t pt-2">
                         <span className="text-sm">Adjusted OAS</span>
                         <span className="text-sm">${adjustedOAS.toLocaleString()}</span>
                       </div>
                     </div>
+
+                    {/* OAS Timing Adjustment Toggle */}
+                    <div className="mt-4 p-3 bg-green-50 rounded-lg border">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-sm font-medium">OAS Timing Adjustment</span>
+                        <span className="text-xs text-muted-foreground">±5 years</span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-3">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOasAdjustment(Math.max(-5, oasAdjustment - 1))}
+                          disabled={oasAdjustment <= -5 || retirementAge[0] + oasAdjustment <= 65}
+                        >
+                          <Minus className="h-3 w-3" />
+                        </Button>
+                        <div className="text-center min-w-[100px]">
+                          <div className="text-lg font-bold">
+                            {oasAdjustment > 0 ? '+' : ''}{oasAdjustment} years
+                          </div>
+                          <div className="text-xs text-muted-foreground">
+                            Start at {actualOasAge}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setOasAdjustment(Math.min(5, oasAdjustment + 1))}
+                          disabled={oasAdjustment >= 5}
+                        >
+                          <Plus className="h-3 w-3" />
+                        </Button>
+                      </div>
+                      <div className="mt-2 text-xs text-center text-muted-foreground">
+                        {actualOasAge === 65 ? 'Normal start at 65' :
+                         actualOasAge > 65 ? 'Delayed start increases benefits' :
+                         'Cannot start before 65'}
+                      </div>
+                    </div>
+
                     <div className="text-xs text-muted-foreground">
                       OAS can be deferred to 70 (increased by 0.6% per month). Not available before 65.
                     </div>
