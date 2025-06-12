@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar } from "lucide-react";
+import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock } from "lucide-react";
 
 interface RetirementDetailDialogProps {
   isOpen: boolean;
@@ -17,7 +16,7 @@ interface RetirementDetailDialogProps {
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [monthlyContribution, setMonthlyContribution] = useState([1000]);
-  const [targetIncome, setTargetIncome] = useState([4000]);
+  const [netMonthlyIncome, setNetMonthlyIncome] = useState([4500]);
 
   // Current data
   const currentAge = 35;
@@ -45,6 +44,15 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const futureContributions = monthlyContribution[0] * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn;
   const totalRetirementSavings = futureCurrentSavings + futureContributions;
 
+  // How long assets will last calculation
+  const governmentBenefits = adjustedCPP + adjustedOAS;
+  const annualIncomeNeed = netMonthlyIncome[0] * 12;
+  const incomeGap = Math.max(0, annualIncomeNeed - governmentBenefits);
+  
+  // Years assets will last (if there's an income gap)
+  const yearsAssetsFunded = incomeGap > 0 ? totalRetirementSavings / incomeGap : yearsInRetirement;
+  const assetsFundedPercentage = Math.min(100, (yearsAssetsFunded / yearsInRetirement) * 100);
+
   // RRIF minimum withdrawal rates by age
   const rrfWithdrawalRates: { [key: number]: number } = {
     65: 0.04, 66: 0.0417, 67: 0.0435, 68: 0.0455, 69: 0.0476,
@@ -54,14 +62,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   };
 
   // Annual retirement income need
-  const annualIncomeNeed = targetIncome[0] * 12;
-  
-  // Retirement income gap
-  const governmentBenefits = adjustedCPP + adjustedOAS;
   const savingsIncome = totalRetirementSavings * 0.04; // 4% withdrawal rule
   const totalProjectedIncome = governmentBenefits + savingsIncome;
-  const incomeGap = Math.max(0, annualIncomeNeed - totalProjectedIncome);
-
+  
   // Required savings to hit retirement goal (PV of annuity)
   const requiredAnnualIncome = incomeGap;
   const discountRate = investmentReturn - inflationRate;
@@ -125,6 +128,96 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Interactive Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Retirement Planning Controls
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-8">
+              {/* Retirement Age Slider */}
+              <div>
+                <label className="text-sm font-medium mb-3 block">Retirement Age: {retirementAge[0]}</label>
+                <Slider
+                  value={retirementAge}
+                  onValueChange={setRetirementAge}
+                  min={55}
+                  max={70}
+                  step={1}
+                  className="mb-2"
+                />
+              </div>
+
+              {/* Net Monthly Income Slider */}
+              <div>
+                <label className="text-sm font-medium mb-3 block">Net Monthly Income Needed: ${netMonthlyIncome[0].toLocaleString()}</label>
+                <Slider
+                  value={netMonthlyIncome}
+                  onValueChange={setNetMonthlyIncome}
+                  min={2000}
+                  max={8000}
+                  step={100}
+                  className="mb-2"
+                />
+              </div>
+
+              {/* Asset Duration Display */}
+              <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
+                <div className="text-center space-y-4">
+                  <div className="flex items-center justify-center gap-2 mb-4">
+                    <Clock className="h-5 w-5 text-purple-600" />
+                    <h3 className="text-lg font-semibold text-purple-900">Asset Funding Duration</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="text-center">
+                      <p className="text-4xl font-bold text-purple-600 mb-1">
+                        {yearsAssetsFunded.toFixed(1)} years
+                      </p>
+                      <p className="text-sm text-purple-700 font-medium">Assets Will Last</p>
+                    </div>
+                    
+                    <div className="text-center">
+                      <p className="text-4xl font-bold text-indigo-600 mb-1">
+                        {assetsFundedPercentage.toFixed(0)}%
+                      </p>
+                      <p className="text-sm text-indigo-700 font-medium">of Retirement Goal</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 p-3 bg-white/60 rounded-lg">
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-600">Years in Retirement:</span>
+                      <span className="font-medium">{yearsInRetirement} years</span>
+                    </div>
+                    <div className="flex justify-between items-center text-sm mt-1">
+                      <span className="text-gray-600">Funding Status:</span>
+                      <span className={`font-medium ${assetsFundedPercentage >= 100 ? 'text-green-600' : assetsFundedPercentage >= 75 ? 'text-yellow-600' : 'text-red-600'}`}>
+                        {assetsFundedPercentage >= 100 ? 'Fully Funded' : 
+                         assetsFundedPercentage >= 75 ? 'Mostly Funded' : 'Underfunded'}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Monthly Contribution Slider */}
+              <div>
+                <label className="text-sm font-medium mb-3 block">Monthly Contribution: ${monthlyContribution[0]}</label>
+                <Slider
+                  value={monthlyContribution}
+                  onValueChange={setMonthlyContribution}
+                  min={0}
+                  max={3000}
+                  step={100}
+                  className="mb-2"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Retirement Summary */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <Card>
@@ -160,53 +253,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </CardContent>
             </Card>
           </div>
-
-          {/* Interactive Controls */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Calculator className="h-5 w-5" />
-                Retirement Planning Assumptions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Retirement Age: {retirementAge[0]}</label>
-                  <Slider
-                    value={retirementAge}
-                    onValueChange={setRetirementAge}
-                    min={55}
-                    max={70}
-                    step={1}
-                    className="mb-2"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Monthly Contribution: ${monthlyContribution[0]}</label>
-                  <Slider
-                    value={monthlyContribution}
-                    onValueChange={setMonthlyContribution}
-                    min={0}
-                    max={3000}
-                    step={100}
-                    className="mb-2"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Target Monthly Income: ${targetIncome[0]}</label>
-                  <Slider
-                    value={targetIncome}
-                    onValueChange={setTargetIncome}
-                    min={2000}
-                    max={8000}
-                    step={100}
-                    className="mb-2"
-                  />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
           <Tabs defaultValue="projections" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4">
