@@ -9,7 +9,6 @@ const ClientInfo = () => {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-foreground mb-2">Client: Michael Smith</h1>
-            <p className="text-muted-foreground">Financial overview and recommendations</p>
           </div>
           
           <div className="flex items-center space-x-8">
