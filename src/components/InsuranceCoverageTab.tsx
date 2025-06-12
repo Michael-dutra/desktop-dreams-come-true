@@ -87,22 +87,6 @@ export const InsuranceCoverageTab = () => {
     setEditingCoverage(coverage);
   };
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const totalCoverage = coverages.reduce((sum, coverage) => {
-    if (coverage.type === "Disability") {
-      return sum + (coverage.monthlyBenefit || 0) * 12; // Annualize monthly benefit
-    }
-    return sum + (coverage.coverageAmount || 0);
-  }, 0);
-
   return (
     <div className="space-y-6">
       {/* Summary Header */}
@@ -116,22 +100,6 @@ export const InsuranceCoverageTab = () => {
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total Policies</p>
-              <p className="text-2xl font-bold">{coverages.length}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Total Coverage Value</p>
-              <p className="text-2xl font-bold text-blue-600">{formatCurrency(totalCoverage)}</p>
-            </div>
-            <div className="text-center">
-              <p className="text-sm text-muted-foreground">Coverage Types</p>
-              <p className="text-2xl font-bold">{new Set(coverages.map(c => c.type)).size}</p>
-            </div>
-          </div>
-        </CardContent>
       </Card>
 
       {/* Coverage Cards Grid */}
