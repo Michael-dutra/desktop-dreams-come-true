@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 interface Liability {
   name: string;
@@ -35,6 +36,7 @@ interface LiabilitiesDetailDialogProps {
 }
 
 export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: LiabilitiesDetailDialogProps) => {
+  const { toast } = useToast();
   // Original liability details
   const [mortgageDetails, setMortgageDetails] = useState({
     id: "mortgage",
@@ -176,6 +178,37 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     }
   };
 
+  const generateLiabilitySummary = (liability: LiabilityDetails) => {
+    const newPayment = liability.monthlyPayment + liability.extraPayment;
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate);
+    const monthsSaved = currentPayoff - newPayoff;
+    const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
+
+    const summary = `${liability.type} Summary:
+    
+Current Balance: $${liability.currentBalance.toLocaleString()}
+Interest Rate: ${liability.interestRate}%
+Monthly Payment: $${liability.monthlyPayment.toLocaleString()}
+${liability.extraPayment > 0 ? `Extra Payment: $${liability.extraPayment.toLocaleString()}` : ''}
+${liability.newRate !== liability.interestRate ? `New Rate: ${liability.newRate}%` : ''}
+
+Payoff Timeline:
+• Current: ${Math.round(currentPayoff)} months
+• Optimized: ${Math.round(newPayoff)} months
+• Time Saved: ${Math.round(monthsSaved)} months
+
+Financial Impact:
+• Interest Saved: $${Math.round(interestSaved).toLocaleString()}
+• Total Payment: $${Math.round(newPayoff * newPayment).toLocaleString()}`;
+
+    toast({
+      title: `${liability.type} Summary`,
+      description: summary,
+      duration: 10000,
+    });
+  };
+
   const renderLiabilityCard = (liability: LiabilityDetails) => {
     const Icon = getIconForType(liability.type);
     const newPayment = liability.monthlyPayment + liability.extraPayment;
@@ -228,18 +261,18 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
             </div>
             <div className="flex items-center gap-2">
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
-                className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                onClick={() => generateLiabilitySummary(liability)}
+                className="text-blue-600 hover:bg-blue-50"
               >
                 <FileText className="w-4 h-4" />
-                Write-up
               </Button>
               <Button 
-                variant="outline" 
+                variant="ghost" 
                 size="sm" 
                 onClick={() => removeLiability(liability.id)}
-                className="text-red-600 border-red-300 hover:bg-red-50"
+                className="text-red-600 hover:bg-red-50"
               >
                 <X className="w-4 h-4" />
               </Button>
