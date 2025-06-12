@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -18,7 +17,6 @@ interface RetirementDetailDialogProps {
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const [retirementAge, setRetirementAge] = useState([65]);
-  const [monthlyContribution, setMonthlyContribution] = useState([1000]);
   const [netMonthlyIncome, setNetMonthlyIncome] = useState([4500]);
 
   // Current data
@@ -32,6 +30,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const currentRRSP = 52000;
   const currentTFSA = 38000;
   const currentNonReg = 25000; // From AssetsBreakdown data
+
+  // Fixed monthly contribution for calculations
+  const monthlyContribution = 1000;
 
   // Calculations
   const projectedCPP = 15000; // Annual at 65
@@ -49,7 +50,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   // Future value of current savings and contributions
   const futureCurrentSavings = currentSavings * Math.pow(1 + investmentReturn, yearsToRetirement);
-  const futureContributions = monthlyContribution[0] * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn;
+  const futureContributions = monthlyContribution * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn;
   const totalRetirementSavings = futureCurrentSavings + futureContributions;
 
   // How long assets will last calculation
@@ -96,11 +97,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     if (!isRetired) {
       const yearsFromNow = age - currentAge;
       const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution[0] * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                        (monthlyContribution * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution[0] * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                        (monthlyContribution * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                          (monthlyContribution[0] * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                          (monthlyContribution * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       
       return {
         age,
@@ -157,11 +158,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     if (!isRetired) {
       const yearsFromNow = age - currentAge;
       const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution[0] * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                        (monthlyContribution * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution[0] * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                        (monthlyContribution * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                          (monthlyContribution[0] * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
+                          (monthlyContribution * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
       
       return {
         age,
@@ -280,30 +281,30 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-8">
-              {/* Retirement Age Slider */}
-              <div>
-                <label className="text-sm font-medium mb-3 block">Retirement Age: {retirementAge[0]}</label>
-                <Slider
-                  value={retirementAge}
-                  onValueChange={setRetirementAge}
-                  min={55}
-                  max={70}
-                  step={1}
-                  className="mb-2"
-                />
-              </div>
-
-              {/* Net Monthly Income Slider */}
-              <div>
-                <label className="text-sm font-medium mb-3 block">Net Monthly Income Needed: ${netMonthlyIncome[0].toLocaleString()}</label>
-                <Slider
-                  value={netMonthlyIncome}
-                  onValueChange={setNetMonthlyIncome}
-                  min={2000}
-                  max={8000}
-                  step={100}
-                  className="mb-2"
-                />
+              {/* Retirement Age and Monthly Income on Same Line */}
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <label className="text-sm font-medium mb-3 block">Retirement Age: {retirementAge[0]}</label>
+                  <Slider
+                    value={retirementAge}
+                    onValueChange={setRetirementAge}
+                    min={55}
+                    max={70}
+                    step={1}
+                    className="mb-2"
+                  />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-3 block">Net Monthly Income Needed: ${netMonthlyIncome[0].toLocaleString()}</label>
+                  <Slider
+                    value={netMonthlyIncome}
+                    onValueChange={setNetMonthlyIncome}
+                    min={2000}
+                    max={8000}
+                    step={100}
+                    className="mb-2"
+                  />
+                </div>
               </div>
 
               {/* Asset Duration Display */}
@@ -344,19 +345,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Monthly Contribution Slider */}
-              <div>
-                <label className="text-sm font-medium mb-3 block">Monthly Contribution: ${monthlyContribution[0]}</label>
-                <Slider
-                  value={monthlyContribution}
-                  onValueChange={setMonthlyContribution}
-                  min={0}
-                  max={3000}
-                  step={100}
-                  className="mb-2"
-                />
               </div>
             </CardContent>
           </Card>
@@ -776,7 +764,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       <div className="flex items-center space-x-1 text-orange-600">
                         <AlertTriangle className="h-4 w-4" />
                         <span className="text-sm font-medium">
-                          Consider increasing contributions by ${(requiredMonthlySavings - monthlyContribution[0]).toFixed(0)}/month
+                          Consider increasing contributions by ${(requiredMonthlySavings - monthlyContribution).toFixed(0)}/month
                         </span>
                       </div>
                     )}
