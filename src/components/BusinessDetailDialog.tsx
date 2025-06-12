@@ -7,9 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2 } from "lucide-react";
+import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2, FileText, Calendar, Share2 } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
+import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
 interface BusinessDetailDialogProps {
   isOpen: boolean;
@@ -149,13 +149,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     { metric: "Customer Retention", value: "94%", trend: "+2%", positive: true },
   ];
 
-  const successionPlan = [
-    { milestone: "Valuation Assessment", status: "Complete", date: "Mar 2024" },
-    { milestone: "Legal Structure Review", status: "In Progress", date: "Jun 2024" },
-    { milestone: "Tax Planning Strategy", status: "Pending", date: "Aug 2024" },
-    { milestone: "Successor Training", status: "Pending", date: "Oct 2024" },
-  ];
-
   const chartConfig = {
     valuation: { label: "Valuation", color: "#8b5cf6" },
     revenue: { label: "Revenue", color: "#06b6d4" },
@@ -180,7 +173,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="financials">Financials</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
-            <TabsTrigger value="succession">Succession</TabsTrigger>
+            <TabsTrigger value="important">Important</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -410,7 +403,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </Card>
             )}
 
-            
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
@@ -588,7 +580,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </CardContent>
             </Card>
 
-            
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
@@ -636,93 +627,236 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             </div>
           </TabsContent>
 
-          <TabsContent value="succession" className="space-y-6">
-            
+          <TabsContent value="important" className="space-y-6">
+            {/* Business Registration Section */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <span>Succession Planning Progress</span>
+                  <FileText className="h-5 w-5" />
+                  <span>Business Registration</span>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {successionPlan.map((milestone) => (
-                    <div key={milestone.milestone} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex items-center space-x-3">
-                        {milestone.status === "Complete" ? (
-                          <CheckCircle className="h-5 w-5 text-green-600" />
-                        ) : milestone.status === "In Progress" ? (
-                          <Target className="h-5 w-5 text-blue-600" />
-                        ) : (
-                          <AlertTriangle className="h-5 w-5 text-orange-600" />
-                        )}
-                        <div>
-                          <h4 className="font-medium">{milestone.milestone}</h4>
-                          <p className="text-sm text-muted-foreground">Target: {milestone.date}</p>
-                        </div>
-                      </div>
-                      <Badge 
-                        variant={
-                          milestone.status === "Complete" ? "secondary" :
-                          milestone.status === "In Progress" ? "default" : "outline"
-                        }
-                      >
-                        {milestone.status}
-                      </Badge>
-                    </div>
-                  ))}
+              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <p className="text-sm text-muted-foreground">Corporation Number</p>
+                  <p className="text-lg font-bold">123456789</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Business Number</p>
+                  <p className="text-lg font-bold">987654321 RC0001</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tax Year End</p>
+                  <p className="text-lg font-bold">December 31</p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Next Tax Return Due</p>
+                  <p className="text-lg font-bold text-orange-600">June 30, 2025</p>
                 </div>
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Exit Strategy Options</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-medium">Management Buyout</h4>
-                    <p className="text-sm text-muted-foreground">Estimated Value: $300K - $350K</p>
-                    <p className="text-sm text-muted-foreground">Timeline: 2-3 years</p>
+            {/* Tax Planning Accounts Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <DollarSign className="h-5 w-5" />
+                  <span>Tax Planning Accounts</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Capital Dividend Account</p>
+                    <p className="text-2xl font-bold text-green-600">$45,000</p>
+                    <p className="text-xs text-green-600">Available for tax-free distribution</p>
                   </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-medium">Third-Party Sale</h4>
-                    <p className="text-sm text-muted-foreground">Estimated Value: $350K - $400K</p>
-                    <p className="text-sm text-muted-foreground">Timeline: 1-2 years</p>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-muted-foreground">Eligible LCGE Remaining</p>
+                    <p className="text-2xl font-bold text-blue-600">$971,190</p>
+                    <p className="text-xs text-blue-600">Lifetime Capital Gains Exemption</p>
                   </div>
-                  <div className="p-3 border rounded-lg">
-                    <h4 className="font-medium">Family Transfer</h4>
-                    <p className="text-sm text-muted-foreground">Estimated Value: $250K - $300K</p>
-                    <p className="text-sm text-muted-foreground">Timeline: 3-5 years</p>
+                  <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                    <p className="text-sm text-muted-foreground">LCGE Used to Date</p>
+                    <p className="text-2xl font-bold">$0</p>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </CardContent>
+            </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Tax Considerations</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Capital Gains Exemption</p>
-                    <p className="text-lg font-bold">$971,190</p>
-                    <p className="text-xs text-green-600">Available for qualified small business</p>
+            {/* Shareholder Structure Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Users className="h-5 w-5" />
+                  <span>Shareholder Structure</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">John Smith</h4>
+                      <p className="text-sm text-muted-foreground">Class A Common</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">100 shares</p>
+                      <p className="text-sm text-muted-foreground">60%</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Estimated Tax Savings</p>
-                    <p className="text-lg font-bold text-green-600">$162,000</p>
-                    <p className="text-xs text-muted-foreground">Based on current structure</p>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Jane Smith</h4>
+                      <p className="text-sm text-muted-foreground">Class A Common</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold">67 shares</p>
+                      <p className="text-sm text-muted-foreground">40%</p>
+                    </div>
                   </div>
-                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                    <p className="text-sm text-blue-800">
-                      Consider corporate reorganization to maximize tax efficiency
-                    </p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Share Classes Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Share2 className="h-5 w-5" />
+                  <span>Share Classes</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Class A Common</h4>
+                    <p className="text-sm text-muted-foreground mb-2">Voting common shares</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Outstanding</p>
+                        <p className="font-bold">167</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Voting Rights</p>
+                        <Badge variant="secondary">Yes</Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Dividend Rights</p>
+                        <Badge variant="secondary">Yes</Badge>
+                      </div>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">Class B Preferred</h4>
+                    <p className="text-sm text-muted-foreground mb-2">Non-voting preferred shares</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Outstanding</p>
+                        <p className="font-bold">0</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Voting Rights</p>
+                        <Badge variant="outline">No</Badge>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Dividend Rights</p>
+                        <Badge variant="secondary">Fixed 5%</Badge>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Corporate Structure Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Building2 className="h-5 w-5" />
+                  <span>Corporate Structure</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Smith Holdings Inc.</h4>
+                      <p className="text-sm text-muted-foreground">Investment holding</p>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="secondary">Active</Badge>
+                      <p className="text-sm text-muted-foreground mt-1">Ownership: 100%</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">Family Trust Co.</h4>
+                      <p className="text-sm text-muted-foreground">Estate planning</p>
+                    </div>
+                    <div className="text-right">
+                      <Badge variant="outline">Trust</Badge>
+                      <p className="text-sm text-muted-foreground mt-1">Ownership: 75%</p>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Important Dates Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calendar className="h-5 w-5" />
+                  <span>Important Dates</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="p-3 border rounded-lg">
+                    <p className="font-medium">Corporate Tax Return</p>
+                    <p className="text-sm text-orange-600">June 30, 2025</p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <p className="font-medium">Annual Return</p>
+                    <p className="text-sm text-blue-600">March 31, 2025</p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <p className="font-medium">Payroll Remittance</p>
+                    <p className="text-sm text-green-600">15th of each month</p>
+                  </div>
+                  <div className="p-3 border rounded-lg">
+                    <p className="font-medium">GST/HST Filing</p>
+                    <p className="text-sm text-purple-600">Quarterly</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Tax Planning Opportunities Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Target className="h-5 w-5" />
+                  <span>Tax Planning Opportunities</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <h4 className="font-medium text-green-800">Capital Dividend Distribution</h4>
+                    <p className="text-sm text-green-600">$45,000 available for tax-free distribution</p>
+                  </div>
+                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                    <h4 className="font-medium text-blue-800">LCGE Planning</h4>
+                    <p className="text-sm text-blue-600">$971,190 lifetime exemption available</p>
+                  </div>
+                  <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                    <h4 className="font-medium text-purple-800">Income Splitting</h4>
+                    <p className="text-sm text-purple-600">Consider family trust distributions</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
 
