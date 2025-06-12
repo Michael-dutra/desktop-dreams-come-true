@@ -1,4 +1,3 @@
-
 import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -28,7 +27,7 @@ const RetirementCard = () => {
             <div className="p-2 bg-purple-100 rounded-lg">
               <PiggyBank className="h-6 w-6 text-purple-600" />
             </div>
-            <span>Retirement Planning</span>
+            <span>Retirement</span>
           </CardTitle>
           <Button 
             variant="outline" 

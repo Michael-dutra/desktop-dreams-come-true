@@ -31,7 +31,7 @@ const BusinessCard = () => {
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg flex items-center space-x-2">
               <Building2 className="h-5 w-5" />
-              <span>Business Planning</span>
+              <span>Business</span>
             </CardTitle>
             <Button 
               variant="outline" 
