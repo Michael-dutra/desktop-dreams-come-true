@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -52,8 +53,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     yearlyAppreciation: 4.2,
     totalReturn: 29.2,
     address: "123 Maple Street, Toronto, ON",
-    monthlyPayment: 1800,
-    remainingYears: 18,
   });
 
   const [rrspDetails, setRrspDetails] = useState({
@@ -475,26 +474,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   isAutoCalculated={true}
                   isEditable={false}
                 />
-                <EditableField 
-                  fieldId="realEstate.monthlyPayment" 
-                  value={realEstateDetails.monthlyPayment} 
-                  label="Monthly Payment" 
-                  tip={`${((realEstateDetails.monthlyPayment * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-                <EditableField 
-                  fieldId="realEstate.remainingYears" 
-                  value={realEstateDetails.remainingYears} 
-                  label="Years Remaining" 
-                  prefix=""
-                />
               </div>
               
               <div className="pt-2">
                 <p className="text-xs text-muted-foreground mb-1">Address: {realEstateDetails.address}</p>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">Rate: <span className="font-semibold">{realEstateRate[0]}%</span> annually</span>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -861,3 +844,4 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     </Dialog>
   );
 };
+
