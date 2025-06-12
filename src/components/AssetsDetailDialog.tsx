@@ -2,13 +2,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
-import { TrendingUp, Home, Wallet, PiggyBank, DollarSign, Calendar, AlertTriangle, Target, Edit2, Check, X, Plus, Brain, Lightbulb } from "lucide-react";
+import { TrendingUp, FileText, X, Plus, Brain, Lightbulb, Edit2, Check } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { useState, useEffect, useMemo } from "react";
 
 interface Asset {
@@ -242,6 +243,18 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
   const nonRegChartData = useMemo(() => {
     return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
   }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
+
+  const showAssetWriteup = (assetType: string, assetName: string) => {
+    // This would typically open a dialog or modal with detailed writeup about the asset
+    console.log(`Showing writeup for ${assetType}: ${assetName}`);
+    // TODO: Implement writeup dialog similar to life insurance writeup
+  };
+
+  const confirmDeleteAsset = (assetId: string, assetName: string) => {
+    // The AlertDialog component will handle the confirmation
+    console.log(`Delete confirmed for asset: ${assetName}`);
+    removeDynamicAsset(assetId);
+  };
 
   const DynamicAssetCard = ({ asset }: { asset: DynamicAsset }) => {
     const futureValue = calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution);
@@ -612,14 +625,41 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               <div className="w-6 h-6 rounded-full" style={{ backgroundColor: asset.color }}></div>
               <span>{asset.name}</span>
             </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => removeDynamicAsset(asset.id)}
-              className="text-red-600 hover:text-red-700"
-            >
-              <X className="w-4 h-4" />
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => showAssetWriteup(asset.type, asset.name)}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <FileText className="w-4 h-4" />
+              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Delete Asset</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Are you sure you want to delete "{asset.name}"? This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => confirmDeleteAsset(asset.id, asset.name)}>
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
+            </div>
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -973,10 +1013,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Primary Residence", { name: "Primary Residence", value: realEstateDetails.currentFMV, amount: `$${realEstateDetails.currentFMV.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Home className="w-6 h-6" />
-                Primary Residence
-                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-amber-500"></div>
+                  <span>Primary Residence</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showAssetWriteup("Primary Residence", "Primary Residence");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1061,10 +1116,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("RRSP", { name: "RRSP", value: rrspDetails.currentValue, amount: `$${rrspDetails.currentValue.toLocaleString()}`, color: "#10b981" })}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <PiggyBank className="w-6 h-6" />
-                RRSP
-                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-emerald-500"></div>
+                  <span>RRSP</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showAssetWriteup("RRSP", "RRSP");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1153,10 +1223,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("TFSA", { name: "TFSA", value: tfsaDetails.currentValue, amount: `$${tfsaDetails.currentValue.toLocaleString()}`, color: "#8b5cf6" })}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <Wallet className="w-6 h-6" />
-                TFSA
-                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-violet-500"></div>
+                  <span>TFSA</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showAssetWriteup("TFSA", "TFSA");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -1245,10 +1330,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
           <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Non-Registered", { name: "Non-Registered", value: nonRegisteredDetails.totalValue, amount: `$${nonRegisteredDetails.totalValue.toLocaleString()}`, color: "#f59e0b" })}>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <DollarSign className="w-6 h-6" />
-                Non-Registered
-                <span className="text-sm text-muted-foreground ml-auto">Click to add copy</span>
+              <CardTitle className="flex items-center justify-between text-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-red-500"></div>
+                  <span>Non-Registered</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      showAssetWriteup("Non-Registered", "Non-Registered");
+                    }}
+                    className="text-muted-foreground hover:text-foreground"
+                  >
+                    <FileText className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm text-muted-foreground">Click to add copy</span>
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
