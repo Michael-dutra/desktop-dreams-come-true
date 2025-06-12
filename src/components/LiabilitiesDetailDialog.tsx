@@ -1,4 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
@@ -9,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useState } from "react";
-import { useToast } from "@/hooks/use-toast";
 
 interface Liability {
   name: string;
@@ -262,18 +262,35 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
                 variant="ghost" 
                 size="sm" 
                 onClick={() => generateLiabilitySummary(liability)}
-                className="text-blue-600 hover:bg-blue-50"
+                className="text-blue-600 hover:bg-blue-50 p-1"
               >
                 <FileText className="w-4 h-4" />
               </Button>
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => removeLiability(liability.id)}
-                className="text-red-600 hover:bg-red-50"
-              >
-                <X className="w-4 h-4" />
-              </Button>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    className="text-red-600 hover:bg-red-50 p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Are you sure you want to delete?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      This will permanently remove the {liability.type} from your liabilities. This action cannot be undone.
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogAction onClick={() => removeLiability(liability.id)} className="bg-red-600 hover:bg-red-700">
+                      Delete
+                    </AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </div>
           </CardTitle>
         </CardHeader>
@@ -582,84 +599,56 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
         </DialogContent>
       </Dialog>
 
-      {/* Liability Summary Dialog */}
+      {/* Liability Write-up Dialog */}
       <Dialog open={summaryDialogOpen} onOpenChange={setSummaryDialogOpen}>
         <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold">
-              {selectedLiabilitySummary?.liability.type} Summary
+          <DialogHeader className="pb-4 border-b">
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              <FileText className="w-5 h-5 text-blue-600" />
+              {selectedLiabilitySummary?.liability.type} Report
             </DialogTitle>
           </DialogHeader>
           
           {selectedLiabilitySummary && (
-            <div className="space-y-6">
-              {/* Current Details */}
+            <div className="space-y-4 text-sm">
               <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Current Details</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-gray-50">
-                    <p className="text-sm font-medium text-gray-600">Balance</p>
-                    <p className="text-lg font-bold">${selectedLiabilitySummary.liability.currentBalance.toLocaleString()}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gray-50">
-                    <p className="text-sm font-medium text-gray-600">Interest Rate</p>
-                    <p className="text-lg font-bold">{selectedLiabilitySummary.liability.interestRate}%</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gray-50">
-                    <p className="text-sm font-medium text-gray-600">Monthly Payment</p>
-                    <p className="text-lg font-bold">${selectedLiabilitySummary.liability.monthlyPayment.toLocaleString()}</p>
-                  </div>
+                <p className="text-gray-700">
+                  Your {selectedLiabilitySummary.liability.type} currently has a balance of ${selectedLiabilitySummary.liability.currentBalance.toLocaleString()} and is projected to be paid off in {Math.round(selectedLiabilitySummary.currentPayoff)} months with current payments.
+                </p>
+                
+                <div className="space-y-2 font-mono text-gray-600">
+                  <div>Current Balance: ${selectedLiabilitySummary.liability.currentBalance.toLocaleString()}</div>
+                  <div>Interest Rate: {selectedLiabilitySummary.liability.interestRate}%</div>
+                  <div>Monthly Payment: ${selectedLiabilitySummary.liability.monthlyPayment.toLocaleString()}</div>
                   {selectedLiabilitySummary.liability.extraPayment > 0 && (
-                    <div className="p-3 rounded-lg bg-gray-50">
-                      <p className="text-sm font-medium text-gray-600">Extra Payment</p>
-                      <p className="text-lg font-bold">${selectedLiabilitySummary.liability.extraPayment.toLocaleString()}</p>
-                    </div>
+                    <div>Extra Payment: ${selectedLiabilitySummary.liability.extraPayment.toLocaleString()}</div>
                   )}
+                  <div>Payoff Timeline: {Math.round(selectedLiabilitySummary.currentPayoff)} months</div>
+                  {selectedLiabilitySummary.liability.newRate !== selectedLiabilitySummary.liability.interestRate && (
+                    <div>Optimized Rate: {selectedLiabilitySummary.liability.newRate}%</div>
+                  )}
+                  <div>Time Saved: {Math.round(selectedLiabilitySummary.monthsSaved)} months</div>
+                  <div>Interest Saved: ${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()}</div>
                 </div>
+
+                <p className="text-gray-700">
+                  {selectedLiabilitySummary.monthsSaved > 0 ? (
+                    `With the proposed optimizations, you could save ${Math.round(selectedLiabilitySummary.monthsSaved)} months and $${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()} in interest payments.`
+                  ) : (
+                    "This debt is currently on track for optimal payoff with the current payment structure."
+                  )}
+                </p>
+
+                <p className="text-gray-700 text-xs">
+                  This projection assumes consistent payment performance. Actual results may vary based on payment timing, rate changes, and other financial factors.
+                </p>
               </div>
 
-              {/* Payoff Timeline */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Payoff Timeline</h3>
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="p-3 rounded-lg bg-red-50">
-                    <p className="text-sm font-medium text-red-800">Current</p>
-                    <p className="text-lg font-bold text-red-600">{Math.round(selectedLiabilitySummary.currentPayoff)} months</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-green-50">
-                    <p className="text-sm font-medium text-green-800">Optimized</p>
-                    <p className="text-lg font-bold text-green-600">{Math.round(selectedLiabilitySummary.newPayoff)} months</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-blue-50">
-                    <p className="text-sm font-medium text-blue-800">Time Saved</p>
-                    <p className="text-lg font-bold text-blue-600">{Math.round(selectedLiabilitySummary.monthsSaved)} months</p>
-                  </div>
-                </div>
+              <div className="flex justify-end pt-4 border-t">
+                <Button onClick={() => setSummaryDialogOpen(false)}>
+                  Close
+                </Button>
               </div>
-
-              {/* Financial Impact */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold">Financial Impact</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-3 rounded-lg bg-purple-50">
-                    <p className="text-sm font-medium text-purple-800">Interest Saved</p>
-                    <p className="text-lg font-bold text-purple-600">${Math.round(selectedLiabilitySummary.interestSaved).toLocaleString()}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-orange-50">
-                    <p className="text-sm font-medium text-orange-800">Total Payment</p>
-                    <p className="text-lg font-bold text-orange-600">${Math.round(selectedLiabilitySummary.newPayoff * selectedLiabilitySummary.newPayment).toLocaleString()}</p>
-                  </div>
-                </div>
-              </div>
-
-              {selectedLiabilitySummary.liability.newRate !== selectedLiabilitySummary.liability.interestRate && (
-                <div className="p-4 rounded-lg bg-yellow-50 border border-yellow-200">
-                  <p className="text-sm font-medium text-yellow-800">Rate Change</p>
-                  <p className="text-lg font-bold text-yellow-600">
-                    {selectedLiabilitySummary.liability.interestRate}% → {selectedLiabilitySummary.liability.newRate}%
-                  </p>
-                </div>
-              )}
             </div>
           )}
         </DialogContent>
