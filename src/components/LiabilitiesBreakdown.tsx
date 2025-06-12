@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Eye } from "lucide-react";
+import { Eye, CreditCard } from "lucide-react";
 import { LiabilitiesDetailDialog } from "./LiabilitiesDetailDialog";
 import { useState } from "react";
 
@@ -26,7 +26,12 @@ const LiabilitiesBreakdown = () => {
     <>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Liabilities</CardTitle>
+          <CardTitle className="text-xl flex items-center space-x-3">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <CreditCard className="h-6 w-6 text-red-600" />
+            </div>
+            <span>Liabilities</span>
+          </CardTitle>
           <Button 
             variant="outline" 
             size="sm"
