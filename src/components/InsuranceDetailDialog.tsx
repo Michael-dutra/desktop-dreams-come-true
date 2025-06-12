@@ -1,4 +1,3 @@
-
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -6,7 +5,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import { Shield, AlertTriangle, CheckCircle, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
 import { useState } from "react";
 
 interface InsuranceDetailDialogProps {
@@ -15,18 +14,16 @@ interface InsuranceDetailDialogProps {
 }
 
 export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialogProps) => {
-  const [incomeMultiplier, setIncomeMultiplier] = useState([10]);
-  const [yearsOfCoverage, setYearsOfCoverage] = useState([20]);
-
-  // Life Insurance Needs Analysis Data
-  const lifeInsuranceNeeds = {
-    incomeReplacement: 650000, // $65k * 10 years
-    debts: 445500, // Mortgage + Car + Credit Cards
-    educationFunds: 120000, // Children's education
-    estateTaxes: 50000,
-    finalExpenses: 25000,
-    total: 1290500
-  };
+  // Editable fields for life insurance calculator
+  const [income, setIncome] = useState(65000);
+  const [incomeMultiplier, setIncomeMultiplier] = useState(10);
+  const [mortgage, setMortgage] = useState(445500);
+  const [childEducation, setChildEducation] = useState(120000);
+  const [otherDebts, setOtherDebts] = useState(25000);
+  const [finalExpenses, setFinalExpenses] = useState(15000);
+  const [taxes, setTaxes] = useState(50000);
+  const [charity, setCharity] = useState(10000);
+  const [other, setOther] = useState(5000);
 
   const currentCoverage = {
     life: 320000,
@@ -34,31 +31,26 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     disability: 0
   };
 
+  // Calculate total life insurance need based on user inputs
+  const calculateTotalNeed = () => {
+    const incomeReplacement = income * incomeMultiplier;
+    return incomeReplacement + mortgage + childEducation + otherDebts + finalExpenses + taxes + charity + other;
+  };
+
+  const totalNeed = calculateTotalNeed();
+  const coverageGap = totalNeed - currentCoverage.life;
+
   const recommendedCoverage = {
-    life: lifeInsuranceNeeds.total,
+    life: totalNeed,
     criticalIllness: 200000,
-    disability: 39000 // 60% of $65k annual income
+    disability: 39000
   };
 
   const coverageGaps = {
-    life: recommendedCoverage.life - currentCoverage.life,
+    life: coverageGap,
     criticalIllness: recommendedCoverage.criticalIllness - currentCoverage.criticalIllness,
     disability: recommendedCoverage.disability - currentCoverage.disability
   };
-
-  // Needs vs Current Coverage Data for Pie Chart
-  const needsVsCoverageData = [
-    { name: "Current Coverage", value: currentCoverage.life, color: "#3b82f6" },
-    { name: "Coverage Gap", value: coverageGaps.life, color: "#ef4444" }
-  ];
-
-  const lifeInsuranceBreakdown = [
-    { category: "Income Replacement", amount: lifeInsuranceNeeds.incomeReplacement, color: "#3b82f6" },
-    { category: "Outstanding Debts", amount: lifeInsuranceNeeds.debts, color: "#ef4444" },
-    { category: "Education Funds", amount: lifeInsuranceNeeds.educationFunds, color: "#10b981" },
-    { category: "Estate Taxes", amount: lifeInsuranceNeeds.estateTaxes, color: "#f59e0b" },
-    { category: "Final Expenses", amount: lifeInsuranceNeeds.finalExpenses, color: "#8b5cf6" }
-  ];
 
   const coverageComparison = [
     { 
@@ -99,22 +91,9 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     }).format(amount);
   };
 
-  const calculateDynamicNeeds = () => {
-    const annualIncome = 65000;
-    const dynamicIncomeReplacement = annualIncome * incomeMultiplier[0];
-    const dynamicTotal = dynamicIncomeReplacement + lifeInsuranceNeeds.debts + lifeInsuranceNeeds.educationFunds + lifeInsuranceNeeds.estateTaxes + lifeInsuranceNeeds.finalExpenses;
-    return {
-      incomeReplacement: dynamicIncomeReplacement,
-      total: dynamicTotal,
-      gap: dynamicTotal - currentCoverage.life
-    };
-  };
-
-  const dynamicNeeds = calculateDynamicNeeds();
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
@@ -123,191 +102,206 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Key Metrics Summary */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-red-700">{formatCurrency(coverageGaps.life)}</p>
-                  <p className="text-sm text-red-600">Life Insurance Gap</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-orange-200 bg-orange-50">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <TrendingUp className="h-8 w-8 text-orange-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-orange-700">{formatCurrency(coverageGaps.criticalIllness)}</p>
-                  <p className="text-sm text-orange-600">Critical Illness Gap</p>
-                </div>
-              </CardContent>
-            </Card>
-            
-            <Card className="border-yellow-200 bg-yellow-50">
-              <CardContent className="p-4">
-                <div className="text-center">
-                  <Shield className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
-                  <p className="text-2xl font-bold text-yellow-700">{formatCurrency(coverageGaps.disability)}</p>
-                  <p className="text-sm text-yellow-600">Disability Coverage Gap</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-
-          {/* Life Insurance Needs vs Coverage Overview */}
+          {/* Simplified Life Insurance Overview */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="h-5 w-5" />
-                Life Insurance: Needs vs Current Coverage
+                Life Insurance Overview
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                  <div className="bg-red-50 p-4 rounded-lg border border-red-200">
-                    <h4 className="font-semibold text-red-900 mb-2">Coverage Gap Analysis</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span>Current Coverage:</span>
-                        <span className="font-medium">{formatCurrency(currentCoverage.life)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Recommended Need:</span>
-                        <span className="font-medium">{formatCurrency(recommendedCoverage.life)}</span>
-                      </div>
-                      <div className="flex justify-between border-t pt-2">
-                        <span className="font-semibold text-red-900">Coverage Gap:</span>
-                        <span className="font-bold text-red-600">{formatCurrency(coverageGaps.life)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span>Coverage Ratio:</span>
-                        <span className="font-medium">{((currentCoverage.life / recommendedCoverage.life) * 100).toFixed(0)}%</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  <div className="bg-orange-50 p-3 rounded-lg border border-orange-200">
-                    <p className="text-sm text-orange-800">
-                      <strong>Priority Action Required:</strong> You currently have only {((currentCoverage.life / recommendedCoverage.life) * 100).toFixed(0)}% of your recommended life insurance coverage.
-                    </p>
-                  </div>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                  <h4 className="font-semibold text-blue-900 mb-2">Current Coverage</h4>
+                  <p className="text-2xl font-bold text-blue-700">{formatCurrency(currentCoverage.life)}</p>
                 </div>
                 
-                <ChartContainer config={{}} className="h-64">
-                  <PieChart>
-                    <Pie
-                      data={needsVsCoverageData}
-                      cx="50%"
-                      cy="50%"
-                      outerRadius={80}
-                      dataKey="value"
-                      label={({ name, value }) => `${name}: ${formatCurrency(value)}`}
-                    >
-                      {needsVsCoverageData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
-                      ))}
-                    </Pie>
-                    <ChartTooltip 
-                      content={<ChartTooltipContent 
-                        formatter={(value) => [formatCurrency(Number(value)), ""]}
-                      />} 
-                    />
-                  </PieChart>
-                </ChartContainer>
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                  <h4 className="font-semibold text-green-900 mb-2">Recommended Need</h4>
+                  <p className="text-2xl font-bold text-green-700">{formatCurrency(totalNeed)}</p>
+                </div>
+                
+                <div className="bg-red-50 p-4 rounded-lg border border-red-200">
+                  <h4 className="font-semibold text-red-900 mb-2">Coverage Gap</h4>
+                  <p className="text-2xl font-bold text-red-700">{formatCurrency(coverageGap)}</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Tabs defaultValue="life-analysis" className="w-full">
+          <Tabs defaultValue="life-calculator" className="w-full">
             <TabsList className="grid w-full grid-cols-3">
-              <TabsTrigger value="life-analysis">Life Insurance Analysis</TabsTrigger>
+              <TabsTrigger value="life-calculator">Life Insurance Calculator</TabsTrigger>
               <TabsTrigger value="ci-disability">CI & Disability</TabsTrigger>
               <TabsTrigger value="coverage-comparison">Coverage Comparison</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="life-analysis" className="space-y-6">
+            <TabsContent value="life-calculator" className="space-y-6">
               <Card>
                 <CardHeader>
                   <CardTitle>Life Insurance Needs Calculator</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Interactive Controls */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* Income Section */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Income Replacement Multiplier: {incomeMultiplier[0]}x
-                      </label>
-                      <Slider
+                      <label className="text-sm font-medium mb-2 block">Annual Income</label>
+                      <Input
+                        type="number"
+                        value={income}
+                        onChange={(e) => setIncome(Number(e.target.value))}
+                        className="w-full"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium mb-2 block">Income Multiplier</label>
+                      <Input
+                        type="number"
                         value={incomeMultiplier}
-                        onValueChange={setIncomeMultiplier}
-                        max={15}
-                        min={5}
-                        step={1}
+                        onChange={(e) => setIncomeMultiplier(Number(e.target.value))}
                         className="w-full"
                       />
                       <p className="text-xs text-muted-foreground mt-1">
                         Recommended: 8-12x annual income
                       </p>
                     </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">
-                        Years of Coverage: {yearsOfCoverage[0]} years
-                      </label>
-                      <Slider
-                        value={yearsOfCoverage}
-                        onValueChange={setYearsOfCoverage}
-                        max={30}
-                        min={10}
-                        step={5}
-                        className="w-full"
-                      />
-                    </div>
                   </div>
 
-                  {/* Dynamic Calculation Results */}
+                  {/* Calculated Income Replacement */}
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-blue-900 mb-2">Calculated Insurance Need</h4>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div className="flex justify-between">
+                      <span className="font-medium text-blue-900">Income Replacement:</span>
+                      <span className="font-bold text-blue-700">{formatCurrency(income * incomeMultiplier)}</span>
+                    </div>
+                  </div>
+
+                  {/* Debt and Expense Fields */}
+                  <div className="space-y-4">
+                    <h4 className="font-semibold">Debts and Expenses</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <span className="text-blue-700">Income Replacement:</span>
-                        <span className="font-medium float-right">{formatCurrency(dynamicNeeds.incomeReplacement)}</span>
+                        <label className="text-sm font-medium mb-2 block">Mortgage</label>
+                        <Input
+                          type="number"
+                          value={mortgage}
+                          onChange={(e) => setMortgage(Number(e.target.value))}
+                          className="w-full"
+                        />
                       </div>
                       <div>
-                        <span className="text-blue-700">Total Need:</span>
-                        <span className="font-medium float-right">{formatCurrency(dynamicNeeds.total)}</span>
+                        <label className="text-sm font-medium mb-2 block">Child Education</label>
+                        <Input
+                          type="number"
+                          value={childEducation}
+                          onChange={(e) => setChildEducation(Number(e.target.value))}
+                          className="w-full"
+                        />
                       </div>
                       <div>
-                        <span className="text-blue-700">Current Coverage:</span>
-                        <span className="font-medium float-right">{formatCurrency(currentCoverage.life)}</span>
+                        <label className="text-sm font-medium mb-2 block">Other Debts</label>
+                        <Input
+                          type="number"
+                          value={otherDebts}
+                          onChange={(e) => setOtherDebts(Number(e.target.value))}
+                          className="w-full"
+                        />
                       </div>
-                      <div className="border-t pt-2">
-                        <span className="text-blue-900 font-semibold">Coverage Gap:</span>
-                        <span className="font-bold float-right text-red-600">{formatCurrency(dynamicNeeds.gap)}</span>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Final Expenses</label>
+                        <Input
+                          type="number"
+                          value={finalExpenses}
+                          onChange={(e) => setFinalExpenses(Number(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Taxes</label>
+                        <Input
+                          type="number"
+                          value={taxes}
+                          onChange={(e) => setTaxes(Number(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block">Charity</label>
+                        <Input
+                          type="number"
+                          value={charity}
+                          onChange={(e) => setCharity(Number(e.target.value))}
+                          className="w-full"
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-medium mb-2 block">Other</label>
+                        <Input
+                          type="number"
+                          value={other}
+                          onChange={(e) => setOther(Number(e.target.value))}
+                          className="w-full"
+                        />
                       </div>
                     </div>
                   </div>
 
-                  {/* Life Insurance Needs Breakdown Chart */}
-                  <div>
-                    <h4 className="font-semibold mb-3">Insurance Needs Breakdown</h4>
-                    <ChartContainer config={chartConfig} className="h-64">
-                      <BarChart data={lifeInsuranceBreakdown}>
-                        <XAxis dataKey="category" tick={{ fontSize: 10 }} />
-                        <YAxis tick={{ fontSize: 10 }} />
-                        <ChartTooltip content={<ChartTooltipContent />} />
-                        <Bar dataKey="amount" fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ChartContainer>
+                  {/* Total Calculation */}
+                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                    <h4 className="font-semibold text-green-900 mb-3">Total Life Insurance Need</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span>Income Replacement:</span>
+                        <span className="font-medium">{formatCurrency(income * incomeMultiplier)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Mortgage:</span>
+                        <span className="font-medium">{formatCurrency(mortgage)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Child Education:</span>
+                        <span className="font-medium">{formatCurrency(childEducation)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Other Debts:</span>
+                        <span className="font-medium">{formatCurrency(otherDebts)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Final Expenses:</span>
+                        <span className="font-medium">{formatCurrency(finalExpenses)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Taxes:</span>
+                        <span className="font-medium">{formatCurrency(taxes)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Charity:</span>
+                        <span className="font-medium">{formatCurrency(charity)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Other:</span>
+                        <span className="font-medium">{formatCurrency(other)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-green-900">Total Need:</span>
+                        <span className="font-bold text-green-700">{formatCurrency(totalNeed)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Current Coverage:</span>
+                        <span className="font-medium">{formatCurrency(currentCoverage.life)}</span>
+                      </div>
+                      <div className="flex justify-between border-t pt-2">
+                        <span className="font-bold text-red-900">Coverage Gap:</span>
+                        <span className="font-bold text-red-600">{formatCurrency(coverageGap)}</span>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="ci-disability" className="space-y-6">
+              
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
@@ -368,6 +362,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             </TabsContent>
 
             <TabsContent value="coverage-comparison" className="space-y-6">
+              
               <Card>
                 <CardHeader>
                   <CardTitle>Coverage Comparison: Current vs Recommended</CardTitle>
@@ -409,7 +404,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                           </div>
                         </div>
                         
-                        {/* Progress bar showing coverage ratio */}
+                        
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className={`h-2 rounded-full ${
@@ -426,7 +421,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
                 </CardContent>
               </Card>
 
-              {/* Action Recommendations */}
+              
               <Card>
                 <CardHeader>
                   <CardTitle>Recommended Actions</CardTitle>
