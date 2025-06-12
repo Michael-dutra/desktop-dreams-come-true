@@ -30,9 +30,9 @@ interface DynamicAsset {
   name: string;
   type: string;
   currentValue: number;
-  years: number[];
-  rate: number[];
-  annualContribution: number;
+  years: number;
+  growthRate: number;
+  monthlyContribution: number;
   color: string;
   // Real Estate specific fields
   purchasePrice?: number;
@@ -47,7 +47,7 @@ interface DynamicAsset {
   // RRSP/TFSA specific fields
   availableRoom?: number;
   ytdGrowth?: number;
-  monthlyContribution?: number;
+  annualContribution?: number;
   // Non-Registered specific fields
   unrealizedGains?: number;
 }
@@ -116,9 +116,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
       name: sourceAsset ? `${sourceAsset.name} (Copy)` : type,
       type: type,
       currentValue: sourceAsset ? sourceAsset.value : 10000,
-      years: [10],
-      rate: [6.0],
-      annualContribution: 1000,
+      years: 10,
+      growthRate: 6.0,
+      monthlyContribution: 1000,
       color: availableColor
     };
 
@@ -136,8 +136,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           capitalImprovements: 50000,
           mortgageBalance: sourceAsset ? Math.floor(sourceAsset.value * 0.45) : 285000,
           address: "123 Main Street, City, Province",
-          rate: [4.2],
-          annualContribution: 0,
+          growthRate: 4.2,
+          monthlyContribution: 0,
           taxRate: 0,
           isPrimaryResidence: true
         };
@@ -153,8 +153,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           capitalImprovements: 25000,
           mortgageBalance: sourceAsset ? Math.floor(sourceAsset.value * 0.6) : 200000,
           address: "456 Investment Ave, City, Province",
-          rate: [4.2],
-          annualContribution: 0,
+          growthRate: 4.2,
+          monthlyContribution: 0,
           taxRate: 25,
           isPrimaryResidence: false
         };
@@ -165,7 +165,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           availableRoom: 18500,
           ytdGrowth: 8.2,
           monthlyContribution: 500,
-          rate: [7.0],
+          growthRate: 7.0,
           annualContribution: 6000
         };
         break;
@@ -175,7 +175,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           availableRoom: 8500,
           ytdGrowth: 6.1,
           monthlyContribution: 417,
-          rate: [6.5],
+          growthRate: 6.5,
           annualContribution: 5000
         };
         break;
@@ -184,7 +184,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           ...baseAsset,
           unrealizedGains: 3200,
           monthlyContribution: 167,
-          rate: [8.0],
+          growthRate: 8.0,
           annualContribution: 2000
         };
         break;
@@ -278,19 +278,19 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Future Value</p>
                 <p className="font-bold text-2xl text-blue-600">
-                  ${Math.round(realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)).toLocaleString()}
+                  ${Math.round(realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.growthRate, asset.years, asset.monthlyContribution), 0)).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Total Projected Growth</p>
                 <p className="font-bold text-2xl text-purple-600">
-                  +${Math.round((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) - (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0))).toLocaleString()}
+                  +${Math.round((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.growthRate, asset.years, asset.monthlyContribution), 0)) - (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0))).toLocaleString()}
                 </p>
               </div>
               <div className="text-center">
                 <p className="text-sm text-muted-foreground">Growth Rate</p>
                 <p className="font-bold text-2xl text-orange-600">
-                  {(((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)) - 1) * 100).toFixed(1)}%
+                  {(((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.growthRate, asset.years, asset.monthlyContribution), 0)) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)) - 1) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
@@ -796,8 +796,20 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           {dynamicAssets.map((asset) => (
             <DynamicAssetCard 
               key={asset.id} 
-              asset={asset} 
-              onRemove={removeDynamicAsset}
+              asset={{
+                id: asset.id,
+                name: asset.name,
+                type: asset.type,
+                currentValue: asset.currentValue,
+                monthlyContribution: asset.monthlyContribution || 0,
+                growthRate: asset.growthRate || 6.0,
+                years: asset.years || 10,
+                purchasePrice: asset.purchasePrice,
+                capitalImprovements: asset.capitalImprovements,
+                propertyName: asset.propertyName
+              }}
+              onDelete={removeDynamicAsset}
+              onCopy={() => {}}
               onUpdate={updateDynamicAsset}
             />
           ))}

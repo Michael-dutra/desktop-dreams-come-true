@@ -1,7 +1,7 @@
 
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { X, Copy2, AlertTriangle } from "lucide-react";
+import { X, Copy, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -73,7 +73,7 @@ export const DynamicAssetCard = ({ asset, onDelete, onCopy, onUpdate }: DynamicA
             onClick={() => onCopy(asset)}
             className="text-blue-600 hover:text-blue-700"
           >
-            <Copy2 className="w-4 h-4" />
+            <Copy className="w-4 h-4" />
           </Button>
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
             <AlertDialogTrigger asChild>
