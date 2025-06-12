@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -23,6 +24,26 @@ interface AssetsDetailDialogProps {
   onClose: () => void;
   assets: Asset[];
 }
+
+// Stable data generation function
+const generateStableChartData = (currentValue: number, futureValue: number, years: number, rate: number) => {
+  const points = [];
+  const steps = 10;
+  
+  for (let i = 0; i <= steps; i++) {
+    const yearProgress = (years * i) / steps;
+    const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
+    
+    points.push({
+      year: yearProgress.toFixed(1),
+      current: currentValue,
+      future: currentProjection,
+      yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
+    });
+  }
+  
+  return points;
+};
 
 export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
   // Individual projection years for each asset
@@ -91,95 +112,19 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
   // Generate stable chart data using useMemo
   const realEstateChartData = useMemo(() => {
-    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
-      const points = [];
-      const steps = 10;
-      
-      for (let i = 0; i <= steps; i++) {
-        const yearProgress = (years * i) / steps;
-        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-        
-        points.push({
-          year: yearProgress.toFixed(1),
-          current: currentValue,
-          future: currentProjection,
-          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-        });
-      }
-      
-      return points;
-    };
-    
-    return generateDataPoints(realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]);
+    return generateStableChartData(realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]);
   }, [realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]]);
 
   const rrspChartData = useMemo(() => {
-    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
-      const points = [];
-      const steps = 10;
-      
-      for (let i = 0; i <= steps; i++) {
-        const yearProgress = (years * i) / steps;
-        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-        
-        points.push({
-          year: yearProgress.toFixed(1),
-          current: currentValue,
-          future: currentProjection,
-          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-        });
-      }
-      
-      return points;
-    };
-    
-    return generateDataPoints(rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]);
+    return generateStableChartData(rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]);
   }, [rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]]);
 
   const tfsaChartData = useMemo(() => {
-    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
-      const points = [];
-      const steps = 10;
-      
-      for (let i = 0; i <= steps; i++) {
-        const yearProgress = (years * i) / steps;
-        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-        
-        points.push({
-          year: yearProgress.toFixed(1),
-          current: currentValue,
-          future: currentProjection,
-          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-        });
-      }
-      
-      return points;
-    };
-    
-    return generateDataPoints(tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]);
+    return generateStableChartData(tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]);
   }, [tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]]);
 
   const nonRegChartData = useMemo(() => {
-    const generateDataPoints = (currentValue: number, futureValue: number, years: number, rate: number) => {
-      const points = [];
-      const steps = 10;
-      
-      for (let i = 0; i <= steps; i++) {
-        const yearProgress = (years * i) / steps;
-        const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-        
-        points.push({
-          year: yearProgress.toFixed(1),
-          current: currentValue,
-          future: currentProjection,
-          yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-        });
-      }
-      
-      return points;
-    };
-    
-    return generateDataPoints(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
+    return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
   }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
 
   const chartConfig = {
@@ -324,7 +269,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             <LineChart 
               data={data} 
               margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-              isAnimationActive={false}
             >
               <XAxis 
                 dataKey="yearLabel"
@@ -557,7 +501,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                 currentValue={rrspDetails.currentValue}
                 futureValue={rrspFV}
                 years={rrspYears[0]}
-                rate={rrspRate[0]}
                 color="#8b5cf6"
               />
 
