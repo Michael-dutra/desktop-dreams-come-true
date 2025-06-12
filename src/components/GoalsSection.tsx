@@ -1,27 +1,33 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Target, Plus } from "lucide-react";
+import { Target, Plus, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { AddGoalDialog } from "./AddGoalDialog";
+import { EditGoalDialog } from "./EditGoalDialog";
 import { useState } from "react";
 
 const GoalsSection = () => {
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [editingGoal, setEditingGoal] = useState<any>(null);
   const [goals, setGoals] = useState([
     {
+      id: 1,
       title: "RRSP vs TFSA: What's better for 2025?",
       description: "Tax planning strategies for the upcoming year",
       progress: 75,
       status: "In Progress"
     },
     {
+      id: 2,
       title: "How to reduce your taxable income this year",
       description: "Deduction opportunities and tax-efficient investing",
       progress: 40,
       status: "Research Phase"
     },
     {
+      id: 3,
       title: "Debt avalanche vs snowball: Which fits your personality?",
       description: "Personalized debt repayment strategies",
       progress: 90,
@@ -30,7 +36,19 @@ const GoalsSection = () => {
   ]);
 
   const handleAddGoal = (newGoal: any) => {
-    setGoals(prev => [...prev, newGoal]);
+    const goalWithId = { ...newGoal, id: Date.now() };
+    setGoals(prev => [...prev, goalWithId]);
+  };
+
+  const handleEditGoal = (goal: any) => {
+    setEditingGoal(goal);
+    setShowEditDialog(true);
+  };
+
+  const handleUpdateGoal = (updatedGoal: any) => {
+    setGoals(prev => prev.map(goal => 
+      goal.id === updatedGoal.id ? updatedGoal : goal
+    ));
   };
 
   const getProgressColor = (progress: number) => {
@@ -59,13 +77,22 @@ const GoalsSection = () => {
         <CardContent>
           <div className="space-y-6">
             {goals.map((goal, index) => (
-              <div key={index} className="space-y-3">
+              <div key={goal.id} className="space-y-3">
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <h4 className="font-medium text-sm">{goal.title}</h4>
-                    <span className="text-xs text-muted-foreground font-medium">
-                      {goal.progress}%
-                    </span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        {goal.progress}%
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={() => handleEditGoal(goal)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground">{goal.description}</p>
                 </div>
@@ -94,6 +121,13 @@ const GoalsSection = () => {
         isOpen={showAddDialog}
         onClose={() => setShowAddDialog(false)}
         onAdd={handleAddGoal}
+      />
+
+      <EditGoalDialog 
+        isOpen={showEditDialog}
+        onClose={() => setShowEditDialog(false)}
+        goal={editingGoal}
+        onUpdate={handleUpdateGoal}
       />
     </>
   );
