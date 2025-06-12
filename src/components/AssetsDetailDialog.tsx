@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -75,9 +76,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     unrealizedGains: 3200,
     annualContribution: 2000,
     monthlyContribution: 167,
-    dividendIncome: 850,
-    annualInterestIncome: 450,
-    capitalGains: 2350,
   });
 
   // FV calculations
@@ -734,22 +732,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
                   prefix="+$"
                   isAutoCalculated={true}
                   isEditable={false}
-                />
-                <EditableField 
-                  fieldId="nonReg.dividendIncome" 
-                  value={nonRegisteredDetails.dividendIncome} 
-                  label="Annual Dividend Income" 
-                  tip={`${((nonRegisteredDetails.dividendIncome / nonRegisteredDetails.totalValue) * 100).toFixed(1)}% dividend yield`}
-                />
-                <EditableField 
-                  fieldId="nonReg.annualInterestIncome" 
-                  value={nonRegisteredDetails.annualInterestIncome} 
-                  label="Annual Interest Income" 
-                />
-                <EditableField 
-                  fieldId="nonReg.capitalGains" 
-                  value={nonRegisteredDetails.capitalGains} 
-                  label="Capital Gains" 
                 />
                 <EditableField 
                   fieldId="nonReg.annualContribution" 
