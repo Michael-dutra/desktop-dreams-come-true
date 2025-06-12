@@ -115,25 +115,58 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
     }
   ];
 
-  // Prepare chart data
-  const chartData = [
+  // Prepare individual chart data for each insurance type
+  const lifeInsuranceChartData = [
     {
-      name: "Life Insurance",
-      current: currentCoverage.life,
-      recommended: recommendedCoverage.life,
-      gap: Math.max(0, coverageGaps.life)
+      name: "Current Coverage",
+      value: currentCoverage.life,
+      fill: "#3b82f6"
     },
     {
-      name: "Critical Illness",
-      current: currentCoverage.criticalIllness,
-      recommended: recommendedCoverage.criticalIllness,
-      gap: Math.max(0, coverageGaps.criticalIllness)
+      name: "Recommended Coverage",
+      value: recommendedCoverage.life,
+      fill: "#10b981"
     },
     {
-      name: "Disability",
-      current: currentCoverage.disability,
-      recommended: recommendedCoverage.disability,
-      gap: Math.max(0, coverageGaps.disability)
+      name: "Coverage Gap",
+      value: Math.max(0, coverageGaps.life),
+      fill: "#ef4444"
+    }
+  ];
+
+  const criticalIllnessChartData = [
+    {
+      name: "Current Coverage",
+      value: currentCoverage.criticalIllness,
+      fill: "#3b82f6"
+    },
+    {
+      name: "Recommended Coverage",
+      value: recommendedCoverage.criticalIllness,
+      fill: "#10b981"
+    },
+    {
+      name: "Coverage Gap",
+      value: Math.max(0, coverageGaps.criticalIllness),
+      fill: "#ef4444"
+    }
+  ];
+
+  const disabilityInsuranceChartData = [
+    {
+      name: "Current Coverage",
+      value: currentCoverage.disability,
+      fill: "#3b82f6"
+    },
+    {
+      name: "Recommended Coverage",
+      value: recommendedCoverage.disability,
+      fill: "#10b981"
+    },
+    {
+      name: "Coverage Gap",
+      value: Math.max(0, coverageGaps.disability),
+      fill: "#ef4444"
     }
   ];
 
@@ -191,71 +224,135 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             </CardContent>
           </Card>
 
-          {/* Insurance Coverage Visualization Chart */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5" />
-                Insurance Coverage Analysis
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={chartConfig} className="h-80">
-                <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                  <XAxis 
-                    dataKey="name" 
-                    tick={{ fontSize: 12 }}
-                    interval={0}
-                    angle={-45}
-                    textAnchor="end"
-                    height={80}
-                  />
-                  <YAxis 
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    tick={{ fontSize: 12 }}
-                  />
-                  <ChartTooltip 
-                    content={<ChartTooltipContent />}
-                    formatter={(value: number) => [formatCurrency(value), ""]}
-                  />
-                  <Bar 
-                    dataKey="current" 
-                    fill="var(--color-current)" 
-                    name="Current Coverage"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar 
-                    dataKey="recommended" 
-                    fill="var(--color-recommended)" 
-                    name="Recommended Coverage"
-                    radius={[4, 4, 0, 0]}
-                  />
-                  <Bar 
-                    dataKey="gap" 
-                    fill="var(--color-gap)" 
-                    name="Coverage Gap"
-                    radius={[4, 4, 0, 0]}
-                  />
-                </BarChart>
-              </ChartContainer>
-              
-              {/* Legend */}
-              <div className="flex justify-center gap-6 mt-4">
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-blue-500 rounded"></div>
-                  <span className="text-sm">Current Coverage</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-green-500 rounded"></div>
-                  <span className="text-sm">Recommended Coverage</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-3 h-3 bg-red-500 rounded"></div>
-                  <span className="text-sm">Coverage Gap</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Three Separate Insurance Charts */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Life Insurance Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Shield className="h-4 w-4" />
+                  Life Insurance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-64">
+                  <BarChart data={lifeInsuranceChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 10 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number) => [formatCurrency(value), ""]}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      fill={(entry) => entry.fill}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Critical Illness Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <AlertTriangle className="h-4 w-4" />
+                  Critical Illness
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-64">
+                  <BarChart data={criticalIllnessChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 10 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number) => [formatCurrency(value), ""]}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      fill={(entry) => entry.fill}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+
+            {/* Disability Insurance Chart */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <CheckCircle className="h-4 w-4" />
+                  Disability Insurance
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-64">
+                  <BarChart data={disabilityInsuranceChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 10 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={60}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                      tick={{ fontSize: 10 }}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      formatter={(value: number) => [formatCurrency(value), ""]}
+                    />
+                    <Bar 
+                      dataKey="value" 
+                      fill={(entry) => entry.fill}
+                      radius={[4, 4, 0, 0]}
+                    />
+                  </BarChart>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Legend for all charts */}
+          <div className="flex justify-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-blue-500 rounded"></div>
+              <span className="text-sm">Current Coverage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-green-500 rounded"></div>
+              <span className="text-sm">Recommended Coverage</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 bg-red-500 rounded"></div>
+              <span className="text-sm">Coverage Gap</span>
+            </div>
+          </div>
 
           <Tabs defaultValue="current-life" className="w-full">
             <TabsList className="grid w-full grid-cols-4">
