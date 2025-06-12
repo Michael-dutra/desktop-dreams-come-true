@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -187,7 +188,7 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[95vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <Shield className="h-5 w-5" />
@@ -225,29 +226,35 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
           </Card>
 
           {/* Three Separate Insurance Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
             {/* Life Insurance Chart */}
-            <Card>
-              <CardHeader>
+            <Card className="min-h-[400px]">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Shield className="h-4 w-4" />
                   Life Insurance
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={lifeInsuranceChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CardContent className="h-80">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <BarChart 
+                    data={lifeInsuranceChartData} 
+                    margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
+                    width="100%"
+                    height="100%"
+                  >
                     <XAxis 
                       dataKey="name" 
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
                       interval={0}
                       angle={-45}
                       textAnchor="end"
-                      height={60}
+                      height={80}
                     />
                     <YAxis 
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
+                      width={60}
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent />}
@@ -263,27 +270,33 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             </Card>
 
             {/* Critical Illness Chart */}
-            <Card>
-              <CardHeader>
+            <Card className="min-h-[400px]">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <AlertTriangle className="h-4 w-4" />
                   Critical Illness
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={criticalIllnessChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CardContent className="h-80">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <BarChart 
+                    data={criticalIllnessChartData} 
+                    margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
+                    width="100%"
+                    height="100%"
+                  >
                     <XAxis 
                       dataKey="name" 
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
                       interval={0}
                       angle={-45}
                       textAnchor="end"
-                      height={60}
+                      height={80}
                     />
                     <YAxis 
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
+                      width={60}
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent />}
@@ -299,27 +312,33 @@ export const InsuranceDetailDialog = ({ isOpen, onClose }: InsuranceDetailDialog
             </Card>
 
             {/* Disability Insurance Chart */}
-            <Card>
-              <CardHeader>
+            <Card className="min-h-[400px]">
+              <CardHeader className="pb-4">
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <CheckCircle className="h-4 w-4" />
                   Disability Insurance
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-64">
-                  <BarChart data={disabilityInsuranceChartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CardContent className="h-80">
+                <ChartContainer config={chartConfig} className="h-full w-full">
+                  <BarChart 
+                    data={disabilityInsuranceChartData} 
+                    margin={{ top: 20, right: 20, left: 20, bottom: 80 }}
+                    width="100%"
+                    height="100%"
+                  >
                     <XAxis 
                       dataKey="name" 
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
                       interval={0}
                       angle={-45}
                       textAnchor="end"
-                      height={60}
+                      height={80}
                     />
                     <YAxis 
                       tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                      tick={{ fontSize: 10 }}
+                      tick={{ fontSize: 11 }}
+                      width={60}
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent />}
