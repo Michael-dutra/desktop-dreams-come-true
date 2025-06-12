@@ -1,11 +1,10 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Crown, FileText, Shield, Users, DollarSign, Calendar, AlertTriangle, CheckCircle } from "lucide-react";
+import { Crown, FileText, Shield, Users, DollarSign, Calendar, AlertTriangle, CheckCircle, Calculator } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
@@ -18,12 +17,23 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
   const estateBreakdown = [
-    { asset: "Real Estate", value: 425000, color: "#8b5cf6", taxable: true },
-    { asset: "Investment Accounts", value: 185000, color: "#06b6d4", taxable: true },
-    { asset: "RRSP/RRIF", value: 95000, color: "#10b981", taxable: true },
-    { asset: "TFSA", value: 55000, color: "#f59e0b", taxable: false },
-    { asset: "Business Assets", value: 25000, color: "#ef4444", taxable: true },
+    { asset: "Real Estate", value: 425000, color: "#8b5cf6", taxable: true, taxRate: 0.06 },
+    { asset: "Investment Accounts", value: 185000, color: "#06b6d4", taxable: true, taxRate: 0.12 },
+    { asset: "RRSP/RRIF", value: 95000, color: "#10b981", taxable: true, taxRate: 0.25 },
+    { asset: "TFSA", value: 55000, color: "#f59e0b", taxable: false, taxRate: 0 },
+    { asset: "Business Assets", value: 25000, color: "#ef4444", taxable: true, taxRate: 0.08 },
   ];
+
+  // Calculate tax breakdown for each asset
+  const taxBreakdown = estateBreakdown.map(asset => ({
+    ...asset,
+    taxAmount: asset.taxable ? asset.value * asset.taxRate : 0,
+    afterTaxValue: asset.taxable ? asset.value - (asset.value * asset.taxRate) : asset.value
+  }));
+
+  const totalTaxes = taxBreakdown.reduce((sum, asset) => sum + asset.taxAmount, 0);
+  const probateFees = 12000; // Fixed probate fees
+  const totalCosts = totalTaxes + probateFees;
 
   const taxProjections = [
     { scenario: "Current Plan", estateTax: 25000, probateFees: 12000, total: 37000 },
@@ -69,11 +79,12 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="documents">Documents</TabsTrigger>
             <TabsTrigger value="beneficiaries">Beneficiaries</TabsTrigger>
             <TabsTrigger value="tax-planning">Tax Planning</TabsTrigger>
+            <TabsTrigger value="tax-breakdown">Final Taxes Breakdown</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -422,6 +433,145 @@ const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
                   <p className="text-green-700">
                     Implementing optimized strategy could save approximately <strong>$24,000</strong> in estate costs
                   </p>
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="tax-breakdown" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Calculator className="h-5 w-5" />
+                  <span>Final Taxes Breakdown by Asset</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {taxBreakdown.map((asset) => (
+                    <div key={asset.asset} className="p-4 border rounded-lg">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }} />
+                          <div>
+                            <h4 className="font-medium">{asset.asset}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {asset.taxable ? `Taxable at ${(asset.taxRate * 100).toFixed(1)}%` : "Tax-Free"}
+                            </p>
+                          </div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground">Asset Value</p>
+                          <p className="text-lg font-bold">${asset.value.toLocaleString()}</p>
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground">Tax Calculation</p>
+                          {asset.taxable ? (
+                            <p className="text-sm">
+                              ${asset.value.toLocaleString()} × {(asset.taxRate * 100).toFixed(1)}% = 
+                              <span className="font-bold text-red-600 ml-1">
+                                ${asset.taxAmount.toLocaleString()}
+                              </span>
+                            </p>
+                          ) : (
+                            <p className="text-sm font-bold text-green-600">$0</p>
+                          )}
+                        </div>
+                        
+                        <div className="text-center">
+                          <p className="text-sm text-muted-foreground">After-Tax Value</p>
+                          <p className="text-lg font-bold text-green-600">
+                            ${asset.afterTaxValue.toLocaleString()}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Tax Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <span className="font-medium">Total Estate Taxes</span>
+                    <span className="text-lg font-bold text-red-600">
+                      ${totalTaxes.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-orange-50 border border-orange-200 rounded-lg">
+                    <span className="font-medium">Probate Fees</span>
+                    <span className="text-lg font-bold text-orange-600">
+                      ${probateFees.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <span className="font-bold">Total Final Costs</span>
+                    <span className="text-xl font-bold">
+                      ${totalCosts.toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Estate Distribution</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Total Estate Value</span>
+                    <span className="text-lg font-bold">
+                      ${totalEstate.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 border rounded-lg">
+                    <span className="font-medium">Less: Final Costs</span>
+                    <span className="text-lg font-bold text-red-600">
+                      -${totalCosts.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <span className="font-bold">Net to Beneficiaries</span>
+                    <span className="text-xl font-bold text-green-600">
+                      ${(totalEstate - totalCosts).toLocaleString()}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax Rate Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Asset Tax Rates Applied:</h4>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li>• Real Estate: 6% (Capital gains + probate)</li>
+                      <li>• Investment Accounts: 12% (Capital gains tax)</li>
+                      <li>• RRSP/RRIF: 25% (Income tax on withdrawal)</li>
+                      <li>• TFSA: 0% (Tax-free)</li>
+                      <li>• Business Assets: 8% (Capital gains + valuation)</li>
+                    </ul>
+                  </div>
+                  <div className="space-y-2">
+                    <h4 className="font-medium">Additional Considerations:</h4>
+                    <ul className="space-y-1 text-muted-foreground">
+                      <li>• Probate fees: Fixed at $12,000</li>
+                      <li>• Legal and administrative costs included</li>
+                      <li>• Rates may vary by province/territory</li>
+                      <li>• Professional valuation may be required</li>
+                    </ul>
+                  </div>
                 </div>
               </CardContent>
             </Card>
