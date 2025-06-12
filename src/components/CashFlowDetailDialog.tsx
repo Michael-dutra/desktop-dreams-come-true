@@ -1,8 +1,9 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, PieChart, Pie, Cell } from "recharts";
-import { TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Edit, Save } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Plus, Trash2, Edit, Save, Check } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -124,6 +125,16 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
   const monthlyIncome = totalIncome;
   const debtToIncomeRatio = (monthlyDebtPayments / monthlyIncome) * 100;
   
+  // Determine the bracket and status
+  const getRatioBracket = (ratio: number) => {
+    if (ratio <= 20) return { range: "0-20%", status: "Excellent", color: "text-green-600" };
+    if (ratio <= 35) return { range: "21-35%", status: "Good", color: "text-green-600" };
+    if (ratio <= 49) return { range: "36-49%", status: "Fair", color: "text-orange-500" };
+    return { range: "50%+", status: "Poor", color: "text-red-500" };
+  };
+
+  const currentBracket = getRatioBracket(debtToIncomeRatio);
+  
   const debtToIncomeData = [
     { name: "Debt Payments", value: debtToIncomeRatio, color: "#ef4444" },
     { name: "Available Income", value: 100 - debtToIncomeRatio, color: "#10b981" }
@@ -188,30 +199,35 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground">Debt-to-Income</p>
-                    <p className="text-2xl font-bold text-green-600">{debtToIncomeRatio.toFixed(1)}%</p>
-                    <p className="text-xs text-green-600">Excellent</p>
+                    <p className={`text-2xl font-bold ${currentBracket.color}`}>{debtToIncomeRatio.toFixed(1)}%</p>
+                    <p className={`text-xs ${currentBracket.color}`}>{currentBracket.status}</p>
                   </div>
-                  <TrendingUp className="h-8 w-8 text-green-600" />
+                  <TrendingUp className={`h-8 w-8 ${currentBracket.color}`} />
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          {/* Debt-to-Income Ratio Chart */}
+          {/* Debt-to-Net Income Ratio Chart */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <DollarSign className="h-5 w-5" />
-                Debt-to-Income Ratio Analysis
+                Debt to Net Income Ratio Analysis
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                    <h4 className="font-semibold text-green-900 mb-2">Excellent Debt Management</h4>
-                    <p className="text-sm text-green-700 mb-3">
-                      Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% is excellent. Financial experts recommend keeping this ratio below 36%.
+                  <div className={`${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'bg-green-50 border-green-200' : currentBracket.status === 'Fair' ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'} p-4 rounded-lg border`}>
+                    <h4 className={`font-semibold mb-2 ${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'text-green-900' : currentBracket.status === 'Fair' ? 'text-orange-900' : 'text-red-900'}`}>
+                      {currentBracket.status} Debt Management
+                    </h4>
+                    <p className={`text-sm mb-3 ${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'text-green-700' : currentBracket.status === 'Fair' ? 'text-orange-700' : 'text-red-700'}`}>
+                      Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% falls in the {currentBracket.status.toLowerCase()} range. 
+                      {currentBracket.status === 'Excellent' || currentBracket.status === 'Good' 
+                        ? ' Financial experts recommend keeping this ratio below 36%.' 
+                        : ' Consider strategies to reduce debt or increase income.'}
                     </p>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
@@ -224,7 +240,7 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                       </div>
                       <div className="flex justify-between border-t pt-2">
                         <span className="font-semibold">Ratio:</span>
-                        <span className="font-bold text-green-600">{debtToIncomeRatio.toFixed(1)}%</span>
+                        <span className={`font-bold ${currentBracket.color}`}>{debtToIncomeRatio.toFixed(1)}%</span>
                       </div>
                     </div>
                   </div>
@@ -232,21 +248,41 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                   <div className="space-y-2">
                     <h4 className="font-medium">Debt-to-Income Benchmarks:</h4>
                     <div className="space-y-1 text-sm">
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Excellent (0-20%):</span>
-                        <span className="text-green-600 font-medium">✓ Your Range</span>
+                        <div className="flex items-center gap-1">
+                          {currentBracket.range === "0-20%" && <Check className="h-4 w-4 text-green-600" />}
+                          <span className={currentBracket.range === "0-20%" ? "text-green-600 font-medium" : "text-gray-500"}>
+                            {currentBracket.range === "0-20%" ? "✓ Your Range" : "Excellent"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Good (21-35%):</span>
-                        <span className="text-gray-500">Good</span>
+                        <div className="flex items-center gap-1">
+                          {currentBracket.range === "21-35%" && <Check className="h-4 w-4 text-green-600" />}
+                          <span className={currentBracket.range === "21-35%" ? "text-green-600 font-medium" : "text-gray-500"}>
+                            {currentBracket.range === "21-35%" ? "✓ Your Range" : "Good"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Fair (36-49%):</span>
-                        <span className="text-orange-500">Fair</span>
+                        <div className="flex items-center gap-1">
+                          {currentBracket.range === "36-49%" && <Check className="h-4 w-4 text-orange-500" />}
+                          <span className={currentBracket.range === "36-49%" ? "text-orange-500 font-medium" : "text-gray-500"}>
+                            {currentBracket.range === "36-49%" ? "✓ Your Range" : "Fair"}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
+                      <div className="flex justify-between items-center">
                         <span>Poor (50%+):</span>
-                        <span className="text-red-500">Poor</span>
+                        <div className="flex items-center gap-1">
+                          {currentBracket.range === "50%+" && <Check className="h-4 w-4 text-red-500" />}
+                          <span className={currentBracket.range === "50%+" ? "text-red-500 font-medium" : "text-gray-500"}>
+                            {currentBracket.range === "50%+" ? "✓ Your Range" : "Poor"}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -496,10 +532,15 @@ export const CashFlowDetailDialog = ({ isOpen, onClose }: CashFlowDetailDialogPr
                   <p className="text-sm text-green-600">You're maintaining a healthy positive cash flow of ${netCashFlow.toLocaleString()}/month.</p>
                 </div>
 
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <p className="font-medium text-green-800">Excellent Debt Management</p>
-                  <p className="text-sm text-green-600">
-                    Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% is excellent and well below the recommended 36% threshold.
+                <div className={`p-3 border rounded-lg ${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'bg-green-50 border-green-200' : currentBracket.status === 'Fair' ? 'bg-orange-50 border-orange-200' : 'bg-red-50 border-red-200'}`}>
+                  <p className={`font-medium ${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'text-green-800' : currentBracket.status === 'Fair' ? 'text-orange-800' : 'text-red-800'}`}>
+                    {currentBracket.status} Debt Management
+                  </p>
+                  <p className={`text-sm ${currentBracket.status === 'Excellent' || currentBracket.status === 'Good' ? 'text-green-600' : currentBracket.status === 'Fair' ? 'text-orange-600' : 'text-red-600'}`}>
+                    Your debt-to-income ratio of {debtToIncomeRatio.toFixed(1)}% is {currentBracket.status.toLowerCase()}
+                    {currentBracket.status === 'Excellent' || currentBracket.status === 'Good' 
+                      ? ' and well below the recommended 36% threshold.' 
+                      : '. Consider strategies to improve this ratio.'}
                   </p>
                 </div>
 
