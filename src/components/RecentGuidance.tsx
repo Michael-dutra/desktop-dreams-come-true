@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, TrendingUp, AlertTriangle, CheckCircle } from "lucide-react";
+import { Brain, TrendingUp, AlertTriangle, CheckCircle, DollarSign, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const RecentGuidance = () => {
@@ -34,6 +34,26 @@ const RecentGuidance = () => {
       action: "Monitor",
       color: "text-blue-600",
       bgColor: "bg-blue-50"
+    },
+    {
+      icon: <DollarSign className="h-5 w-5" />,
+      type: "Cash Flow Optimization",
+      title: "Emergency fund fully funded",
+      description: "You've successfully built a 6-month emergency fund totaling $18,000. Consider redirecting monthly emergency contributions to investment accounts for growth.",
+      priority: "medium",
+      action: "Rebalance",
+      color: "text-purple-600",
+      bgColor: "bg-purple-50"
+    },
+    {
+      icon: <Shield className="h-5 w-5" />,
+      type: "Retirement Planning",
+      title: "RRSP contribution deadline approaching",
+      description: "Maximize your 2024 RRSP contribution by March 1st. Contributing $5,500 more could reduce taxable income and save $1,650 in taxes this year.",
+      priority: "high",
+      action: "Contribute",
+      color: "text-indigo-600",
+      bgColor: "bg-indigo-50"
     }
   ];
 

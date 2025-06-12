@@ -6,16 +6,37 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useState } from "react";
 
 const ReportsSection = () => {
-  const [filterType, setFilterType] = useState("all");
+  const [selections, setSelections] = useState({
+    netWorth: "",
+    assets: "",
+    liabilities: "",
+    cashFlow: "",
+    insurance: "",
+    retirement: "",
+    aiGuidance: "",
+    goals: "",
+    actionItems: ""
+  });
 
-  const allReports = [
+  const reportSections = [
+    { key: "netWorth", label: "Net Worth", icon: <TrendingUp className="h-4 w-4" /> },
+    { key: "assets", label: "Assets", icon: <PieChart className="h-4 w-4" /> },
+    { key: "liabilities", label: "Liabilities", icon: <BarChart3 className="h-4 w-4" /> },
+    { key: "cashFlow", label: "Cash Flow", icon: <FileText className="h-4 w-4" /> },
+    { key: "insurance", label: "Insurance", icon: <FileText className="h-4 w-4" /> },
+    { key: "retirement", label: "Retirement", icon: <FileText className="h-4 w-4" /> },
+    { key: "aiGuidance", label: "Recent AI Guidance", icon: <FileText className="h-4 w-4" /> },
+    { key: "goals", label: "Goals", icon: <FileText className="h-4 w-4" /> },
+    { key: "actionItems", label: "Action Items", icon: <FileText className="h-4 w-4" /> }
+  ];
+
+  const recentReports = [
     {
       icon: <PieChart className="h-4 w-4" />,
       title: "Portfolio Performance Report",
       description: "Q4 2024 detailed analysis",
       date: "Generated Dec 15, 2024",
       color: "text-blue-600",
-      type: "section",
     },
     {
       icon: <BarChart3 className="h-4 w-4" />,
@@ -23,7 +44,6 @@ const ReportsSection = () => {
       description: "2024 tax year recommendations",
       date: "Generated Dec 10, 2024",
       color: "text-green-600",
-      type: "section",
     },
     {
       icon: <TrendingUp className="h-4 w-4" />,
@@ -31,73 +51,89 @@ const ReportsSection = () => {
       description: "5-year financial forecast",
       date: "Generated Dec 8, 2024",
       color: "text-purple-600",
-      type: "section",
-    },
-    {
-      icon: <FileText className="h-4 w-4" />,
-      title: "Comprehensive Financial Report",
-      description: "Complete client analysis and recommendations",
-      date: "Generated Dec 5, 2024",
-      color: "text-orange-600",
-      type: "full",
-    },
-    {
-      icon: <FileText className="h-4 w-4" />,
-      title: "Annual Financial Review",
-      description: "Year-end comprehensive assessment",
-      date: "Generated Dec 1, 2024",
-      color: "text-red-600",
-      type: "full",
-    },
+    }
   ];
 
-  const filteredReports = filterType === "all" 
-    ? allReports 
-    : allReports.filter(report => report.type === filterType);
+  const handleSelectionChange = (section: string, value: string) => {
+    setSelections(prev => ({ ...prev, [section]: value }));
+  };
+
+  const handleGenerateReport = () => {
+    console.log("Generating report with selections:", selections);
+    // Here you would implement the actual report generation logic
+  };
 
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-lg flex items-center space-x-2">
-            <FileText className="h-5 w-5" />
-            <span>Reports</span>
-          </CardTitle>
-          <Select value={filterType} onValueChange={setFilterType}>
-            <SelectTrigger className="w-40">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Reports</SelectItem>
-              <SelectItem value="section">By Section</SelectItem>
-              <SelectItem value="full">Full Report</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+        <CardTitle className="text-lg flex items-center space-x-2">
+          <FileText className="h-5 w-5" />
+          <span>Reports</span>
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-3">
-          {filteredReports.map((report, index) => (
-            <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
-              <div className="flex items-center space-x-3">
-                <div className={`${report.color}`}>
-                  {report.icon}
+        <div className="space-y-6">
+          {/* Report Generation Section */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-medium">Generate Custom Report</h3>
+            <div className="space-y-3">
+              {reportSections.map((section) => (
+                <div key={section.key} className="flex items-center space-x-3">
+                  <div className="flex items-center space-x-2 flex-1">
+                    <div className="text-muted-foreground">
+                      {section.icon}
+                    </div>
+                    <span className="text-sm font-medium min-w-0 flex-1">{section.label}</span>
+                  </div>
+                  <Select 
+                    value={selections[section.key as keyof typeof selections]} 
+                    onValueChange={(value) => handleSelectionChange(section.key, value)}
+                  >
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Select" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="summary">Summary</SelectItem>
+                      <SelectItem value="detailed">Detailed</SelectItem>
+                      <SelectItem value="analysis">Analysis</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div>
-                  <p className="text-sm font-medium">{report.title}</p>
-                  <p className="text-xs text-muted-foreground">{report.description}</p>
-                  <p className="text-xs text-muted-foreground flex items-center space-x-1 mt-1">
-                    <Calendar className="h-3 w-3" />
-                    <span>{report.date}</span>
-                  </p>
-                </div>
-              </div>
-              <Button variant="outline" size="sm" className="flex items-center space-x-2">
-                <Download className="h-4 w-4" />
-                <span>Download</span>
-              </Button>
+              ))}
             </div>
-          ))}
+            <Button onClick={handleGenerateReport} className="w-full">
+              Generate Report
+            </Button>
+          </div>
+
+          {/* Divider */}
+          <div className="border-t" />
+
+          {/* Recent Reports Section */}
+          <div className="space-y-3">
+            <h3 className="text-sm font-medium">Recent Reports</h3>
+            {recentReports.map((report, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-lg border hover:bg-muted/50 transition-colors">
+                <div className="flex items-center space-x-3">
+                  <div className={`${report.color}`}>
+                    {report.icon}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium">{report.title}</p>
+                    <p className="text-xs text-muted-foreground">{report.description}</p>
+                    <p className="text-xs text-muted-foreground flex items-center space-x-1 mt-1">
+                      <Calendar className="h-3 w-3" />
+                      <span>{report.date}</span>
+                    </p>
+                  </div>
+                </div>
+                <Button variant="outline" size="sm" className="flex items-center space-x-2">
+                  <Download className="h-4 w-4" />
+                  <span>Download</span>
+                </Button>
+              </div>
+            ))}
+          </div>
         </div>
       </CardContent>
     </Card>
