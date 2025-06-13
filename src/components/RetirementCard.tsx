@@ -16,8 +16,10 @@ const RetirementCard = () => {
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
   const yearsInRetirement = lifeExpectancy - retirementAge;
-  const yearsIncomeWillLast = totalRetirementSavings / (netMonthlyIncomeNeeded * 12);
-  const coverageRatio = Math.min(1, yearsIncomeWillLast / yearsInRetirement);
+  
+  // Calculate total retirement needs and percentage saved
+  const totalRetirementNeeded = netMonthlyIncomeNeeded * 12 * yearsInRetirement;
+  const savingsPercentage = Math.min(100, (totalRetirementSavings / totalRetirementNeeded) * 100);
 
   return (
     <>
@@ -46,6 +48,31 @@ const RetirementCard = () => {
             <p className="text-3xl font-bold text-purple-600 mb-1">$90,000</p>
             <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
+
+          {/* Retirement Savings Progress Meter */}
+          <div className="p-5 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-200 shadow-sm">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-lg font-bold text-indigo-800">Retirement Savings Progress</span>
+              <span className="text-lg font-bold text-indigo-600 bg-white px-3 py-1 rounded-full">
+                {savingsPercentage.toFixed(1)}%
+              </span>
+            </div>
+            <div className="space-y-3">
+              <Progress 
+                value={savingsPercentage} 
+                className="h-4 bg-indigo-100 border border-indigo-200 rounded-full overflow-hidden"
+              />
+              <div className="flex justify-between text-sm text-indigo-700">
+                <span>$0</span>
+                <span className="font-medium">{savingsPercentage.toFixed(1)}% of goal</span>
+                <span>${(totalRetirementNeeded / 1000).toFixed(0)}K needed</span>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
+              <TrendingUp className="h-5 w-5 text-green-600" />
+              <span className="text-sm font-semibold text-green-700">Building towards retirement goal</span>
+            </div>
+          </div>
           
           {/* Retirement Goals */}
           <div className="space-y-4 pt-2 border-t border-gray-200">
@@ -63,31 +90,6 @@ const RetirementCard = () => {
                   <span className="text-sm font-medium text-emerald-800">Monthly Need</span>
                 </div>
                 <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded.toLocaleString()}</p>
-              </div>
-            </div>
-
-            {/* Enhanced Progress Bar */}
-            <div className="p-5 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-200 shadow-sm">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-lg font-bold text-indigo-800">Income Coverage</span>
-                <span className="text-lg font-bold text-indigo-600 bg-white px-3 py-1 rounded-full">
-                  {yearsIncomeWillLast.toFixed(0)} of {yearsInRetirement} years
-                </span>
-              </div>
-              <div className="space-y-3">
-                <Progress 
-                  value={coverageRatio * 100} 
-                  className="h-4 bg-indigo-100 border border-indigo-200 rounded-full overflow-hidden"
-                />
-                <div className="flex justify-between text-sm text-indigo-700">
-                  <span>0 years</span>
-                  <span className="font-medium">{(coverageRatio * 100).toFixed(0)}% covered</span>
-                  <span>{yearsInRetirement} years</span>
-                </div>
-              </div>
-              <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-semibold text-green-700">On track for retirement at {retirementAge}</span>
               </div>
             </div>
           </div>
