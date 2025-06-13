@@ -1,11 +1,10 @@
-
 import { Crown, FileText, Shield, AlertTriangle, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import EstateDetailDialog from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -88,11 +87,10 @@ const EstateCard = () => {
                   />
                   <Bar 
                     dataKey="amount" 
-                    fill={(entry) => entry.color}
                     radius={[4, 4, 0, 0]}
                   >
                     {estateBreakdownData.map((entry, index) => (
-                      <Bar key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Bar>
                 </BarChart>
