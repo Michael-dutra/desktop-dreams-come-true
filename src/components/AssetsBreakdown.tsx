@@ -1,28 +1,51 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp, FileText } from "lucide-react";
+import { Eye, TrendingUp } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [rateOfReturn, setRateOfReturn] = useState([7]);
+  const [timeHorizon, setTimeHorizon] = useState([10]);
 
-  const [assets, setAssets] = useState([
+  const [assets] = useState([
     { name: "Real Estate", amount: "$620,000", value: 620000, color: "#3b82f6" },
     { name: "RRSP", amount: "$52,000", value: 52000, color: "#10b981" },
     { name: "TFSA", amount: "$38,000", value: 38000, color: "#8b5cf6" },
     { name: "Non-Registered", amount: "$25,000", value: 25000, color: "#f59e0b" },
   ]);
 
+  // Calculate projected values
+  const projectedAssets = assets.map(asset => {
+    const projectedValue = asset.value * Math.pow(1 + rateOfReturn[0] / 100, timeHorizon[0]);
+    return {
+      ...asset,
+      currentValue: asset.value,
+      projectedValue: projectedValue,
+      growth: projectedValue - asset.value
+    };
+  });
+
+  const totalCurrentValue = assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
+  const totalGrowth = totalProjectedValue - totalCurrentValue;
+
   const chartConfig = {
-    realEstate: { label: "Real Estate", color: "#3b82f6" },
-    rrsp: { label: "RRSP", color: "#10b981" },
-    tfsa: { label: "TFSA", color: "#8b5cf6" },
-    nonRegistered: { label: "Non-Registered", color: "#f59e0b" },
+    currentValue: { label: "Current Value", color: "#6b7280" },
+    projectedValue: { label: "Projected Value", color: "#3b82f6" },
   };
+
+  const chartData = projectedAssets.map(asset => ({
+    name: asset.name.replace(/\s+/g, '\n'),
+    current: asset.currentValue,
+    projected: asset.projectedValue,
+    fill: asset.color
+  }));
 
   return (
     <>
@@ -46,10 +69,93 @@ const AssetsBreakdown = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
-            {/* Breakdown List */}
+            {/* Total Values Summary */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+                <p className="text-sm text-gray-600 font-medium">Current Total</p>
+                <p className="text-2xl font-bold text-gray-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
+              </div>
+              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+                <p className="text-sm text-blue-600 font-medium">Projected Total</p>
+                <p className="text-2xl font-bold text-blue-800">${(totalProjectedValue / 1000).toFixed(0)}K</p>
+                <p className="text-xs text-green-600 font-medium">+${(totalGrowth / 1000).toFixed(0)}K growth</p>
+              </div>
+            </div>
+
+            {/* Interactive Controls */}
+            <div className="p-4 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-200">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-orange-700">
+                    Rate of Return: {rateOfReturn[0]}%
+                  </label>
+                  <Slider
+                    value={rateOfReturn}
+                    onValueChange={setRateOfReturn}
+                    min={1}
+                    max={15}
+                    step={0.5}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-purple-700">
+                    Time Horizon: {timeHorizon[0]} years
+                  </label>
+                  <Slider
+                    value={timeHorizon}
+                    onValueChange={setTimeHorizon}
+                    min={1}
+                    max={30}
+                    step={1}
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            </div>
+            
+            {/* Asset Growth Bar Chart */}
+            <div className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+              <div className="mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Asset Growth Projection</h3>
+                <p className="text-sm text-gray-600">Current vs projected values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
+              </div>
+              
+              <ChartContainer config={chartConfig} className="h-80 w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+                    <XAxis 
+                      dataKey="name" 
+                      tick={{ fontSize: 12 }}
+                      interval={0}
+                      angle={-45}
+                      textAnchor="end"
+                      height={80}
+                    />
+                    <YAxis 
+                      tick={{ fontSize: 12 }}
+                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent 
+                        formatter={(value, name) => [
+                          `$${Number(value).toLocaleString()}`, 
+                          name === 'current' ? 'Current Value' : 'Projected Value'
+                        ]}
+                      />}
+                    />
+                    <Bar dataKey="current" fill="#6b7280" name="current" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="projected" fill="#3b82f6" name="projected" radius={[2, 2, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+
+            {/* Asset Breakdown List */}
             <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">Current Holdings</h3>
               {assets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between">
+                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
                     <span className="text-lg font-medium">{asset.name}</span>
@@ -59,28 +165,6 @@ const AssetsBreakdown = () => {
                   </div>
                 </div>
               ))}
-            </div>
-            
-            {/* Chart - Made bigger and better centered */}
-            <div className="flex justify-center">
-              <ChartContainer config={chartConfig} className="h-80 w-full max-w-md mx-auto">
-                <PieChart>
-                  <Pie
-                    data={assets}
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={120}
-                    paddingAngle={3}
-                    dataKey="value"
-                  >
-                    {assets.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} stroke="#ffffff" strokeWidth={2} />
-                    ))}
-                  </Pie>
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                </PieChart>
-              </ChartContainer>
             </div>
           </div>
         </CardContent>
