@@ -1,4 +1,5 @@
 
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,7 +55,7 @@ ${coverageGap > 0 ? `Consider securing additional disability insurance to ensure
   const coverageComparison = [
     { category: "Current Coverage", amount: currentCoverage, color: "#3b82f6" }, // Blue
     { category: "Recommended", amount: recommendedCoverage, color: "#10b981" }, // Green
-    { category: "Monthly Expenses", amount: monthlyExpenses, color: "#f59e0b" }, // Orange
+    { category: "Coverage Gap", amount: coverageGap, color: "#ef4444" }, // Red
   ];
 
   const chartConfig = {
@@ -238,3 +239,4 @@ ${coverageGap > 0 ? `Consider securing additional disability insurance to ensure
     </div>
   );
 };
+
