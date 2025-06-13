@@ -1,4 +1,5 @@
 
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -534,6 +535,56 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 </Card>
               </div>
 
+              {/* Tax Projections Chart */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Tax Impact by Asset</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <XAxis 
+                          dataKey="name" 
+                          tick={{ fontSize: 12 }}
+                          interval={0}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                        />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value, name) => [formatCurrency(Number(value)), name]}
+                          />}
+                        />
+                        <Bar 
+                          dataKey="grossValue" 
+                          fill="#3b82f6"
+                          name="Gross Value"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey="taxOwed" 
+                          fill="#ef4444"
+                          name="Tax Owed"
+                          radius={[4, 4, 0, 0]}
+                        />
+                        <Bar 
+                          dataKey="netValue" 
+                          fill="#10b981"
+                          name="Net Value"
+                          radius={[4, 4, 0, 0]}
+                        />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+
               {/* Individual Asset Controls - 2 Column Layout */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {projectedAssets.map((asset, index) => (
@@ -612,7 +663,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 ))}
               </div>
 
-              {/* Detailed Tax Calculations */}
+              {/* Detailed Tax Calculations - Moved to bottom */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Detailed Tax Calculations</CardTitle>
@@ -1173,3 +1224,4 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
     </>
   );
 };
+
