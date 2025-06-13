@@ -1,4 +1,3 @@
-
 import { Crown, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,7 +77,7 @@ const EstateCard = () => {
     {
       category: "Estate",
       amount: estateValues.totalEstate,
-      color: "#10b981" // Green
+      color: "#8b5cf6" // Purple
     },
     {
       category: "Final Taxes",
@@ -88,7 +87,7 @@ const EstateCard = () => {
     {
       category: "Net to Beneficiaries",
       amount: estateValues.netToBeneficiaries,
-      color: "#3b82f6" // Blue
+      color: "#10b981" // Green
     }
   ];
 
@@ -191,16 +190,16 @@ const EstateCard = () => {
             {/* Summary Numbers */}
             <div className="grid grid-cols-3 gap-4 mt-6">
               <div className="text-center">
-                <p className="text-lg font-bold text-green-800">Total Estate</p>
-                <p className="text-2xl font-bold text-green-900">${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-purple-800">Total Estate</p>
+                <p className="text-2xl font-bold text-purple-900">${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold text-red-800">Estate Taxes</p>
                 <p className="text-2xl font-bold text-red-900">${(estateValues.finalTaxes / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-blue-800">Net Amount</p>
-                <p className="text-2xl font-bold text-blue-900">${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-green-800">Net Amount</p>
+                <p className="text-2xl font-bold text-green-900">${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </div>
