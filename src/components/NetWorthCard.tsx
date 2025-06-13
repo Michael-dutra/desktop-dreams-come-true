@@ -171,8 +171,8 @@ const NetWorthCard = () => {
                   strokeWidth={3}
                   fill="#10b981"
                   fillOpacity={0.3}
-                  dot={{ fill: "white", strokeWidth: 3, r: 6, stroke: "#10b981" }}
-                  activeDot={{ r: 8, fill: "white", stroke: "#10b981", strokeWidth: 4 }}
+                  dot={{ fill: "white", strokeWidth: 4, r: 8, stroke: "#10b981" }}
+                  activeDot={{ r: 10, fill: "white", stroke: "#10b981", strokeWidth: 5 }}
                 />
               </AreaChart>
             </ChartContainer>
