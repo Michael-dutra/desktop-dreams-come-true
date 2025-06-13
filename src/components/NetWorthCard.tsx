@@ -101,19 +101,19 @@ const NetWorthCard = () => {
                   width={55}
                 />
                 <ChartTooltip 
-                  content={<ChartTooltipContent 
-                    formatter={(value) => [`$${Number(value).toLocaleString()}`, "Net Worth"]}
-                    labelStyle={{ color: '#1f2937', fontWeight: 'bold' }}
-                    contentStyle={{ 
-                      backgroundColor: 'white', 
-                      border: '2px solid #10b981',
-                      borderRadius: '8px',
-                      color: '#1f2937',
-                      fontSize: '14px',
-                      fontWeight: '500',
-                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
-                    }}
-                  />} 
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-white border-2 border-green-500 rounded-lg p-3 shadow-lg">
+                          <p className="text-gray-900 font-bold text-sm mb-1">{label}</p>
+                          <p className="text-green-600 font-semibold text-base">
+                            Net Worth: ${Number(payload[0].value).toLocaleString()}
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
                 />
                 <Area 
                   type="monotone" 
