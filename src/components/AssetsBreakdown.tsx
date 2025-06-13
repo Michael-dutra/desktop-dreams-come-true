@@ -33,9 +33,6 @@ const AssetsBreakdown = () => {
   const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
-  // Find the maximum projected value for scaling the bars
-  const maxProjectedValue = Math.max(...projectedAssets.map(asset => asset.projectedValue));
-
   return (
     <>
       <Card>
@@ -125,27 +122,28 @@ const AssetsBreakdown = () => {
               
               <div className="space-y-3">
                 {projectedAssets.map((asset, index) => {
-                  const widthPercentage = (asset.projectedValue / maxProjectedValue) * 100;
+                  // Use a consistent bar width for better comparison
+                  const maxBarWidth = 100; // Full width
+                  const widthPercentage = Math.max((asset.projectedValue / 1000000) * 100, 5); // Min 5% width for visibility
                   
                   return (
-                    <div key={index} className="space-y-1">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="font-medium">{asset.name}</span>
-                        <span className="font-bold">${(asset.projectedValue / 1000).toFixed(0)}K</span>
+                    <div key={index} className="flex items-center space-x-3">
+                      <div className="w-20 text-right">
+                        <span className="text-xs font-medium">{asset.name}</span>
                       </div>
-                      <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden">
-                        <div 
-                          className="h-full rounded-full transition-all duration-300 ease-out"
-                          style={{ 
-                            width: `${widthPercentage}%`,
-                            backgroundColor: asset.color
-                          }}
-                        />
-                        <div className="absolute inset-0 flex items-center px-2">
-                          <span className="text-xs font-medium text-white drop-shadow-sm">
-                            ${(asset.projectedValue / 1000).toFixed(0)}K
-                          </span>
+                      <div className="flex-1 relative">
+                        <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                          <div 
+                            className="h-full rounded-full transition-all duration-300 ease-out"
+                            style={{ 
+                              width: `${Math.min(widthPercentage, maxBarWidth)}%`,
+                              backgroundColor: asset.color
+                            }}
+                          />
                         </div>
+                      </div>
+                      <div className="w-16 text-left">
+                        <span className="text-xs font-bold">${(asset.projectedValue / 1000).toFixed(0)}K</span>
                       </div>
                     </div>
                   );
