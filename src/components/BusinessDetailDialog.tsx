@@ -303,7 +303,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   // Helper function to format large numbers
   const formatLargeNumber = (value: number): string => {
     if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 2)}M`;
+      return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
     } else if (value >= 1000) {
       return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
     }
@@ -359,7 +359,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                         </linearGradient>
                       </defs>
                       <XAxis dataKey="year" />
-                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                      <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
                       <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, "Valuation"]} />} />
                       <Area type="monotone" dataKey="valuation" stroke="#8b5cf6" fill="url(#valuationGradient)" />
                     </AreaChart>
@@ -484,7 +484,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 <ChartContainer config={chartConfig} className="h-80">
                   <BarChart data={businessGrowthData}>
                     <XAxis dataKey="year" />
-                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <YAxis tickFormatter={(value) => `$${formatLargeNumber(value)}`} />
                     <ChartTooltip content={<ChartTooltipContent />} />
                     <Bar dataKey="revenue" fill="#06b6d4" name="Revenue" />
                     <Bar dataKey="profit" fill="#10b981" name="Profit" />
