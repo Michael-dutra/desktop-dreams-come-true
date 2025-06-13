@@ -19,6 +19,16 @@ const BusinessCard = () => {
   const grossRevenue = 485000;
   const currentYear = 2024;
   
+  // Helper function to format large numbers
+  const formatLargeNumber = (value: number): string => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
+    }
+    return value.toString();
+  };
+  
   // Generate dynamic business growth data
   const generateBusinessData = () => {
     const data = [];
@@ -80,12 +90,12 @@ const BusinessCard = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-1">Current Value</p>
-                  <p className="text-2xl font-bold text-blue-600">${(currentValuation / 1000).toFixed(0)}K</p>
+                  <p className="text-2xl font-bold text-blue-600">${formatLargeNumber(currentValuation)}</p>
                   <p className="text-xs text-muted-foreground">{currentYear}</p>
                 </div>
                 <div className="text-center">
                   <p className="text-sm text-muted-foreground mb-1">Projected Value</p>
-                  <p className="text-2xl font-bold text-green-600">${(finalValuation / 1000).toFixed(0)}K</p>
+                  <p className="text-2xl font-bold text-green-600">${formatLargeNumber(finalValuation)}</p>
                   <p className="text-xs text-muted-foreground">{currentYear + yearsProjection[0]}</p>
                 </div>
               </div>
@@ -94,7 +104,7 @@ const BusinessCard = () => {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground">Current Annual Revenue</p>
-                <p className="text-2xl font-bold">${(grossRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold">${formatLargeNumber(grossRevenue)}</p>
                 <p className="text-sm text-muted-foreground mt-1">Base 2024</p>
               </div>
               <div>
@@ -180,7 +190,7 @@ const BusinessCard = () => {
                       tick={{ fontSize: 12, fill: 'white' }}
                       axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
                       tickLine={{ stroke: '#e2e8f0' }}
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                      tickFormatter={(value) => `$${formatLargeNumber(value)}`}
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
@@ -190,10 +200,10 @@ const BusinessCard = () => {
                             <div className="bg-white border-2 border-indigo-500 rounded-lg p-3 shadow-lg">
                               <p className="text-gray-900 font-bold text-sm mb-1">{label}</p>
                               <p className="text-indigo-600 font-semibold text-base">
-                                Valuation: ${Number(data.valuation).toLocaleString()}
+                                Valuation: ${formatLargeNumber(data.valuation)}
                               </p>
                               <p className="text-gray-600 text-sm">
-                                Revenue: ${Number(data.revenue).toLocaleString()}
+                                Revenue: ${formatLargeNumber(data.revenue)}
                               </p>
                             </div>
                           );
