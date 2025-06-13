@@ -157,7 +157,6 @@ const AssetsBreakdown = () => {
       <AssetsDetailDialog 
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
-        assets={assets}
       />
     </>
   );
