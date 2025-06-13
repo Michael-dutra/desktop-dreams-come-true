@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -527,33 +526,33 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
           <TabsContent value="legacy" className="space-y-6">
             {/* Estate Documents Status */}
-            <Card>
-              <CardHeader>
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader className="bg-blue-100 border-b border-blue-200">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>Estate Documents Status</span>
+                    <FileText className="h-5 w-5 text-blue-600" />
+                    <span className="text-blue-800">Estate Documents Status</span>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Document
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="space-y-4">
                   {estateDocuments.map((doc) => (
-                    <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={doc.id} className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-white">
                       <div>
-                        <h4 className="font-medium">{doc.name}</h4>
-                        <p className="text-sm text-muted-foreground">Last Updated: {doc.lastUpdated}</p>
+                        <h4 className="font-medium text-blue-900">{doc.name}</h4>
+                        <p className="text-sm text-blue-700">Last Updated: {doc.lastUpdated}</p>
                       </div>
                       <div className="flex items-center gap-4">
                         <div className="text-right">
                           <Badge variant={doc.status === "Current" ? "secondary" : doc.status === "Outdated" ? "destructive" : "outline"}>
                             {doc.status}
                           </Badge>
-                          <p className="text-xs text-muted-foreground mt-1">{doc.review}</p>
+                          <p className="text-xs text-blue-600 mt-1">{doc.review}</p>
                         </div>
                       </div>
                     </div>
@@ -563,35 +562,35 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
             </Card>
 
             {/* Trust Structures */}
-            <Card>
-              <CardHeader>
+            <Card className="border-green-200 bg-green-50">
+              <CardHeader className="bg-green-100 border-b border-green-200">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Scale className="h-5 w-5" />
-                    <span>Trust Structures</span>
+                    <Scale className="h-5 w-5 text-green-600" />
+                    <span className="text-green-800">Trust Structures</span>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Trust
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="space-y-4">
                   {trustStructures.map((trust) => (
-                    <div key={trust.id} className="p-4 border rounded-lg">
+                    <div key={trust.id} className="p-4 border border-green-200 rounded-lg bg-white">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium">{trust.name}</h4>
-                        <Badge variant="outline">{trust.type}</Badge>
+                        <h4 className="font-medium text-green-900">{trust.name}</h4>
+                        <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
                       </div>
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="text-muted-foreground">Assets</p>
-                          <p className="font-medium">{trust.assets}</p>
+                          <p className="text-green-600">Assets</p>
+                          <p className="font-medium text-green-800">{trust.assets}</p>
                         </div>
                         <div>
-                          <p className="text-muted-foreground">Purpose</p>
-                          <p className="font-medium">{trust.purpose}</p>
+                          <p className="text-green-600">Purpose</p>
+                          <p className="font-medium text-green-800">{trust.purpose}</p>
                         </div>
                       </div>
                     </div>
@@ -601,24 +600,24 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
             </Card>
 
             {/* Document Actions */}
-            <Card>
-              <CardHeader>
+            <Card className="border-orange-200 bg-orange-50">
+              <CardHeader className="bg-orange-100 border-b border-orange-200">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5" />
-                    <span>Document Actions</span>
+                    <Calendar className="h-5 w-5 text-orange-600" />
+                    <span className="text-orange-800">Document Actions</span>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" className="bg-orange-600 hover:bg-orange-700">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Action
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="space-y-3">
                   {documentActions.map((action) => (
-                    <div key={action.id} className="flex items-center justify-between p-3 border rounded-lg">
-                      <span className="font-medium">{action.action}</span>
+                    <div key={action.id} className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-white">
+                      <span className="font-medium text-orange-900">{action.action}</span>
                       <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
                         {action.priority}
                       </Badge>
@@ -629,83 +628,33 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
             </Card>
 
             {/* Beneficiary Allocation */}
-            <Card>
-              <CardHeader>
+            <Card className="border-purple-200 bg-purple-50">
+              <CardHeader className="bg-purple-100 border-b border-purple-200">
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
-                    <Users className="h-5 w-5" />
-                    <span>Beneficiary Allocation</span>
+                    <Users className="h-5 w-5 text-purple-600" />
+                    <span className="text-purple-800">Beneficiary Allocation</span>
                   </div>
-                  <Button size="sm">
+                  <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                     <Plus className="h-4 w-4 mr-2" />
                     Add Beneficiary
                   </Button>
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-4">
                 <div className="space-y-4">
                   {beneficiaries.map((beneficiary) => (
-                    <div key={beneficiary.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div key={beneficiary.id} className="flex items-center justify-between p-4 border border-purple-200 rounded-lg bg-white">
                       <div>
-                        <h4 className="font-medium">{beneficiary.name}</h4>
-                        <p className="text-sm text-muted-foreground">{beneficiary.relationship}</p>
+                        <h4 className="font-medium text-purple-900">{beneficiary.name}</h4>
+                        <p className="text-sm text-purple-700">{beneficiary.relationship}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold">{beneficiary.percentage}%</p>
-                        <p className="text-sm text-muted-foreground">${beneficiary.amount.toLocaleString()}</p>
+                        <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
+                        <p className="text-sm text-purple-600">${beneficiary.amount.toLocaleString()}</p>
                       </div>
                     </div>
                   ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Distribution Timeline */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribution Timeline</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Calendar className="h-4 w-4 text-blue-600" />
-                    <h4 className="font-medium text-blue-800">Immediate Distribution</h4>
-                  </div>
-                  <p className="text-sm text-blue-700 mb-2">Available immediately upon probate</p>
-                  <p className="text-lg font-bold text-blue-800">$300,000</p>
-                </div>
-                
-                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Scale className="h-4 w-4 text-green-600" />
-                    <h4 className="font-medium text-green-800">Trust Distribution</h4>
-                  </div>
-                  <p className="text-sm text-green-700 mb-2">Through family trust over time</p>
-                  <p className="text-lg font-bold text-green-800">$485,000</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Special Provisions */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Special Provisions</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <BookOpen className="h-4 w-4 text-purple-600" />
-                    <h4 className="font-medium text-purple-800">Education Fund</h4>
-                  </div>
-                  <p className="text-sm text-purple-700">$50,000 allocated for grandchildren's education</p>
-                </div>
-                
-                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Heart className="h-4 w-4 text-orange-600" />
-                    <h4 className="font-medium text-orange-800">Charitable Bequest</h4>
-                  </div>
-                  <p className="text-sm text-orange-700">$25,000 to local hospital foundation</p>
                 </div>
               </CardContent>
             </Card>
