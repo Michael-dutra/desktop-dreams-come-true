@@ -66,39 +66,39 @@ const AssetsBreakdown = () => {
           </Button>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6">
+          <div className="space-y-4">
             {/* Current Asset Breakdown List */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900">Current Holdings</h3>
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-gray-700">Current Holdings</h3>
               {assets.map((asset, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-lg font-medium">{asset.name}</span>
+                  <div className="flex items-center space-x-2">
+                    <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: asset.color }}></div>
+                    <span className="text-sm font-medium">{asset.name}</span>
                   </div>
-                  <span className="text-lg font-semibold">{asset.amount}</span>
+                  <span className="text-sm font-semibold">{asset.amount}</span>
                 </div>
               ))}
             </div>
 
-            {/* Total Values Summary */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-                <p className="text-sm text-gray-600 font-medium">Current Total</p>
-                <p className="text-2xl font-bold text-gray-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
+            {/* Current and Projected Totals - Horizontal Layout */}
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+              <div className="text-center">
+                <p className="text-xs text-gray-600 font-medium">Current Total</p>
+                <p className="text-lg font-bold text-gray-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
               </div>
-              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
-                <p className="text-sm text-blue-600 font-medium">Projected Total</p>
-                <p className="text-2xl font-bold text-blue-800">${(totalProjectedValue / 1000).toFixed(0)}K</p>
-                <p className="text-xs text-green-600 font-medium">+${(totalGrowth / 1000).toFixed(0)}K growth</p>
+              <div className="text-center">
+                <p className="text-xs text-blue-600 font-medium">Projected Total</p>
+                <p className="text-lg font-bold text-blue-800">${(totalProjectedValue / 1000).toFixed(0)}K</p>
+                <p className="text-xs text-green-600 font-medium">+${(totalGrowth / 1000).toFixed(0)}K</p>
               </div>
             </div>
 
             {/* Interactive Controls */}
-            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
-              <div className="grid grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-orange-700">
+            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-orange-700">
                     Rate of Return: {rateOfReturn[0]}%
                   </label>
                   <Slider
@@ -110,8 +110,8 @@ const AssetsBreakdown = () => {
                     className="w-full"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-purple-700">
+                <div className="space-y-1">
+                  <label className="text-xs font-medium text-purple-700">
                     Time Horizon: {timeHorizon[0]} years
                   </label>
                   <Slider
@@ -126,14 +126,14 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Asset Projected Values Bar Chart - Larger Size */}
-            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
-              <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Projected Asset Values</h3>
-                <p className="text-sm text-gray-600">Future values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
+            {/* Asset Projected Values Bar Chart */}
+            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+              <div className="mb-3">
+                <h3 className="text-sm font-semibold text-gray-900 mb-1">Projected Asset Values</h3>
+                <p className="text-xs text-gray-600">Future values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
               </div>
               
-              <ChartContainer config={chartConfig} className="h-96 w-full">
+              <ChartContainer config={chartConfig} className="h-80 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <XAxis 
