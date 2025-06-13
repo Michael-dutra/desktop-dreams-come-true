@@ -1,3 +1,4 @@
+
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -83,6 +84,7 @@ const NetWorthCard = () => {
 
         {/* Interactive Controls */}
         <div className="p-4 bg-white/10 rounded-lg space-y-4">
+          <h4 className="text-lg font-semibold text-white mb-3">Net Worth Simulation</h4>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
               <span className="text-sm font-medium text-white">Rate of Return</span>
