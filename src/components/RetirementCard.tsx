@@ -51,8 +51,8 @@ const RetirementCard = () => {
             <p className="text-base text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
 
-          {/* Interactive Controls - Stacked Layout */}
-          <div className="flex-1 space-y-5 p-5 bg-gradient-to-r from-orange-50 via-purple-50 to-emerald-50 rounded-xl border border-orange-200">
+          {/* Interactive Controls - Reduced size */}
+          <div className="p-3 bg-gradient-to-r from-orange-50 via-purple-50 to-emerald-50 rounded-xl border border-orange-200">
             <div className="space-y-3">
               <label className="text-base font-semibold text-orange-700">
                 Retirement Age: {retirementAge[0]}
@@ -66,7 +66,7 @@ const RetirementCard = () => {
                 className="w-full"
               />
             </div>
-            <div className="space-y-3">
+            <div className="space-y-3 mt-4">
               <label className="text-base font-semibold text-emerald-700">
                 Monthly Income Needed: ${netMonthlyIncomeNeeded[0].toLocaleString()}
               </label>
