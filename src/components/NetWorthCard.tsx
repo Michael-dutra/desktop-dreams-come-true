@@ -1,4 +1,3 @@
-
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -141,7 +140,7 @@ const NetWorthCard = () => {
         {/* Dynamic Projection Chart */}
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-4">
           <div className="text-center mb-4">
-            <h4 className="text-lg font-medium text-white">{timeHorizon[0]}-Year Projection</h4>
+            <h4 className="text-lg font-medium text-white">{timeHorizon[0]}-Year Net Worth Projection</h4>
             <p className="text-xs text-gray-300">At {rateOfReturn[0]}% annual growth</p>
           </div>
           <div className="w-full overflow-hidden">
