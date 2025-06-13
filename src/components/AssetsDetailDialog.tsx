@@ -22,7 +22,6 @@ interface Asset {
 interface AssetsDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  assets: Asset[];
 }
 
 interface DynamicAsset {
@@ -45,12 +44,13 @@ interface DynamicAsset {
   capitalImprovements?: number;
   inclusionRate?: number;
   taxRate?: number;
-  // RRSP/TFSA specific fields
+  // RRSP/TFSA/FHSA specific fields
   availableRoom?: number;
   ytdGrowth?: number;
   monthlyContribution?: number;
   // Non-Registered specific fields
   unrealizedGains?: number;
+  costBase?: number;
 }
 
 const generateStableChartData = (currentValue: number, futureValue: number, years: number, rate: number) => {
@@ -72,7 +72,7 @@ const generateStableChartData = (currentValue: number, futureValue: number, year
   return points;
 };
 
-export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDialogProps) => {
+export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
   // Individual projection years for each asset
   const [realEstateYears, setRealEstateYears] = useState([10]);
   const [rrspYears, setRrspYears] = useState([10]);
@@ -123,6 +123,9 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
     unrealizedGains: 3200,
     annualContribution: 2000,
     monthlyContribution: 167,
+    costBase: 21800,
+    inclusionRate: 50,
+    taxRate: 25,
   });
 
   // New state for dynamic assets
@@ -130,7 +133,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
 
   const addDynamicAsset = (type: string, sourceAsset?: Asset) => {
     const colors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#d946ef", "#f43f5e"];
-    const usedColors = [...assets.map(a => a.color), ...dynamicAssets.map(a => a.color)];
+    const usedColors = [...dynamicAssets.map(a => a.color)];
     const availableColor = colors.find(color => !usedColors.includes(color)) || colors[0];
 
     const baseAsset = {
@@ -191,13 +194,26 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           annualContribution: 5000
         };
         break;
+      case "FHSA":
+        newAsset = {
+          ...baseAsset,
+          availableRoom: 8000,
+          ytdGrowth: 6.1,
+          monthlyContribution: 417,
+          rate: [6.5],
+          annualContribution: 5000
+        };
+        break;
       case "Non-Registered":
         newAsset = {
           ...baseAsset,
           unrealizedGains: 3200,
           monthlyContribution: 167,
           rate: [8.0],
-          annualContribution: 2000
+          annualContribution: 2000,
+          costBase: sourceAsset ? sourceAsset.value - 3200 : 6800,
+          inclusionRate: 50,
+          taxRate: 25
         };
         break;
       default:
@@ -502,6 +518,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           );
 
         case "TFSA":
+        case "FHSA":
           return (
             <div className="grid grid-cols-2 gap-4">
               <DynamicEditableField 
@@ -543,44 +560,82 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
           );
 
         case "Non-Registered":
+          const capitalGainNonReg = asset.currentValue - (asset.costBase || 0);
+          const estimatedCapitalGainsTaxNonReg = capitalGainNonReg * ((asset.inclusionRate || 50) / 100) * ((asset.taxRate || 25) / 100);
+
           return (
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicEditableField 
-                fieldKey="currentValue" 
-                value={asset.currentValue} 
-                label="Current Value" 
-              />
-              <DynamicEditableField 
-                fieldKey="futureValue" 
-                value={Math.round(futureValue)} 
-                label={`Future Value (${asset.years[0]} years)`} 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="unrealizedGains" 
-                value={asset.unrealizedGains || 0} 
-                label="Unrealized Gains" 
-                prefix="+$"
-              />
-              <DynamicEditableField 
-                fieldKey="projectedGrowth" 
-                value={Math.round(futureValue - asset.currentValue)} 
-                label="Projected Growth" 
-                prefix="+$"
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="annualContribution" 
-                value={asset.annualContribution} 
-                label="Annual Contribution" 
-              />
-              <DynamicEditableField 
-                fieldKey="monthlyContribution" 
-                value={asset.monthlyContribution || 0} 
-                label="Monthly Contribution" 
-              />
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <DynamicEditableField 
+                  fieldKey="currentValue" 
+                  value={asset.currentValue} 
+                  label="Current Value" 
+                />
+                <DynamicEditableField 
+                  fieldKey="futureValue" 
+                  value={Math.round(futureValue)} 
+                  label={`Future Value (${asset.years[0]} years)`} 
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <DynamicEditableField 
+                  fieldKey="costBase" 
+                  value={asset.costBase || 0} 
+                  label="Cost Base" 
+                />
+                <DynamicEditableField 
+                  fieldKey="projectedGrowth" 
+                  value={Math.round(futureValue - asset.currentValue)} 
+                  label="Projected Growth" 
+                  prefix="+$"
+                  isAutoCalculated={true}
+                  isEditable={false}
+                />
+                <DynamicEditableField 
+                  fieldKey="annualContribution" 
+                  value={asset.annualContribution} 
+                  label="Annual Contribution" 
+                />
+                <DynamicEditableField 
+                  fieldKey="monthlyContribution" 
+                  value={asset.monthlyContribution || 0} 
+                  label="Monthly Contribution" 
+                />
+              </div>
+
+              <div className="bg-muted/20 p-4 rounded-lg space-y-3">
+                <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
+                <div className="grid grid-cols-2 gap-4">
+                  <DynamicEditableField 
+                    fieldKey="capitalGain" 
+                    value={Math.round(capitalGainNonReg)} 
+                    label="Capital Gain" 
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                  <DynamicEditableField 
+                    fieldKey="inclusionRate" 
+                    value={asset.inclusionRate || 50} 
+                    label="Inclusion Rate" 
+                    prefix=""
+                    suffix="%"
+                  />
+                  <DynamicEditableField 
+                    fieldKey="taxRate" 
+                    value={asset.taxRate || 25} 
+                    label="Tax Rate" 
+                    prefix=""
+                    suffix="%"
+                  />
+                  <DynamicEditableField 
+                    fieldKey="estimatedCapitalGainsTax" 
+                    value={Math.round(estimatedCapitalGainsTaxNonReg)} 
+                    label="Estimated Capital Gains Tax" 
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                </div>
+              </div>
             </div>
           );
 
@@ -708,7 +763,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose, assets }: AssetsDetailDial
             </div>
           )}
           
-          {(asset.type === "RRSP" || asset.type === "TFSA" || asset.type === "Non-Registered") && (
+          {(asset.type === "RRSP" || asset.type === "TFSA" || asset.type === "FHSA" || asset.type === "Non-Registered") && (
             <div className="pt-2">
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-green-600" />
@@ -989,10 +1044,15 @@ Total Projected Growth: $${Math.round(tfsaFV - tfsaDetails.currentValue).toLocal
 This projection assumes consistent market performance and regular contributions. TFSA growth is completely tax-free, making this an excellent vehicle for long-term wealth building.`;
 
       case "Non-Registered":
+        const capitalGain = nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase;
+        const estimatedCapitalGainsTax = capitalGain * (nonRegisteredDetails.inclusionRate / 100) * (nonRegisteredDetails.taxRate / 100);
+        
         return `Your Non-Registered investment account currently holds $${nonRegisteredDetails.totalValue.toLocaleString()} and is projected to grow to $${Math.round(nonRegFV).toLocaleString()} over ${nonRegYears[0]} years, assuming ${nonRegRate[0]}% annual returns and $${nonRegisteredDetails.annualContribution.toLocaleString()} in annual contributions.
 
 Current Value: $${nonRegisteredDetails.totalValue.toLocaleString()}
-Unrealized Gains: $${nonRegisteredDetails.unrealizedGains.toLocaleString()}
+Cost Base: $${nonRegisteredDetails.costBase.toLocaleString()}
+Capital Gain: $${capitalGain.toLocaleString()}
+Estimated Capital Gains Tax: $${Math.round(estimatedCapitalGainsTax).toLocaleString()}
 Annual Contributions: $${nonRegisteredDetails.annualContribution.toLocaleString()}
 Monthly Contributions: $${nonRegisteredDetails.monthlyContribution.toLocaleString()}
 Growth Assumption: ${nonRegRate[0]}% annually
@@ -1484,45 +1544,79 @@ This projection assumes consistent market performance and regular contributions.
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <EditableField 
-                  fieldId="nonReg.totalValue" 
-                  value={nonRegisteredDetails.totalValue} 
-                  label="Current Value" 
-                />
-                <EditableField 
-                  fieldId="future-value-nonreg" 
-                  value={Math.round(nonRegFV)} 
-                  label={`Future Value (${nonRegYears[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="nonReg.unrealizedGains" 
-                  value={nonRegisteredDetails.unrealizedGains} 
-                  label="Unrealized Gains" 
-                  prefix="+$"
-                  tip={`${((nonRegisteredDetails.unrealizedGains / nonRegisteredDetails.totalValue) * 100).toFixed(1)}% of total value`}
-                />
-                <EditableField 
-                  fieldId="projected-growth-nonreg" 
-                  value={Math.round(nonRegFV - nonRegisteredDetails.totalValue)} 
-                  label="Projected Growth" 
-                  prefix="+$"
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="nonReg.annualContribution" 
-                  value={nonRegisteredDetails.annualContribution} 
-                  label="Annual Contribution" 
-                  tip={`${(nonRegisteredDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-                <EditableField 
-                  fieldId="nonReg.monthlyContribution" 
-                  value={nonRegisteredDetails.monthlyContribution} 
-                  label="Monthly Contribution" 
-                />
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <EditableField 
+                    fieldId="nonReg.totalValue" 
+                    value={nonRegisteredDetails.totalValue} 
+                    label="Current Value" 
+                  />
+                  <EditableField 
+                    fieldId="future-value-nonreg" 
+                    value={Math.round(nonRegFV)} 
+                    label={`Future Value (${nonRegYears[0]} years)`} 
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                  <EditableField 
+                    fieldId="nonReg.costBase" 
+                    value={nonRegisteredDetails.costBase} 
+                    label="Cost Base" 
+                  />
+                  <EditableField 
+                    fieldId="projected-growth-nonreg" 
+                    value={Math.round(nonRegFV - nonRegisteredDetails.totalValue)} 
+                    label="Projected Growth" 
+                    prefix="+$"
+                    isAutoCalculated={true}
+                    isEditable={false}
+                  />
+                  <EditableField 
+                    fieldId="nonReg.annualContribution" 
+                    value={nonRegisteredDetails.annualContribution} 
+                    label="Annual Contribution" 
+                    tip={`${(nonRegisteredDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
+                  />
+                  <EditableField 
+                    fieldId="nonReg.monthlyContribution" 
+                    value={nonRegisteredDetails.monthlyContribution} 
+                    label="Monthly Contribution" 
+                  />
+                </div>
+
+                <div className="bg-muted/20 p-4 rounded-lg space-y-3">
+                  <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
+                  <div className="grid grid-cols-2 gap-4">
+                    <EditableField 
+                      fieldId="capital-gain-nonreg" 
+                      value={Math.round(nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase)} 
+                      label="Capital Gain" 
+                      isAutoCalculated={true}
+                      isEditable={false}
+                    />
+                    <EditableField 
+                      fieldId="nonReg.inclusionRate" 
+                      value={nonRegisteredDetails.inclusionRate} 
+                      label="Inclusion Rate" 
+                      prefix=""
+                      suffix="%"
+                    />
+                    <EditableField 
+                      fieldId="nonReg.taxRate" 
+                      value={nonRegisteredDetails.taxRate} 
+                      label="Tax Rate" 
+                      prefix=""
+                      suffix="%"
+                    />
+                    <EditableField 
+                      fieldId="estimated-capital-gains-tax-nonreg" 
+                      value={Math.round((nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase) * (nonRegisteredDetails.inclusionRate / 100) * (nonRegisteredDetails.taxRate / 100))} 
+                      label="Estimated Capital Gains Tax" 
+                      isAutoCalculated={true}
+                      isEditable={false}
+                    />
+                  </div>
+                </div>
               </div>
               
               <div className="pt-2">
@@ -1559,6 +1653,7 @@ This projection assumes consistent market performance and regular contributions.
                       <SelectItem value="RRSP">RRSP</SelectItem>
                       <SelectItem value="RRIF">RRIF</SelectItem>
                       <SelectItem value="TFSA">TFSA</SelectItem>
+                      <SelectItem value="FHSA">FHSA</SelectItem>
                       <SelectItem value="Non-Registered">Non-Registered</SelectItem>
                       <SelectItem value="DB">DB (Defined Benefit)</SelectItem>
                       <SelectItem value="DC">DC (Defined Contribution)</SelectItem>
