@@ -27,7 +27,7 @@ const MonthlyCashFlow = () => {
 
   return (
     <>
-      <Card className="relative overflow-hidden">
+      <Card className="relative overflow-hidden h-full flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-xl flex items-center space-x-3">
             <div className="p-2 bg-green-100 rounded-lg">
@@ -46,9 +46,9 @@ const MonthlyCashFlow = () => {
           </Button>
         </CardHeader>
         
-        <CardContent className="space-y-6">
+        <CardContent className="flex-1 flex flex-col">
           {/* Income, Expenses, and Net Cash Flow in one row */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-3 gap-4 mb-4">
             <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
               <div className="flex items-center space-x-2 mb-3">
                 <div className="p-2 bg-green-100 rounded-lg">
@@ -80,8 +80,8 @@ const MonthlyCashFlow = () => {
             </div>
           </div>
 
-          {/* Emergency Fund Calculator */}
-          <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+          {/* Emergency Fund Calculator - Expanded to fill remaining space */}
+          <div className="flex-1 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 flex flex-col">
             <div className="mb-4">
               <h3 className="text-base font-bold text-blue-800 mb-1 flex items-center">
                 <Shield className="h-5 w-5 mr-2" />
@@ -123,9 +123,9 @@ const MonthlyCashFlow = () => {
               </div>
             </div>
 
-            {/* Sliders */}
-            <div className="space-y-3">
-              <div className="space-y-1">
+            {/* Sliders - Expanded */}
+            <div className="space-y-4 flex-1">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-medium text-blue-700">Current Emergency Fund</span>
                   <span className="text-xs font-bold text-blue-800">${(currentFund / 1000).toFixed(0)}K</span>
@@ -140,7 +140,7 @@ const MonthlyCashFlow = () => {
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-medium text-blue-700">Essential Monthly Expenses</span>
                   <span className="text-xs font-bold text-blue-800">${(monthlyExpenses / 1000).toFixed(1)}K</span>
@@ -155,7 +155,7 @@ const MonthlyCashFlow = () => {
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-2">
                 <div className="flex justify-between items-center">
                   <span className="text-xs font-medium text-blue-700">Target Months Coverage</span>
                   <span className="text-xs font-bold text-blue-800">{targetMonths} months</span>
@@ -172,7 +172,7 @@ const MonthlyCashFlow = () => {
             </div>
 
             {/* Status Message */}
-            <div className={`mt-3 p-2 rounded-lg text-xs ${
+            <div className={`mt-4 p-2 rounded-lg text-xs ${
               monthsCovered >= targetMonths 
                 ? 'bg-green-100 border border-green-200 text-green-800'
                 : monthsCovered >= targetMonths * 0.5
