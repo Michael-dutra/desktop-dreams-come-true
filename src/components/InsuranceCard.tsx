@@ -1,3 +1,4 @@
+
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,16 @@ const InsuranceCard = () => {
 
   const chartConfig = {
     amount: { label: "Amount", color: "#3b82f6" }
+  };
+
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`;
+    } else {
+      return `$${value.toFixed(0)}`;
+    }
   };
 
   const handleSliderChange = (key: keyof typeof needsValues, value: number[]) => {
@@ -105,11 +116,11 @@ const InsuranceCard = () => {
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    tickFormatter={(value) => formatCurrency(value)}
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent 
-                      formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]}
+                      formatter={(value) => [formatCurrency(Number(value)), "Amount"]}
                     />}
                   />
                   <Bar 
@@ -128,15 +139,15 @@ const InsuranceCard = () => {
             <div className="grid grid-cols-3 gap-4 mt-4 text-center">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <p className="text-xs text-blue-700 font-medium">Current Coverage</p>
-                <p className="text-lg font-bold text-blue-800">${(currentLifeCoverage / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-blue-800">{formatCurrency(currentLifeCoverage)}</p>
               </div>
               <div className="p-2 bg-red-100 rounded-lg">
                 <p className="text-xs text-red-700 font-medium">Calculated Need</p>
-                <p className="text-lg font-bold text-red-800">${(calculatedLifeNeed / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-red-800">{formatCurrency(calculatedLifeNeed)}</p>
               </div>
               <div className="p-2 bg-amber-100 rounded-lg">
                 <p className="text-xs text-amber-700 font-medium">Coverage Gap</p>
-                <p className="text-lg font-bold text-amber-800">${(lifeGap / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-amber-800">{formatCurrency(lifeGap)}</p>
               </div>
             </div>
           </div>
@@ -152,7 +163,7 @@ const InsuranceCard = () => {
                       {config.label}
                     </span>
                     <span className="text-sm font-bold text-gray-900">
-                      ${(needsValues[key as keyof typeof needsValues][0] / 1000).toFixed(0)}K
+                      {formatCurrency(needsValues[key as keyof typeof needsValues][0])}
                     </span>
                   </div>
                   <Slider
@@ -165,7 +176,7 @@ const InsuranceCard = () => {
                   />
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>$0</span>
-                    <span>${(config.max / 1000).toFixed(0)}K</span>
+                    <span>{formatCurrency(config.max)}</span>
                   </div>
                 </div>
               ))}
