@@ -1,5 +1,5 @@
 
-import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
+import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -52,10 +52,10 @@ const RetirementCard = () => {
           </div>
 
           {/* Interactive Controls */}
-          <div className="space-y-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl border border-slate-200">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-4 p-4 bg-gradient-to-r from-orange-50 via-purple-50 to-emerald-50 rounded-xl border border-orange-200">
+            <div className="grid grid-cols-2 gap-6">
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-orange-700">
                   Retirement Age: {retirementAge[0]}
                 </label>
                 <Slider
@@ -68,7 +68,7 @@ const RetirementCard = () => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-medium text-slate-700">
+                <label className="text-sm font-medium text-emerald-700">
                   Monthly Income Needed: ${netMonthlyIncomeNeeded[0].toLocaleString()}
                 </label>
                 <Slider
@@ -105,26 +105,6 @@ const RetirementCard = () => {
             <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
               <TrendingUp className="h-5 w-5 text-green-600" />
               <span className="text-sm font-semibold text-green-700">Building towards retirement goal</span>
-            </div>
-          </div>
-          
-          {/* Retirement Goals */}
-          <div className="space-y-4 pt-2 border-t border-gray-200">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Calendar className="h-4 w-4 text-orange-600" />
-                  <span className="text-sm font-medium text-orange-800">Retirement Age</span>
-                </div>
-                <p className="text-lg font-bold text-orange-600">{retirementAge[0]}</p>
-              </div>
-              <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
-                <div className="flex items-center space-x-2 mb-1">
-                  <Target className="h-4 w-4 text-emerald-600" />
-                  <span className="text-sm font-medium text-emerald-800">Monthly Need</span>
-                </div>
-                <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded[0].toLocaleString()}</p>
-              </div>
             </div>
           </div>
         </CardContent>
