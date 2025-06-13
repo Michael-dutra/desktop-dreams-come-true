@@ -2,11 +2,30 @@
 import { TrendingUp, TrendingDown, DollarSign, Eye, PiggyBank } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { CashFlowDetailDialog } from "./CashFlowDetailDialog";
 import { useState } from "react";
 
 const MonthlyCashFlow = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+
+  // Cash flow trend data for the interactive chart
+  const cashFlowTrend = [
+    { month: "Jul", flow: 6800 },
+    { month: "Aug", flow: 7200 },
+    { month: "Sep", flow: 7500 },
+    { month: "Oct", flow: 7100 },
+    { month: "Nov", flow: 7800 },
+    { month: "Dec", flow: 7500 },
+  ];
+
+  const chartConfig = {
+    flow: {
+      label: "Net Cash Flow",
+      color: "#10b981",
+    },
+  };
 
   return (
     <>
@@ -34,6 +53,41 @@ const MonthlyCashFlow = () => {
           <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
             <p className="text-3xl font-bold text-green-600 mb-1">+$7,500</p>
             <p className="text-sm text-green-700 font-medium">Net Monthly Flow</p>
+          </div>
+
+          {/* Interactive Cash Flow Trend Chart */}
+          <div className="p-4 bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 rounded-xl border-2 border-emerald-200 shadow-sm">
+            <div className="mb-3">
+              <h3 className="text-sm font-semibold text-emerald-800 mb-1">6-Month Cash Flow Trend</h3>
+              <p className="text-xs text-emerald-600">Monthly net cash flow progression</p>
+            </div>
+            
+            <ChartContainer config={chartConfig} className="h-20">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={cashFlowTrend} margin={{ top: 5, right: 10, left: 10, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 10 }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis hide />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, "Net Flow"]}
+                    />}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="flow" 
+                    stroke="#10b981" 
+                    strokeWidth={2}
+                    dot={{ fill: "#10b981", strokeWidth: 0, r: 3 }}
+                    activeDot={{ r: 4, stroke: "#10b981", strokeWidth: 2, fill: "#fff" }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            </ChartContainer>
           </div>
           
           {/* Income vs Expenses */}
