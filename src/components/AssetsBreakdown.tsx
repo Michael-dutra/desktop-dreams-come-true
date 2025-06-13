@@ -63,12 +63,12 @@ const AssetsBreakdown = () => {
           </Button>
         </CardHeader>
         <CardContent className="pb-4">
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Interactive Controls */}
-            <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-orange-700">
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-orange-700">
                     Rate of Return: {rateOfReturn[0]}%
                   </label>
                   <Slider
@@ -80,8 +80,8 @@ const AssetsBreakdown = () => {
                     className="w-full"
                   />
                 </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-medium text-purple-700">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-purple-700">
                     Time Horizon: {timeHorizon[0]} years
                   </label>
                   <Slider
@@ -101,37 +101,37 @@ const AssetsBreakdown = () => {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-semibold text-gray-900">Asset</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-right">Current</TableHead>
-                    <TableHead className="font-semibold text-gray-900 text-right">Projected</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-lg">Asset</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-lg text-right">Current</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-lg text-right">Projected</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {projectedAssets.map((asset, index) => (
                     <TableRow key={index} className="hover:bg-gray-50">
-                      <TableCell className="font-medium">
-                        <div className="flex items-center space-x-2">
+                      <TableCell className="font-semibold text-base py-4">
+                        <div className="flex items-center space-x-3">
                           <div 
-                            className="w-3 h-3 rounded-full" 
+                            className="w-4 h-4 rounded-full" 
                             style={{ backgroundColor: asset.color }}
                           />
                           <span>{asset.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-semibold">
+                      <TableCell className="text-right font-bold text-base py-4">
                         {formatCurrency(asset.currentValue)}
                       </TableCell>
-                      <TableCell className="text-right font-semibold text-blue-600">
+                      <TableCell className="text-right font-bold text-blue-600 text-base py-4">
                         {formatCurrency(asset.projectedValue)}
                       </TableCell>
                     </TableRow>
                   ))}
                   <TableRow className="border-t-2 bg-gray-50 font-bold">
-                    <TableCell className="font-bold text-gray-900">Total</TableCell>
-                    <TableCell className="text-right font-bold text-gray-900">
+                    <TableCell className="font-bold text-gray-900 text-lg py-4">Total</TableCell>
+                    <TableCell className="text-right font-bold text-gray-900 text-lg py-4">
                       {formatCurrency(totalCurrentValue)}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-blue-600">
+                    <TableCell className="text-right font-bold text-blue-600 text-lg py-4">
                       {formatCurrency(totalProjectedValue)}
                     </TableCell>
                   </TableRow>
@@ -140,14 +140,14 @@ const AssetsBreakdown = () => {
             </div>
 
             {/* Growth Summary */}
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
               <div className="text-center">
-                <p className="text-xs text-gray-600 font-medium">Total Growth</p>
-                <p className="text-lg font-bold text-green-600">+{formatCurrency(totalGrowth)}</p>
+                <p className="text-sm text-gray-600 font-medium">Total Growth</p>
+                <p className="text-xl font-bold text-green-600">+{formatCurrency(totalGrowth)}</p>
               </div>
               <div className="text-center">
-                <p className="text-xs text-blue-600 font-medium">Projection Period</p>
-                <p className="text-lg font-bold text-blue-800">{timeHorizon[0]} years at {rateOfReturn[0]}%</p>
+                <p className="text-sm text-blue-600 font-medium">Projection Period</p>
+                <p className="text-xl font-bold text-blue-800">{timeHorizon[0]} years at {rateOfReturn[0]}%</p>
               </div>
             </div>
           </div>
