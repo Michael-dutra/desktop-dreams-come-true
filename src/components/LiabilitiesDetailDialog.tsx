@@ -527,12 +527,15 @@ This projection assumes consistent payment performance. Actual results may vary 
                     tick={{ fontSize: 10 }} 
                     tickFormatter={(value) => {
                       // Format X-axis labels based on timeline length
-                      if (chartData.length > 120) { // More than 10 years
+                      const totalMonths = chartData.length;
+                      if (totalMonths > 240) { // More than 20 years
+                        return value % 24 === 0 ? `${Math.floor(value / 12)}y` : '';
+                      } else if (totalMonths > 120) { // More than 10 years
                         return value % 12 === 0 ? `${Math.floor(value / 12)}y` : '';
-                      } else if (chartData.length > 60) { // More than 5 years  
-                        return value % 6 === 0 ? `${value}m` : '';
+                      } else if (totalMonths > 60) { // More than 5 years  
+                        return value % 12 === 0 ? `${value}m` : '';
                       } else {
-                        return `${value}m`;
+                        return value % 6 === 0 ? `${value}m` : '';
                       }
                     }}
                   />
