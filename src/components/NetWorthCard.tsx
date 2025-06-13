@@ -11,7 +11,6 @@ const NetWorthCard = () => {
   
   const currentNetWorth = 287500;
   const monthlyGrowth = 32500;
-  const yearlyGrowthRate = 12.8;
 
   // Generate dynamic projection data based on sliders
   const generateProjectionData = () => {
@@ -57,10 +56,6 @@ const NetWorthCard = () => {
             </div>
             <span>Net Worth</span>
           </CardTitle>
-          <div className="flex items-center space-x-1 text-green-300">
-            <TrendingUp className="h-4 w-4" />
-            <span className="text-sm font-medium">{yearlyGrowthRate}%</span>
-          </div>
         </div>
       </CardHeader>
       <CardContent className="space-y-6 pb-6">
@@ -77,11 +72,11 @@ const NetWorthCard = () => {
         {/* Assets vs Liabilities Grid */}
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white/10 rounded-lg p-4 text-center">
-            <p className="text-sm text-white/80 mb-2">Total Assets</p>
+            <p className="text-sm text-white/80 mb-2">Current Assets</p>
             <p className="text-xl font-bold text-white">$735,000</p>
           </div>
           <div className="bg-white/10 rounded-lg p-4 text-center">
-            <p className="text-sm text-white/80 mb-2">Total Liabilities</p>
+            <p className="text-sm text-white/80 mb-2">Current Liabilities</p>
             <p className="text-xl font-bold text-white">$447,500</p>
           </div>
         </div>
