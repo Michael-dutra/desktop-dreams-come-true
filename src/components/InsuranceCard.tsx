@@ -2,6 +2,7 @@
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
@@ -10,9 +11,35 @@ import { useState } from "react";
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
 
-  // Life Insurance Data
+  // Life Insurance needs toggles
+  const [needsToggles, setNeedsToggles] = useState({
+    incomeReplacement: true,
+    debtCoverage: true,
+    emergencyFund: true,
+    education: true,
+    finalExpenses: true,
+    charitable: false
+  });
+
+  // Base amounts for each need
+  const baseAmounts = {
+    incomeReplacement: 450000,
+    debtCoverage: 120000,
+    emergencyFund: 35000,
+    education: 80000,
+    finalExpenses: 25000,
+    charitable: 50000
+  };
+
+  // Calculate total need based on active toggles
+  const calculateTotalNeed = () => {
+    return Object.entries(needsToggles).reduce((total, [key, isActive]) => {
+      return total + (isActive ? baseAmounts[key as keyof typeof baseAmounts] : 0);
+    }, 0);
+  };
+
   const currentLifeCoverage = 320000;
-  const calculatedLifeNeed = 640000;
+  const calculatedLifeNeed = calculateTotalNeed();
   const lifeGap = Math.max(0, calculatedLifeNeed - currentLifeCoverage);
 
   const lifeInsuranceData = [
@@ -35,6 +62,22 @@ const InsuranceCard = () => {
 
   const chartConfig = {
     amount: { label: "Amount", color: "#3b82f6" }
+  };
+
+  const handleToggleChange = (key: keyof typeof needsToggles) => {
+    setNeedsToggles(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }));
+  };
+
+  const needsLabels = {
+    incomeReplacement: "Income Replacement",
+    debtCoverage: "Debt Coverage", 
+    emergencyFund: "Emergency Fund",
+    education: "Education Costs",
+    finalExpenses: "Final Expenses",
+    charitable: "Charitable Legacy"
   };
 
   return (
@@ -115,37 +158,26 @@ const InsuranceCard = () => {
             </div>
           </div>
 
-          {/* Critical Illness */}
-          <div className="p-5 bg-green-50 border border-green-200 rounded-xl">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-green-900">Critical Illness</p>
-                <p className="text-sm text-green-700">Total Benefit</p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-green-600">$50K</p>
-                <div className="flex items-center text-sm text-red-600">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span>Gap: $100K</span>
+          {/* Life Insurance Needs Toggles */}
+          <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
+            <h4 className="font-medium text-gray-900 mb-3">Life Insurance Needs</h4>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(needsToggles).map(([key, isActive]) => (
+                <div key={key} className="flex items-center justify-between p-2 bg-white rounded-lg border">
+                  <div className="flex-1">
+                    <span className="text-sm font-medium text-gray-700">
+                      {needsLabels[key as keyof typeof needsLabels]}
+                    </span>
+                    <p className="text-xs text-gray-500">
+                      ${(baseAmounts[key as keyof typeof baseAmounts] / 1000).toFixed(0)}K
+                    </p>
+                  </div>
+                  <Switch
+                    checked={isActive}
+                    onCheckedChange={() => handleToggleChange(key as keyof typeof needsToggles)}
+                  />
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Disability Insurance */}
-          <div className="p-5 bg-purple-50 border border-purple-200 rounded-xl">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-purple-900">Disability Insurance</p>
-                <p className="text-sm text-purple-700">Total Benefit</p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-purple-600">$3K/month</p>
-                <div className="flex items-center text-sm text-yellow-600">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span>Gap: $1.5K/mo</span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </CardContent>
