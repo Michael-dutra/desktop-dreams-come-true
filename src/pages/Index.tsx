@@ -30,7 +30,7 @@ const Index = () => {
           {/* First Row - Net Worth, Assets, and Liabilities */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <NetWorthCard />
-            <AssetsBreakdown totalAssets={2020000} activeBusinessAssets={1818000} />
+            <AssetsBreakdown />
             <LiabilitiesBreakdown />
           </div>
           

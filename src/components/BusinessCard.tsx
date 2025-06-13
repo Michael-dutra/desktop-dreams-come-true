@@ -228,8 +228,8 @@ const BusinessCard = () => {
       </Card>
 
       <BusinessDetailDialog 
-        open={showDetailDialog} 
-        onOpenChange={setShowDetailDialog} 
+        isOpen={showDetailDialog} 
+        onClose={() => setShowDetailDialog(false)} 
       />
     </>
   );
