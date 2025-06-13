@@ -1,4 +1,5 @@
-import { Crown, FileText, Shield, AlertTriangle, Eye } from "lucide-react";
+
+import { Crown, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -18,22 +19,22 @@ const EstateCard = () => {
     {
       category: "Total Estate",
       amount: totalEstateValue,
-      color: "#10b981"
+      color: "#8b5cf6"
     },
     {
       category: "Estate Taxes",
       amount: estateTaxes,
-      color: "#ef4444"
+      color: "#f59e0b"
     },
     {
       category: "Net to Beneficiaries",
       amount: netEstateValue,
-      color: "#3b82f6"
+      color: "#06b6d4"
     }
   ];
 
   const chartConfig = {
-    amount: { label: "Amount", color: "#10b981" }
+    amount: { label: "Amount", color: "#8b5cf6" }
   };
 
   return (
@@ -59,7 +60,7 @@ const EstateCard = () => {
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Estate Value Breakdown Chart */}
-          <div className="p-5 bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-xl">
+          <div className="p-5 bg-gradient-to-r from-purple-50 to-cyan-50 border border-purple-200 rounded-xl">
             <div className="mb-4">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Estate Value Breakdown</h3>
               <p className="text-sm text-gray-600">Before and after tax implications</p>
@@ -99,50 +100,17 @@ const EstateCard = () => {
 
             {/* Summary Numbers */}
             <div className="grid grid-cols-3 gap-4 mt-4 text-center">
-              <div className="p-2 bg-green-100 rounded-lg">
-                <p className="text-xs text-green-700 font-medium">Total Estate</p>
-                <p className="text-lg font-bold text-green-800">${(totalEstateValue / 1000).toFixed(0)}K</p>
+              <div className="p-2 bg-purple-100 rounded-lg">
+                <p className="text-xs text-purple-700 font-medium">Total Estate</p>
+                <p className="text-lg font-bold text-purple-800">${(totalEstateValue / 1000).toFixed(0)}K</p>
               </div>
-              <div className="p-2 bg-red-100 rounded-lg">
-                <p className="text-xs text-red-700 font-medium">Estate Taxes</p>
-                <p className="text-lg font-bold text-red-800">${(estateTaxes / 1000).toFixed(0)}K</p>
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <p className="text-xs text-amber-700 font-medium">Estate Taxes</p>
+                <p className="text-lg font-bold text-amber-800">${(estateTaxes / 1000).toFixed(0)}K</p>
               </div>
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <p className="text-xs text-blue-700 font-medium">Net Amount</p>
-                <p className="text-lg font-bold text-blue-800">${(netEstateValue / 1000).toFixed(0)}K</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Will Status */}
-          <div className="p-5 bg-green-50 border border-green-200 rounded-xl">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-green-900">Will & Testament</p>
-                <p className="text-sm text-green-700">Last Updated</p>
-              </div>
-              <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-green-600">Current</p>
-                <div className="flex items-center text-sm text-green-600">
-                  <FileText className="h-4 w-4 mr-1" />
-                  <span>Mar 2024</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tax Planning Status */}
-          <div className="p-5 bg-orange-50 border border-orange-200 rounded-xl">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-orange-900">Tax Planning Status</p>
-                <p className="text-sm text-orange-700">Review Needed</p>
-              </div>
-              <div className="text-right space-y-1">
-                <div className="flex items-center text-sm text-orange-600">
-                  <AlertTriangle className="h-4 w-4 mr-1" />
-                  <span>Action Required</span>
-                </div>
+              <div className="p-2 bg-cyan-100 rounded-lg">
+                <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
+                <p className="text-lg font-bold text-cyan-800">${(netEstateValue / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </div>
