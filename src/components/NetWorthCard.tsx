@@ -86,7 +86,7 @@ const NetWorthCard = () => {
           </div>
           <div className="w-full overflow-hidden">
             <ChartContainer config={chartConfig} className="h-44 w-full">
-              <LineChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+              <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
                   tick={{ fontSize: 11, fill: 'white' }}
@@ -115,6 +115,14 @@ const NetWorthCard = () => {
                     }}
                   />} 
                 />
+                <Area 
+                  type="monotone" 
+                  dataKey="netWorth" 
+                  stroke="#10b981" 
+                  strokeWidth={3}
+                  fill="#10b981"
+                  fillOpacity={0.3}
+                />
                 <Line 
                   type="monotone" 
                   dataKey="netWorth" 
@@ -123,7 +131,7 @@ const NetWorthCard = () => {
                   dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
                   activeDot={{ r: 7, fill: "#10b981", stroke: "white", strokeWidth: 3 }}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           </div>
         </div>
