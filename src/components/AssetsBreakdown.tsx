@@ -68,20 +68,19 @@ const AssetsBreakdown = () => {
         <CardContent>
           <div className="space-y-4">
             {/* Current Asset Breakdown List */}
-            <div className="space-y-2">
-              <h3 className="text-sm font-medium text-gray-700">Current Holdings</h3>
+            <div className="space-y-3">
               {assets.map((asset, index) => (
                 <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <div className={`w-2 h-2 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-sm font-medium">{asset.name}</span>
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
+                    <span className="text-lg font-medium">{asset.name}</span>
                   </div>
-                  <span className="text-sm font-semibold">{asset.amount}</span>
+                  <span className="text-lg font-semibold">{asset.amount}</span>
                 </div>
               ))}
             </div>
 
-            {/* Current and Projected Totals - Horizontal Layout */}
+            {/* Current and Projected Totals - Compact Horizontal Layout */}
             <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
               <div className="text-center">
                 <p className="text-xs text-gray-600 font-medium">Current Total</p>
