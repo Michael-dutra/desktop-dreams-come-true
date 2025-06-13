@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { EstateDetailDialog } from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -102,15 +102,13 @@ const EstateCard = () => {
       category: "Current Estate",
       grossValue: totalCurrentValue,
       taxes: totalCurrentTax,
-      netValue: totalCurrentNet,
-      color: "#8b5cf6"
+      netValue: totalCurrentNet
     },
     {
-      category: "Future Estate",
+      category: `Future Estate (${timeHorizon[0]} years)`,
       grossValue: totalFutureValue,
       taxes: totalFutureTax,
-      netValue: totalFutureNet,
-      color: "#f59e0b"
+      netValue: totalFutureNet
     }
   ];
 
@@ -141,7 +139,7 @@ const EstateCard = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-6">
           {/* Interactive Controls */}
           <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
             <div className="grid grid-cols-2 gap-6">
@@ -175,13 +173,13 @@ const EstateCard = () => {
           </div>
 
           {/* Estate Tax Comparison Chart */}
-          <div className="p-5 bg-gradient-to-r from-purple-50 to-cyan-50 border border-purple-200 rounded-xl">
-            <div className="mb-4">
+          <div className="p-6 bg-gradient-to-r from-purple-50 to-cyan-50 border border-purple-200 rounded-xl">
+            <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Estate Tax Projection</h3>
-              <p className="text-sm text-gray-600">Current vs projected tax implications</p>
+              <p className="text-sm text-gray-600">Current vs projected tax implications over {timeHorizon[0]} years</p>
             </div>
             
-            <ChartContainer config={chartConfig} className="h-48 w-full">
+            <ChartContainer config={chartConfig} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
                   <XAxis 
@@ -211,64 +209,42 @@ const EstateCard = () => {
             </ChartContainer>
 
             {/* Summary Numbers */}
-            <div className="grid grid-cols-2 gap-4 mt-4">
-              <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-6 mt-6">
+              <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-700">Current ({new Date().getFullYear()})</h4>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
                     <p className="text-xs text-purple-700 font-medium">Gross</p>
-                    <p className="text-sm font-bold text-purple-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-purple-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
                   </div>
-                  <div className="p-2 bg-red-100 rounded-lg">
+                  <div className="p-3 bg-red-100 rounded-lg">
                     <p className="text-xs text-red-700 font-medium">Taxes</p>
-                    <p className="text-sm font-bold text-red-800">${(totalCurrentTax / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-red-800">${(totalCurrentTax / 1000).toFixed(0)}K</p>
                   </div>
-                  <div className="p-2 bg-green-100 rounded-lg">
+                  <div className="p-3 bg-green-100 rounded-lg">
                     <p className="text-xs text-green-700 font-medium">Net</p>
-                    <p className="text-sm font-bold text-green-800">${(totalCurrentNet / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-green-800">${(totalCurrentNet / 1000).toFixed(0)}K</p>
                   </div>
                 </div>
               </div>
               
-              <div className="space-y-2">
+              <div className="space-y-3">
                 <h4 className="text-sm font-medium text-gray-700">Projected ({new Date().getFullYear() + timeHorizon[0]})</h4>
-                <div className="grid grid-cols-3 gap-2 text-center">
-                  <div className="p-2 bg-purple-100 rounded-lg">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="p-3 bg-purple-100 rounded-lg">
                     <p className="text-xs text-purple-700 font-medium">Gross</p>
-                    <p className="text-sm font-bold text-purple-800">${(totalFutureValue / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-purple-800">${(totalFutureValue / 1000).toFixed(0)}K</p>
                   </div>
-                  <div className="p-2 bg-red-100 rounded-lg">
+                  <div className="p-3 bg-red-100 rounded-lg">
                     <p className="text-xs text-red-700 font-medium">Taxes</p>
-                    <p className="text-sm font-bold text-red-800">${(totalFutureTax / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-red-800">${(totalFutureTax / 1000).toFixed(0)}K</p>
                   </div>
-                  <div className="p-2 bg-green-100 rounded-lg">
+                  <div className="p-3 bg-green-100 rounded-lg">
                     <p className="text-xs text-green-700 font-medium">Net</p>
-                    <p className="text-sm font-bold text-green-800">${(totalFutureNet / 1000).toFixed(0)}K</p>
+                    <p className="text-lg font-bold text-green-800">${(totalFutureNet / 1000).toFixed(0)}K</p>
                   </div>
                 </div>
               </div>
-            </div>
-          </div>
-
-          {/* Asset Breakdown with Tax Status */}
-          <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-            <h4 className="font-medium text-gray-900 mb-3">Asset Tax Breakdown</h4>
-            <div className="space-y-3">
-              {projectedAssets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-3 h-3 rounded-full" style={{ backgroundColor: asset.color }}></div>
-                    <div>
-                      <span className="text-sm font-medium text-gray-700">{asset.name}</span>
-                      <p className="text-xs text-gray-500">{asset.taxStatus}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">${(asset.futureValue / 1000).toFixed(0)}K</p>
-                    <p className="text-xs text-red-600">Tax: ${(asset.futureTax / 1000).toFixed(0)}K</p>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </CardContent>
