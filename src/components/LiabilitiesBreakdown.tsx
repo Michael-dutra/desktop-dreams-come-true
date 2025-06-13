@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
 import { LiabilitiesDetailDialog } from "./LiabilitiesDetailDialog";
 import { Slider } from "@/components/ui/slider";
-import { Progress } from "@/components/ui/progress";
 import { useState } from "react";
 
 const LiabilitiesBreakdown = () => {
@@ -122,7 +121,7 @@ const LiabilitiesBreakdown = () => {
           </Button>
         </CardHeader>
         <CardContent className="pb-4 flex-1 flex flex-col">
-          <div className="space-y-4 flex-1">
+          <div className="space-y-3 flex-1">
             {/* Total Monthly Payments Summary */}
             <div className="p-3 bg-gray-50 rounded-lg border">
               <div className="flex items-center justify-between">
@@ -131,40 +130,32 @@ const LiabilitiesBreakdown = () => {
               </div>
             </div>
             
-            {/* Individual Debt Simulators */}
-            <div className="space-y-4 flex-1">
+            {/* Compact Individual Debt Cards */}
+            <div className="space-y-3 flex-1">
               {liabilities.map((liability, index) => {
                 const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
                 const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
                 const monthsSaved = originalPayoff.months - newPayoff.months;
-                const interestSaved = originalPayoff.totalInterest - newPayoff.totalInterest;
-                const progressPercent = Math.min(100, ((liability.value - (liability.value * 0.8)) / liability.value) * 100); // Mock progress
                 
                 return (
-                  <div key={index} className="p-4 rounded-lg border-2" style={{ borderColor: liability.color }}>
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: liability.color }}></div>
-                        <span className="text-lg font-bold">{liability.name}</span>
+                  <div key={index} className="p-3 rounded-lg border-2 space-y-2" style={{ borderColor: liability.color }}>
+                    {/* Compact Header: Name + Balance + Payment in one line */}
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: liability.color }}></div>
+                        <span className="font-bold text-sm">{liability.name}</span>
                       </div>
-                      <span className="text-lg font-bold" style={{ color: liability.color }}>{liability.amount}</span>
+                      <div className="flex items-center space-x-3 text-sm">
+                        <span className="font-medium">{liability.amount}</span>
+                        <span className="text-gray-600">${liability.monthlyPayment}/mo</span>
+                      </div>
                     </div>
                     
-                    {/* Progress Ring */}
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm mb-1">
-                        <span className="text-gray-600">Progress</span>
-                        <span className="font-medium">{progressPercent.toFixed(0)}% paid off</span>
-                      </div>
-                      <Progress value={progressPercent} className="h-2" />
-                    </div>
-                    
-                    {/* Interactive Controls */}
-                    <div className="grid grid-cols-2 gap-4 mb-4">
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">
-                          Interest Rate: {liability.rate.toFixed(1)}%
+                    {/* Compact Sliders - Side by Side */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">
+                          Rate: {liability.rate.toFixed(1)}%
                         </label>
                         <Slider
                           value={[liability.rate]}
@@ -175,9 +166,9 @@ const LiabilitiesBreakdown = () => {
                           className="w-full"
                         />
                       </div>
-                      <div className="space-y-2">
-                        <label className="text-sm font-medium text-gray-700">
-                          Extra Payment: ${liability.extraPayment}
+                      <div className="space-y-1">
+                        <label className="text-xs font-medium text-gray-700">
+                          Extra: ${liability.extraPayment}
                         </label>
                         <Slider
                           value={[liability.extraPayment]}
@@ -190,51 +181,22 @@ const LiabilitiesBreakdown = () => {
                       </div>
                     </div>
                     
-                    {/* Results */}
-                    <div className="space-y-2">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">📅 Original Payoff:</span>
+                    {/* Compact Results */}
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">Original:</span>
                         <span className="font-medium">{formatMonthsToDate(originalPayoff.months)}</span>
                       </div>
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">📅 With Extra Payment:</span>
+                      <div className="flex justify-between">
+                        <span className="text-gray-600">New:</span>
                         <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
                       </div>
                       {monthsSaved > 0 && (
-                        <>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">⏰ Months Saved:</span>
-                            <span className="font-bold text-blue-600">{Math.round(monthsSaved)} months</span>
-                          </div>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="text-gray-600">💰 Interest Saved:</span>
-                            <span className="font-bold text-purple-600">${Math.round(interestSaved).toLocaleString()}</span>
-                          </div>
-                        </>
+                        <div className="col-span-2 flex justify-between">
+                          <span className="text-gray-600">Time Saved:</span>
+                          <span className="font-bold text-blue-600">{Math.round(monthsSaved)} months</span>
+                        </div>
                       )}
-                    </div>
-                    
-                    {/* Timeline Bar */}
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-xs mb-1">
-                        <span>Now</span>
-                        <span>{formatMonthsToDate(Math.max(originalPayoff.months, newPayoff.months))}</span>
-                      </div>
-                      <div className="relative h-2 bg-gray-200 rounded-full">
-                        {/* Original timeline */}
-                        <div 
-                          className="absolute h-2 bg-red-300 rounded-full"
-                          style={{ width: '100%' }}
-                        />
-                        {/* Optimized timeline */}
-                        <div 
-                          className="absolute h-2 rounded-full"
-                          style={{ 
-                            width: `${(newPayoff.months / originalPayoff.months) * 100}%`,
-                            backgroundColor: liability.color
-                          }}
-                        />
-                      </div>
                     </div>
                   </div>
                 );
