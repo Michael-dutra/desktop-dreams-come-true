@@ -75,6 +75,26 @@ const BusinessCard = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
+            {/* Business Value Comparison Section */}
+            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Current Value</p>
+                  <p className="text-2xl font-bold text-blue-600">${(currentValuation / 1000).toFixed(0)}K</p>
+                  <p className="text-xs text-muted-foreground">{currentYear}</p>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm text-muted-foreground mb-1">Projected Value</p>
+                  <p className="text-2xl font-bold text-green-600">${(finalValuation / 1000).toFixed(0)}K</p>
+                  <p className="text-xs text-muted-foreground">{currentYear + yearsProjection[0]}</p>
+                </div>
+              </div>
+              <div className="flex items-center justify-center space-x-1 text-green-600 mt-3 pt-3 border-t border-blue-200">
+                <TrendingUp className="h-4 w-4" />
+                <span className="text-sm font-medium">+{projectedGrowth.toFixed(1)}% growth potential</span>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <p className="text-sm text-muted-foreground">Business Value</p>
@@ -140,22 +160,6 @@ const BusinessCard = () => {
                     />
                   </div>
                 </div>
-              </div>
-            </div>
-            
-            {/* Business Status Items */}
-            <div className="space-y-3">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Business Insurance</span>
-                <span className="text-sm font-medium text-green-600">Active</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Succession Plan</span>
-                <span className="text-sm font-medium text-orange-600">In Progress</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-muted-foreground">Key Person Insurance</span>
-                <span className="text-sm font-medium text-green-600">Covered</span>
               </div>
             </div>
             
