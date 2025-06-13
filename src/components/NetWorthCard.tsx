@@ -2,7 +2,7 @@
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from "recharts";
+import { AreaChart, Area, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 
 const NetWorthCard = () => {
   const projectionData = [
@@ -122,12 +122,6 @@ const NetWorthCard = () => {
                   strokeWidth={3}
                   fill="#10b981"
                   fillOpacity={0.3}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="netWorth" 
-                  stroke="#10b981" 
-                  strokeWidth={3}
                   dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
                   activeDot={{ r: 7, fill: "#10b981", stroke: "white", strokeWidth: 3 }}
                 />
