@@ -104,8 +104,7 @@ const LiabilitiesBreakdown = () => {
   const TimelineSaved = ({ monthsSaved, color }: { monthsSaved: number, color: string }) => {
     if (monthsSaved <= 0) return null;
     
-    const maxMonths = 60; // Max timeline length
-    const progressWidth = Math.min((monthsSaved / maxMonths) * 100, 100);
+    const progressWidth = Math.min((monthsSaved / 60) * 100, 100);
     
     return (
       <div className="mt-2">
@@ -133,7 +132,6 @@ const LiabilitiesBreakdown = () => {
         </div>
         <div className="flex justify-between text-xs text-gray-500 mt-1">
           <span>0</span>
-          <span>{maxMonths}+ months</span>
         </div>
       </div>
     );
@@ -213,7 +211,7 @@ const LiabilitiesBreakdown = () => {
                           value={[liability.extraPayment]}
                           onValueChange={liability.setExtra}
                           min={0}
-                          max={liability.name === "Mortgage" ? 1000 : 500}
+                          max={5000}
                           step={25}
                           className="w-full"
                         />
