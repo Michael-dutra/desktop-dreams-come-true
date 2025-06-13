@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -223,9 +222,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Estate Overview</TabsTrigger>
-            <TabsTrigger value="projections">Final Tax Projections</TabsTrigger>
             <TabsTrigger value="taxes">Tax Analysis</TabsTrigger>
             <TabsTrigger value="summary">Estate Summary</TabsTrigger>
             <TabsTrigger value="legacy">Legacy</TabsTrigger>
@@ -287,9 +285,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="projections" className="space-y-6">
+            {/* Moved Tax Projections Content */}
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
