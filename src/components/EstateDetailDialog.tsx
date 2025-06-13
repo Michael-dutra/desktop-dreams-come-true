@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -217,14 +218,13 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <DollarSign className="h-5 w-5" />
-            Estate Planning & Tax Analysis
+            Estate Planning
           </DialogTitle>
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="overview">Estate Overview</TabsTrigger>
-            <TabsTrigger value="summary">Estate Summary</TabsTrigger>
             <TabsTrigger value="legacy">Legacy</TabsTrigger>
           </TabsList>
 
