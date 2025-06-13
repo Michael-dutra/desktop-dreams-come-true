@@ -167,7 +167,7 @@ const NetWorthCard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="netWorth" 
-                  stroke="white" 
+                  stroke="#10b981" 
                   strokeWidth={3}
                   fill="#10b981"
                   fillOpacity={0.3}
