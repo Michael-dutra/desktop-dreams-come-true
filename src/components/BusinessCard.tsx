@@ -1,3 +1,4 @@
+
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -227,8 +228,8 @@ const BusinessCard = () => {
       </Card>
 
       <BusinessDetailDialog 
-        open={showDetailDialog} 
-        onOpenChange={setShowDetailDialog} 
+        isOpen={showDetailDialog} 
+        onClose={() => setShowDetailDialog(false)} 
       />
     </>
   );
