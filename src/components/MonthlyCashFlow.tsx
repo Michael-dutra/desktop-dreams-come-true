@@ -83,36 +83,36 @@ const MonthlyCashFlow = () => {
           {/* Emergency Fund Calculator - Expanded to fill remaining space */}
           <div className="flex-1 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 flex flex-col">
             <div className="mb-4">
-              <h3 className="text-base font-bold text-blue-800 mb-1 flex items-center">
-                <Shield className="h-5 w-5 mr-2" />
+              <h3 className="text-lg font-bold text-blue-800 mb-2 flex items-center">
+                <Shield className="h-6 w-6 mr-2" />
                 Emergency Fund Calculator
               </h3>
-              <p className="text-xs text-blue-600 font-medium">Assess your financial safety net</p>
+              <p className="text-sm text-blue-600 font-medium">Assess your financial safety net</p>
             </div>
             
             {/* Current Status */}
             <div className="grid grid-cols-2 gap-3 mb-4">
               <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-700 font-medium">Current Fund</p>
-                <p className="text-lg font-bold text-blue-800">${(currentFund / 1000).toFixed(0)}K</p>
+                <p className="text-sm text-blue-700 font-medium">Current Fund</p>
+                <p className="text-xl font-bold text-blue-800">${(currentFund / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center p-3 bg-white rounded-lg border border-blue-100">
-                <p className="text-xs text-blue-700 font-medium">Months Covered</p>
-                <p className="text-lg font-bold text-blue-800">{monthsCovered.toFixed(1)}</p>
+                <p className="text-sm text-blue-700 font-medium">Months Covered</p>
+                <p className="text-xl font-bold text-blue-800">{monthsCovered.toFixed(1)}</p>
               </div>
             </div>
 
             {/* Progress Bar */}
             <div className="mb-4">
               <div className="flex justify-between items-center mb-2">
-                <span className="text-xs font-medium text-blue-700">Progress to Target</span>
-                <span className="text-xs font-bold text-blue-800">{progressPercentage.toFixed(0)}%</span>
+                <span className="text-sm font-medium text-blue-700">Progress to Target</span>
+                <span className="text-sm font-bold text-blue-800">{progressPercentage.toFixed(0)}%</span>
               </div>
               <Progress value={progressPercentage} className="h-2" />
             </div>
 
             {/* Target Analysis */}
-            <div className="grid grid-cols-2 gap-2 mb-4 text-xs">
+            <div className="grid grid-cols-2 gap-2 mb-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-blue-600">Target ({targetMonths} months):</span>
                 <span className="font-medium text-blue-800">${(targetAmount / 1000).toFixed(0)}K</span>
@@ -127,8 +127,8 @@ const MonthlyCashFlow = () => {
             <div className="space-y-4 flex-1">
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-blue-700">Current Emergency Fund</span>
-                  <span className="text-xs font-bold text-blue-800">${(currentFund / 1000).toFixed(0)}K</span>
+                  <span className="text-sm font-medium text-blue-700">Current Emergency Fund</span>
+                  <span className="text-sm font-bold text-blue-800">${(currentFund / 1000).toFixed(0)}K</span>
                 </div>
                 <Slider
                   value={currentEmergencyFund}
@@ -142,8 +142,8 @@ const MonthlyCashFlow = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-blue-700">Essential Monthly Expenses</span>
-                  <span className="text-xs font-bold text-blue-800">${(monthlyExpenses / 1000).toFixed(1)}K</span>
+                  <span className="text-sm font-medium text-blue-700">Essential Monthly Expenses</span>
+                  <span className="text-sm font-bold text-blue-800">${(monthlyExpenses / 1000).toFixed(1)}K</span>
                 </div>
                 <Slider
                   value={essentialMonthlyExpenses}
@@ -157,8 +157,8 @@ const MonthlyCashFlow = () => {
 
               <div className="space-y-2">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs font-medium text-blue-700">Target Months Coverage</span>
-                  <span className="text-xs font-bold text-blue-800">{targetMonths} months</span>
+                  <span className="text-sm font-medium text-blue-700">Target Months Coverage</span>
+                  <span className="text-sm font-bold text-blue-800">{targetMonths} months</span>
                 </div>
                 <Slider
                   value={targetMonthsCoverage}
@@ -172,18 +172,18 @@ const MonthlyCashFlow = () => {
             </div>
 
             {/* Status Message */}
-            <div className={`mt-4 p-2 rounded-lg text-xs ${
+            <div className={`mt-4 p-3 rounded-lg text-sm ${
               monthsCovered >= targetMonths 
                 ? 'bg-green-100 border border-green-200 text-green-800'
                 : monthsCovered >= targetMonths * 0.5
                 ? 'bg-yellow-100 border border-yellow-200 text-yellow-800'
                 : 'bg-red-100 border border-red-200 text-red-800'
             }`}>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {monthsCovered >= targetMonths ? (
-                  <Shield className="h-3 w-3" />
+                  <Shield className="h-4 w-4" />
                 ) : (
-                  <AlertCircle className="h-3 w-3" />
+                  <AlertCircle className="h-4 w-4" />
                 )}
                 <span className="font-medium">
                   {monthsCovered >= targetMonths 
