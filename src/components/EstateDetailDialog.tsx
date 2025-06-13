@@ -225,7 +225,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         <Tabs defaultValue="overview" className="space-y-4">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Estate Overview</TabsTrigger>
-            <TabsTrigger value="projections">Asset Projections</TabsTrigger>
+            <TabsTrigger value="projections">Final Tax Projections</TabsTrigger>
             <TabsTrigger value="taxes">Tax Analysis</TabsTrigger>
             <TabsTrigger value="summary">Estate Summary</TabsTrigger>
             <TabsTrigger value="legacy">Legacy</TabsTrigger>
@@ -284,25 +284,6 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                     <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
                     <p className="text-lg font-bold text-cyan-800">${(netEstateValue / 1000).toFixed(0)}K</p>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Current Asset Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Current Asset Distribution</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {estateAssets.map((asset, index) => (
-                    <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
-                      <div className="w-4 h-4 rounded-full mx-auto mb-2" style={{ backgroundColor: asset.color }}></div>
-                      <p className="text-sm font-medium">{asset.name}</p>
-                      <p className="text-lg font-bold">${(asset.currentValue / 1000).toFixed(0)}K</p>
-                      <p className="text-xs text-gray-600">{asset.taxableStatus}</p>
-                    </div>
-                  ))}
                 </div>
               </CardContent>
             </Card>
@@ -508,6 +489,25 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
           </TabsContent>
 
           <TabsContent value="summary" className="space-y-6">
+            {/* Current Asset Distribution - moved from overview */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Current Asset Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {estateAssets.map((asset, index) => (
+                    <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
+                      <div className="w-4 h-4 rounded-full mx-auto mb-2" style={{ backgroundColor: asset.color }}></div>
+                      <p className="text-sm font-medium">{asset.name}</p>
+                      <p className="text-lg font-bold">${(asset.currentValue / 1000).toFixed(0)}K</p>
+                      <p className="text-xs text-gray-600">{asset.taxableStatus}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
