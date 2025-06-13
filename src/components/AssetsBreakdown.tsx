@@ -71,14 +71,12 @@ const AssetsBreakdown = () => {
             <div className="space-y-3">
               <h3 className="text-lg font-semibold text-gray-900">Current Holdings</h3>
               {assets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                <div key={index} className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
                     <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
                     <span className="text-lg font-medium">{asset.name}</span>
                   </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg font-semibold">{asset.amount}</span>
-                  </div>
+                  <span className="text-lg font-semibold">{asset.amount}</span>
                 </div>
               ))}
             </div>
