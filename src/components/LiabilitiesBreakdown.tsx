@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
 import { LiabilitiesDetailDialog } from "./LiabilitiesDetailDialog";
@@ -16,21 +16,21 @@ const LiabilitiesBreakdown = () => {
       amount: "$420,000", 
       monthlyPayment: 2800,
       color: "#8b5cf6", // Purple
-      value: 420000 // Add missing value property
+      value: 420000
     },
     { 
       name: "Car Loan", 
       amount: "$18,000", 
       monthlyPayment: 450,
       color: "#f59e0b", // Amber
-      value: 18000 // Add missing value property
+      value: 18000
     },
     { 
       name: "Credit Cards", 
       amount: "$7,500", 
       monthlyPayment: 250,
       color: "#06b6d4", // Cyan
-      value: 7500 // Add missing value property
+      value: 7500
     },
   ];
 
@@ -111,7 +111,7 @@ const LiabilitiesBreakdown = () => {
                     />
                     <Bar dataKey="monthlyPayment" radius={[4, 4, 0, 0]}>
                       {liabilities.map((entry, index) => (
-                        <rect key={`cell-${index}`} fill={entry.color} />
+                        <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
                     </Bar>
                   </BarChart>
