@@ -1,4 +1,3 @@
-
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -90,14 +89,16 @@ const NetWorthCard = () => {
               <span className="text-sm font-medium text-white">Rate of Return</span>
               <span className="text-sm font-bold text-white">{rateOfReturn[0]}%</span>
             </div>
-            <Slider
-              value={rateOfReturn}
-              onValueChange={setRateOfReturn}
-              max={15}
-              min={1}
-              step={0.5}
-              className="w-full"
-            />
+            <div className="slider-bright-green">
+              <Slider
+                value={rateOfReturn}
+                onValueChange={setRateOfReturn}
+                max={15}
+                min={1}
+                step={0.5}
+                className="w-full [&_.slider-track]:bg-green-400 [&_.slider-range]:bg-green-500 [&_.slider-thumb]:bg-green-500 [&_.slider-thumb]:border-green-600"
+              />
+            </div>
           </div>
           
           <div className="space-y-2">
@@ -105,14 +106,16 @@ const NetWorthCard = () => {
               <span className="text-sm font-medium text-white">Time Horizon</span>
               <span className="text-sm font-bold text-white">{timeHorizon[0]} years</span>
             </div>
-            <Slider
-              value={timeHorizon}
-              onValueChange={setTimeHorizon}
-              max={30}
-              min={1}
-              step={1}
-              className="w-full"
-            />
+            <div className="slider-bright-green">
+              <Slider
+                value={timeHorizon}
+                onValueChange={setTimeHorizon}
+                max={30}
+                min={1}
+                step={1}
+                className="w-full [&_.slider-track]:bg-green-400 [&_.slider-range]:bg-green-500 [&_.slider-thumb]:bg-green-500 [&_.slider-thumb]:border-green-600"
+              />
+            </div>
           </div>
         </div>
 

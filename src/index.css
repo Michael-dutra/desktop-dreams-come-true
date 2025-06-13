@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -100,4 +101,24 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Bright green slider styles */
+.slider-bright-green [data-orientation="horizontal"] {
+  --slider-track: #4ade80 !important;
+  --slider-range: #22c55e !important;
+  --slider-thumb: #16a34a !important;
+}
+
+.slider-bright-green .relative .h-2 {
+  background-color: #4ade80 !important;
+}
+
+.slider-bright-green .absolute.h-full {
+  background-color: #22c55e !important;
+}
+
+.slider-bright-green .block.h-5.w-5 {
+  background-color: #16a34a !important;
+  border-color: #15803d !important;
 }
