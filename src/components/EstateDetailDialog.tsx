@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Calculator, DollarSign, TrendingUp, AlertTriangle, FileText, Users, Plus, Edit, Calendar, Heart, BookOpen, Scale, X } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
+import { Calculator, DollarSign, FileText, Users, Plus, Calendar, Scale, X } from "lucide-react";
 
 interface EstateDetailDialogProps {
   isOpen: boolean;
@@ -64,24 +64,6 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
   const totalEstateValue = 785000;
   const estateTaxes = 25000;
   const netEstateValue = totalEstateValue - estateTaxes;
-
-  const estateBreakdownData = [
-    {
-      category: "Total Estate",
-      amount: totalEstateValue,
-      color: "#8b5cf6"
-    },
-    {
-      category: "Estate Taxes",
-      amount: estateTaxes,
-      color: "#f59e0b"
-    },
-    {
-      category: "Net to Beneficiaries",
-      amount: netEstateValue,
-      color: "#06b6d4"
-    }
-  ];
 
   const [estateAssets] = useState([
     { 
@@ -229,14 +211,24 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
   const totalTaxOwed = projectedAssets.reduce((sum, asset) => sum + asset.taxOwed, 0);
   const totalNetValue = projectedAssets.reduce((sum, asset) => sum + asset.netValue, 0);
 
-  // Chart data for tax breakdown
-  const taxBreakdownData = projectedAssets.map(asset => ({
-    name: asset.name,
-    grossValue: asset.futureValue,
-    taxOwed: asset.taxOwed,
-    netValue: asset.netValue,
-    fill: asset.color
-  }));
+  // Updated estate breakdown data that responds to slider changes
+  const estateBreakdownData = [
+    {
+      category: "Total Estate",
+      amount: totalFutureValue,
+      color: "#8b5cf6"
+    },
+    {
+      category: "Final Taxes",
+      amount: totalTaxOwed,
+      color: "#f59e0b"
+    },
+    {
+      category: "Net to Beneficiaries",
+      amount: totalNetValue,
+      color: "#06b6d4"
+    }
+  ];
 
   const chartConfig = {
     grossValue: { label: "Gross Value", color: "#3b82f6" },
@@ -519,15 +511,15 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                   <div className="grid grid-cols-3 gap-4 mt-4 text-center">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <p className="text-xs text-purple-700 font-medium">Total Estate</p>
-                      <p className="text-lg font-bold text-purple-800">{formatCurrency(totalEstateValue)}</p>
+                      <p className="text-lg font-bold text-purple-800">{formatCurrency(totalFutureValue)}</p>
                     </div>
                     <div className="p-2 bg-amber-100 rounded-lg">
-                      <p className="text-xs text-amber-700 font-medium">Estate Taxes</p>
-                      <p className="text-lg font-bold text-amber-800">{formatCurrency(estateTaxes)}</p>
+                      <p className="text-xs text-amber-700 font-medium">Final Taxes</p>
+                      <p className="text-lg font-bold text-amber-800">{formatCurrency(totalTaxOwed)}</p>
                     </div>
                     <div className="p-2 bg-cyan-100 rounded-lg">
                       <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
-                      <p className="text-lg font-bold text-cyan-800">{formatCurrency(netEstateValue)}</p>
+                      <p className="text-lg font-bold text-cyan-800">{formatCurrency(totalNetValue)}</p>
                     </div>
                   </div>
                 </CardContent>
