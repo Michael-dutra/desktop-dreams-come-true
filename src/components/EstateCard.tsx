@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { EstateDetailDialog } from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -180,7 +180,7 @@ const EstateCard = () => {
                     radius={[4, 4, 0, 0]}
                   >
                     {estateData.map((entry, index) => (
-                      <Bar key={`cell-${index}`} dataKey="amount" fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Bar>
                 </BarChart>
