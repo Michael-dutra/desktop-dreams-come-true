@@ -1,3 +1,4 @@
+
 import { Crown, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -54,8 +55,12 @@ const EstateCard = () => {
       return total + (asset.currentValue * Math.pow(1 + rate, years));
     }, 0);
     
-    // Calculate estimated final taxes (simplified calculation)
-    const estimatedTaxes = 25000; // Fixed for now based on your example
+    // Calculate estimated final taxes based on sliders (simplified calculation)
+    // Higher rate of return and longer time horizon = higher taxes due to more growth
+    const baseTaxRate = 0.03; // 3% base rate
+    const rateMultiplier = 1 + (rateOfReturn[0] - 6) * 0.001; // Adjust based on rate
+    const timeMultiplier = 1 + (timeHorizon[0] - 15) * 0.002; // Adjust based on time
+    const estimatedTaxes = totalEstateValue * baseTaxRate * rateMultiplier * timeMultiplier;
     
     // Net to beneficiaries
     const netToBeneficiaries = totalEstateValue - estimatedTaxes;
@@ -73,17 +78,17 @@ const EstateCard = () => {
     {
       category: "Estate",
       amount: estateValues.totalEstate,
-      color: "#8b5cf6"
+      color: "#10b981" // Green
     },
     {
       category: "Final Taxes",
       amount: estateValues.finalTaxes,
-      color: "#ef4444"
+      color: "#ef4444" // Red
     },
     {
       category: "Net to Beneficiaries",
       amount: estateValues.netToBeneficiaries,
-      color: "#10b981"
+      color: "#3b82f6" // Blue
     }
   ];
 
@@ -148,10 +153,7 @@ const EstateCard = () => {
           {/* Estate Values Chart */}
           <div className="p-6 bg-gradient-to-r from-purple-50 to-green-50 border border-purple-200 rounded-xl">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Estate Analysis ({timeHorizon[0]} years)</h3>
-              <div className="text-sm text-gray-600 space-y-1">
-                <div>$0K - $400K - $800K</div>
-              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Final Tax Simulation ({timeHorizon[0]} years)</h3>
             </div>
             
             <ChartContainer config={chartConfig} className="h-64 w-full">
@@ -176,9 +178,12 @@ const EstateCard = () => {
                   />
                   <Bar 
                     dataKey="amount" 
-                    fill="#8b5cf6"
                     radius={[4, 4, 0, 0]}
-                  />
+                  >
+                    {estateData.map((entry, index) => (
+                      <Bar key={`cell-${index}`} dataKey="amount" fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
@@ -186,16 +191,16 @@ const EstateCard = () => {
             {/* Summary Numbers */}
             <div className="grid grid-cols-3 gap-4 mt-6">
               <div className="text-center">
-                <p className="text-lg font-bold text-purple-800">Total Estate</p>
-                <p className="text-2xl font-bold text-purple-900">${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-green-800">Total Estate</p>
+                <p className="text-2xl font-bold text-green-900">${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold text-red-800">Estate Taxes</p>
                 <p className="text-2xl font-bold text-red-900">${(estateValues.finalTaxes / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-green-800">Net Amount</p>
-                <p className="text-2xl font-bold text-green-900">${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold text-blue-800">Net Amount</p>
+                <p className="text-2xl font-bold text-blue-900">${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </div>
