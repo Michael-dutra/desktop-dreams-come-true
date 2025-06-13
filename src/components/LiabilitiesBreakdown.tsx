@@ -155,24 +155,24 @@ const LiabilitiesBreakdown = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent className="pb-4 flex-1 flex flex-col space-y-4">
+        <CardContent className="pb-4 flex-1 flex flex-col">
           {/* Total Monthly Payments Summary */}
-          <div className="p-4 bg-gray-50 rounded-lg border">
+          <div className="p-4 bg-gray-50 rounded-lg border mb-4">
             <div className="flex items-center justify-between">
               <span className="text-lg font-medium">Total Monthly Payments</span>
               <span className="text-xl font-bold text-red-600">${totalMonthlyPayments.toLocaleString()}</span>
             </div>
           </div>
           
-          {/* Individual Debt Cards - Bigger and Better Spaced */}
-          <div className="space-y-4 flex-1">
+          {/* Individual Debt Cards - Takes up remaining space */}
+          <div className="flex-1 flex flex-col space-y-4">
             {liabilities.map((liability, index) => {
               const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
               const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
               const monthsSaved = originalPayoff.months - newPayoff.months;
               
               return (
-                <div key={index} className="p-4 rounded-lg border-2 space-y-3" style={{ borderColor: liability.color }}>
+                <div key={index} className="p-4 rounded-lg border-2 space-y-3 flex-1" style={{ borderColor: liability.color }}>
                   {/* Header */}
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
