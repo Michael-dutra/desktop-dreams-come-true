@@ -3,10 +3,39 @@ import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { useState } from "react";
 
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+
+  // Life Insurance Data
+  const currentLifeCoverage = 320000;
+  const calculatedLifeNeed = 640000;
+  const lifeGap = Math.max(0, calculatedLifeNeed - currentLifeCoverage);
+
+  const lifeInsuranceData = [
+    {
+      category: "Current Coverage",
+      amount: currentLifeCoverage,
+      color: "#3b82f6"
+    },
+    {
+      category: "Calculated Need",
+      amount: calculatedLifeNeed,
+      color: "#ef4444"
+    },
+    {
+      category: "Coverage Gap",
+      amount: lifeGap,
+      color: "#f59e0b"
+    }
+  ];
+
+  const chartConfig = {
+    amount: { label: "Amount", color: "#3b82f6" }
+  };
 
   return (
     <>
@@ -30,19 +59,58 @@ const InsuranceCard = () => {
           </Button>
         </CardHeader>
         <CardContent className="space-y-5">
-          {/* Life Insurance */}
-          <div className="p-5 bg-blue-50 border border-blue-200 rounded-xl">
-            <div className="flex justify-between items-center">
-              <div className="space-y-1">
-                <p className="text-lg font-semibold text-blue-900">Life Insurance</p>
-                <p className="text-sm text-blue-700">Total Benefit</p>
+          {/* Life Insurance Analysis Chart */}
+          <div className="p-5 bg-gradient-to-r from-blue-50 to-red-50 border border-blue-200 rounded-xl">
+            <div className="mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Life Insurance Coverage Analysis</h3>
+              <p className="text-sm text-gray-600">Current coverage vs calculated needs</p>
+            </div>
+            
+            <ChartContainer config={chartConfig} className="h-48 w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={lifeInsuranceData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <XAxis 
+                    dataKey="category" 
+                    tick={{ fontSize: 12 }}
+                    interval={0}
+                    angle={-45}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]}
+                    />}
+                  />
+                  <Bar 
+                    dataKey="amount" 
+                    radius={[4, 4, 0, 0]}
+                  >
+                    {lifeInsuranceData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+
+            {/* Summary Numbers */}
+            <div className="grid grid-cols-3 gap-4 mt-4 text-center">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <p className="text-xs text-blue-700 font-medium">Current Coverage</p>
+                <p className="text-lg font-bold text-blue-800">${(currentLifeCoverage / 1000).toFixed(0)}K</p>
               </div>
-              <div className="text-right space-y-1">
-                <p className="text-xl font-bold text-blue-600">$320K</p>
-                <div className="flex items-center text-sm text-orange-600">
-                  <TrendingUp className="h-4 w-4 mr-1" />
-                  <span>Gap: $320K</span>
-                </div>
+              <div className="p-2 bg-red-100 rounded-lg">
+                <p className="text-xs text-red-700 font-medium">Calculated Need</p>
+                <p className="text-lg font-bold text-red-800">${(calculatedLifeNeed / 1000).toFixed(0)}K</p>
+              </div>
+              <div className="p-2 bg-amber-100 rounded-lg">
+                <p className="text-xs text-amber-700 font-medium">Coverage Gap</p>
+                <p className="text-lg font-bold text-amber-800">${(lifeGap / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </div>
