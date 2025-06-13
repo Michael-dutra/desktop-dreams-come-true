@@ -25,7 +25,7 @@ const RetirementCard = () => {
 
   return (
     <>
-      <Card className="relative overflow-hidden">
+      <Card className="relative overflow-hidden h-full flex flex-col">
         <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-purple-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-xl flex items-center space-x-3">
@@ -44,67 +44,65 @@ const RetirementCard = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="flex-1 flex flex-col space-y-6">
           {/* Total Savings */}
-          <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-            <p className="text-3xl font-bold text-purple-600 mb-1">$90,000</p>
-            <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
+          <div className="text-center p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
+            <p className="text-4xl font-bold text-purple-600 mb-2">$90,000</p>
+            <p className="text-base text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
 
-          {/* Interactive Controls */}
-          <div className="space-y-4 p-4 bg-gradient-to-r from-orange-50 via-purple-50 to-emerald-50 rounded-xl border border-orange-200">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-orange-700">
-                  Retirement Age: {retirementAge[0]}
-                </label>
-                <Slider
-                  value={retirementAge}
-                  onValueChange={setRetirementAge}
-                  min={55}
-                  max={70}
-                  step={1}
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-emerald-700">
-                  Monthly Income Needed: ${netMonthlyIncomeNeeded[0].toLocaleString()}
-                </label>
-                <Slider
-                  value={netMonthlyIncomeNeeded}
-                  onValueChange={setNetMonthlyIncomeNeeded}
-                  min={2000}
-                  max={8000}
-                  step={100}
-                  className="w-full"
-                />
-              </div>
+          {/* Interactive Controls - Stacked Layout */}
+          <div className="flex-1 space-y-5 p-5 bg-gradient-to-r from-orange-50 via-purple-50 to-emerald-50 rounded-xl border border-orange-200">
+            <div className="space-y-3">
+              <label className="text-base font-semibold text-orange-700">
+                Retirement Age: {retirementAge[0]}
+              </label>
+              <Slider
+                value={retirementAge}
+                onValueChange={setRetirementAge}
+                min={55}
+                max={70}
+                step={1}
+                className="w-full"
+              />
+            </div>
+            <div className="space-y-3">
+              <label className="text-base font-semibold text-emerald-700">
+                Monthly Income Needed: ${netMonthlyIncomeNeeded[0].toLocaleString()}
+              </label>
+              <Slider
+                value={netMonthlyIncomeNeeded}
+                onValueChange={setNetMonthlyIncomeNeeded}
+                min={2000}
+                max={8000}
+                step={100}
+                className="w-full"
+              />
             </div>
           </div>
 
           {/* Retirement Savings Progress Meter */}
-          <div className="p-5 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-200 shadow-sm">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-lg font-bold text-indigo-800">Retirement Savings Progress</span>
-              <span className="text-lg font-bold text-indigo-600 bg-white px-3 py-1 rounded-full">
+          <div className="flex-1 p-6 bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 rounded-xl border-2 border-indigo-200 shadow-sm">
+            <div className="flex justify-between items-center mb-5">
+              <span className="text-xl font-bold text-indigo-800">Retirement Savings Progress</span>
+              <span className="text-xl font-bold text-indigo-600 bg-white px-4 py-2 rounded-full">
                 {savingsPercentage.toFixed(1)}%
               </span>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-4">
               <Progress 
                 value={savingsPercentage} 
-                className="h-4 bg-indigo-100 border border-indigo-200 rounded-full overflow-hidden"
+                className="h-5 bg-indigo-100 border border-indigo-200 rounded-full overflow-hidden"
               />
-              <div className="flex justify-between text-sm text-indigo-700">
+              <div className="flex justify-between text-base text-indigo-700 font-medium">
                 <span>$0</span>
-                <span className="font-medium">{savingsPercentage.toFixed(1)}% of goal</span>
+                <span className="font-semibold">{savingsPercentage.toFixed(1)}% of goal</span>
                 <span>${(totalRetirementNeeded / 1000).toFixed(0)}K needed</span>
               </div>
             </div>
-            <div className="flex items-center space-x-2 mt-4 p-3 bg-green-100 rounded-lg border border-green-200">
-              <TrendingUp className="h-5 w-5 text-green-600" />
-              <span className="text-sm font-semibold text-green-700">Building towards retirement goal</span>
+            <div className="flex items-center space-x-3 mt-5 p-4 bg-green-100 rounded-lg border border-green-200">
+              <TrendingUp className="h-6 w-6 text-green-600" />
+              <span className="text-base font-semibold text-green-700">Building towards retirement goal</span>
             </div>
           </div>
         </CardContent>
