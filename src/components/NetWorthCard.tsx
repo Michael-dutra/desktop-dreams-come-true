@@ -67,6 +67,7 @@ const NetWorthCard = () => {
       <CardContent className="space-y-6 pb-6">
         {/* Main Net Worth Display */}
         <div className="text-center py-2">
+          <p className="text-sm text-white/80 mb-1">Current Net Worth</p>
           <p className="text-4xl font-bold text-white mb-3">$287,500</p>
           <div className="flex items-center justify-center space-x-2 text-green-300">
             <TrendingUp className="h-5 w-5" />
@@ -124,7 +125,7 @@ const NetWorthCard = () => {
           <div className="flex items-center space-x-3 bg-white/5 rounded-lg p-3">
             <Target className="h-5 w-5 text-green-300" />
             <div>
-              <p className="text-xs text-white/70">Projected Value</p>
+              <p className="text-xs text-white/70">Projected Net Worth</p>
               <p className="text-sm font-semibold text-white">{formatCurrency(finalValue)}</p>
             </div>
           </div>
