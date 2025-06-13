@@ -419,6 +419,15 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
     setBeneficiaries(beneficiaries.filter(beneficiary => beneficiary.id !== id));
   };
 
+  // Updated formatting function to show M for millions
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -456,11 +465,11 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                         />
                         <YAxis 
                           tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                          tickFormatter={(value) => formatCurrency(value)}
                         />
                         <ChartTooltip 
                           content={<ChartTooltipContent 
-                            formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]}
+                            formatter={(value) => [formatCurrency(Number(value)), "Amount"]}
                           />}
                         />
                         <Bar 
@@ -479,15 +488,15 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                   <div className="grid grid-cols-3 gap-4 mt-4 text-center">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <p className="text-xs text-purple-700 font-medium">Total Estate</p>
-                      <p className="text-lg font-bold text-purple-800">${(totalEstateValue / 1000).toFixed(0)}K</p>
+                      <p className="text-lg font-bold text-purple-800">{formatCurrency(totalEstateValue)}</p>
                     </div>
                     <div className="p-2 bg-amber-100 rounded-lg">
                       <p className="text-xs text-amber-700 font-medium">Estate Taxes</p>
-                      <p className="text-lg font-bold text-amber-800">${(estateTaxes / 1000).toFixed(0)}K</p>
+                      <p className="text-lg font-bold text-amber-800">{formatCurrency(estateTaxes)}</p>
                     </div>
                     <div className="p-2 bg-cyan-100 rounded-lg">
                       <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
-                      <p className="text-lg font-bold text-cyan-800">${(netEstateValue / 1000).toFixed(0)}K</p>
+                      <p className="text-lg font-bold text-cyan-800">{formatCurrency(netEstateValue)}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -501,7 +510,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">${(totalFutureValue / 1000).toFixed(0)}K</p>
+                      <p className="text-2xl font-bold text-foreground">{formatCurrency(totalFutureValue)}</p>
                       <p className="text-sm text-muted-foreground">Total Future Value</p>
                     </div>
                   </CardContent>
@@ -509,7 +518,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-red-600">${(totalTaxOwed / 1000).toFixed(0)}K</p>
+                      <p className="text-2xl font-bold text-red-600">{formatCurrency(totalTaxOwed)}</p>
                       <p className="text-sm text-muted-foreground">Estimated Taxes</p>
                     </div>
                   </CardContent>
@@ -517,7 +526,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 <Card>
                   <CardContent className="p-4">
                     <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">${(totalNetValue / 1000).toFixed(0)}K</p>
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetValue)}</p>
                       <p className="text-sm text-muted-foreground">Net Estate Value</p>
                     </div>
                   </CardContent>
@@ -569,19 +578,19 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Current Value</p>
-                          <p className="text-lg font-bold">${(asset.currentValue / 1000).toFixed(0)}K</p>
+                          <p className="text-lg font-bold">{formatCurrency(asset.currentValue)}</p>
                         </div>
                         <div className="text-center p-3 bg-blue-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Future Value</p>
-                          <p className="text-lg font-bold text-blue-600">${(asset.futureValue / 1000).toFixed(0)}K</p>
+                          <p className="text-lg font-bold text-blue-600">{formatCurrency(asset.futureValue)}</p>
                         </div>
                         <div className="text-center p-3 bg-red-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Tax Owed</p>
-                          <p className="text-lg font-bold text-red-600">${(asset.taxOwed / 1000).toFixed(0)}K</p>
+                          <p className="text-lg font-bold text-red-600">{formatCurrency(asset.taxOwed)}</p>
                         </div>
                         <div className="text-center p-3 bg-green-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Net Value</p>
-                          <p className="text-lg font-bold text-green-600">${(asset.netValue / 1000).toFixed(0)}K</p>
+                          <p className="text-lg font-bold text-green-600">{formatCurrency(asset.netValue)}</p>
                         </div>
                       </div>
 
@@ -628,23 +637,23 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                           return (
                             <tr key={index} className="border-b">
                               <td className="p-2 font-medium">{asset.name}</td>
-                              <td className="text-right p-2">${asset.currentValue.toLocaleString()}</td>
-                              <td className="text-right p-2 font-medium">${asset.futureValue.toLocaleString()}</td>
-                              <td className="text-right p-2">${asset.taxableAmount.toLocaleString()}</td>
+                              <td className="text-right p-2">{formatCurrency(asset.currentValue)}</td>
+                              <td className="text-right p-2 font-medium">{formatCurrency(asset.futureValue)}</td>
+                              <td className="text-right p-2">{formatCurrency(asset.taxableAmount)}</td>
                               <td className="text-right p-2">{taxRate}%</td>
-                              <td className="text-right p-2 text-red-600 font-medium">${asset.taxOwed.toLocaleString()}</td>
-                              <td className="text-right p-2 text-green-600 font-bold">${asset.netValue.toLocaleString()}</td>
+                              <td className="text-right p-2 text-red-600 font-medium">{formatCurrency(asset.taxOwed)}</td>
+                              <td className="text-right p-2 text-green-600 font-bold">{formatCurrency(asset.netValue)}</td>
                             </tr>
                           );
                         })}
                         <tr className="border-t-2 font-bold">
                           <td className="p-2">Total</td>
-                          <td className="text-right p-2">${estateAssets.reduce((sum, asset) => sum + asset.currentValue, 0).toLocaleString()}</td>
-                          <td className="text-right p-2">${totalFutureValue.toLocaleString()}</td>
-                          <td className="text-right p-2">${projectedAssets.reduce((sum, asset) => sum + asset.taxableAmount, 0).toLocaleString()}</td>
+                          <td className="text-right p-2">{formatCurrency(estateAssets.reduce((sum, asset) => sum + asset.currentValue, 0))}</td>
+                          <td className="text-right p-2">{formatCurrency(totalFutureValue)}</td>
+                          <td className="text-right p-2">{formatCurrency(projectedAssets.reduce((sum, asset) => sum + asset.taxableAmount, 0))}</td>
                           <td className="text-right p-2">-</td>
-                          <td className="text-right p-2 text-red-600">${totalTaxOwed.toLocaleString()}</td>
-                          <td className="text-right p-2 text-green-600">${totalNetValue.toLocaleString()}</td>
+                          <td className="text-right p-2 text-red-600">{formatCurrency(totalTaxOwed)}</td>
+                          <td className="text-right p-2 text-green-600">{formatCurrency(totalNetValue)}</td>
                         </tr>
                       </tbody>
                     </table>
@@ -833,7 +842,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                         <div className="flex items-center gap-4">
                           <div className="text-right">
                             <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
-                            <p className="text-sm text-purple-600">${beneficiary.amount.toLocaleString()}</p>
+                            <p className="text-sm text-purple-600">{formatCurrency(beneficiary.amount)}</p>
                           </div>
                           <Button
                             variant="ghost"

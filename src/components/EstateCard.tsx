@@ -1,3 +1,4 @@
+
 import { Crown, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -95,6 +96,15 @@ const EstateCard = () => {
     amount: { label: "Amount", color: "#8b5cf6" }
   };
 
+  // Updated formatting function to show M for millions
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
+  };
+
   return (
     <>
       <Card className="relative overflow-hidden">
@@ -166,12 +176,12 @@ const EstateCard = () => {
                   />
                   <YAxis 
                     tick={{ fontSize: 12 }}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                    tickFormatter={(value) => formatCurrency(value)}
                   />
                   <ChartTooltip 
                     content={<ChartTooltipContent 
                       formatter={(value, name) => [
-                        `$${Number(value).toLocaleString()}`, 
+                        formatCurrency(Number(value)), 
                         name
                       ]}
                     />}
@@ -192,15 +202,15 @@ const EstateCard = () => {
             <div className="grid grid-cols-3 gap-4 mt-6">
               <div className="text-center">
                 <p className="text-lg font-bold" style={{ color: '#8b5cf6' }}>Total Estate</p>
-                <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>{formatCurrency(estateValues.totalEstate)}</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold" style={{ color: '#ef4444' }}>Estate Taxes</p>
-                <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>${(estateValues.finalTaxes / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>{formatCurrency(estateValues.finalTaxes)}</p>
               </div>
               <div className="text-center">
                 <p className="text-lg font-bold" style={{ color: '#10b981' }}>Net Amount</p>
-                <p className="text-2xl font-bold" style={{ color: '#10b981' }}>${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
+                <p className="text-2xl font-bold" style={{ color: '#10b981' }}>{formatCurrency(estateValues.netToBeneficiaries)}</p>
               </div>
             </div>
           </div>
