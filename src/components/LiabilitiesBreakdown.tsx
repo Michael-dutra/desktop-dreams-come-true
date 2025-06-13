@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
@@ -60,7 +59,7 @@ const LiabilitiesBreakdown = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent>
+        <CardContent className="pb-4">
           <div className="space-y-4">
             {/* Total Debt Amount */}
             <div className="space-y-3">

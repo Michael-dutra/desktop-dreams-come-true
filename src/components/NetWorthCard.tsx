@@ -1,4 +1,3 @@
-
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -38,7 +37,7 @@ const NetWorthCard = () => {
           </div>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 pb-4">
         {/* Main Net Worth Display */}
         <div className="text-center">
           <p className="text-4xl font-bold text-white mb-2">$287,500</p>
