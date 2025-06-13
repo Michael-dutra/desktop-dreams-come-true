@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -301,6 +300,16 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     setBusinessInsurances(businessInsurances.filter(insurance => insurance.id !== id));
   };
 
+  // Helper function to format large numbers
+  const formatLargeNumber = (value: number): string => {
+    if (value >= 1000000) {
+      return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 2)}M`;
+    } else if (value >= 1000) {
+      return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
+    }
+    return value.toString();
+  };
+
   const businessGrowthData = financialData;
 
   const chartConfig = {
@@ -448,7 +457,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                             <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stream.color }} />
                             <span className="text-sm">{stream.name}</span>
                           </div>
-                          <span className="text-sm font-medium">${stream.value.toLocaleString()}</span>
+                          <span className="text-sm font-medium">${formatLargeNumber(stream.value)}</span>
                         </div>
                       ))}
                     </div>
@@ -582,15 +591,15 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     <>
                       <div>
                         <p className="text-sm text-muted-foreground">Revenue</p>
-                        <p className="text-2xl font-bold">${currentYearData.revenue.toLocaleString()}</p>
+                        <p className="text-2xl font-bold">${formatLargeNumber(currentYearData.revenue)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Profit</p>
-                        <p className="text-2xl font-bold text-green-600">${currentYearData.profit.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-green-600">${formatLargeNumber(currentYearData.profit)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">Valuation</p>
-                        <p className="text-2xl font-bold text-purple-600">${currentYearData.valuation.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-purple-600">${formatLargeNumber(currentYearData.valuation)}</p>
                       </div>
                     </>
                   )}
@@ -702,15 +711,15 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     <>
                       <div>
                         <p className="text-sm text-muted-foreground">2025 Revenue</p>
-                        <p className="text-xl font-bold">${projectionsData.revenue2025.toLocaleString()}</p>
+                        <p className="text-xl font-bold">${formatLargeNumber(projectionsData.revenue2025)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">2025 Profit</p>
-                        <p className="text-xl font-bold">${projectionsData.profit2025.toLocaleString()}</p>
+                        <p className="text-xl font-bold">${formatLargeNumber(projectionsData.profit2025)}</p>
                       </div>
                       <div>
                         <p className="text-sm text-muted-foreground">2025 Valuation</p>
-                        <p className="text-xl font-bold">${projectionsData.valuation2025.toLocaleString()}</p>
+                        <p className="text-xl font-bold">${formatLargeNumber(projectionsData.valuation2025)}</p>
                       </div>
                     </>
                   )}
