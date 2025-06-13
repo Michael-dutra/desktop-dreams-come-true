@@ -2,795 +2,684 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Textarea } from "@/components/ui/textarea";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Calculator, DollarSign, TrendingUp, AlertTriangle, FileText, Users, Plus, Edit, Calendar, Heart, BookOpen, Scale, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { v4 as uuidv4 } from "uuid";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 interface EstateDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface EstateDocument {
+interface Document {
   id: string;
-  name: string;
-  lastUpdated: string;
-  status: "Current" | "Outdated" | "Pending";
-  review: string;
-}
-
-interface TrustBeneficiary {
-  id: string;
-  name: string;
-  relationship: string;
-  allocation: number;
-}
-
-interface TrustStructure {
-  id: string;
-  name: string;
+  title: string;
   type: string;
-  assets: string;
-  purpose: string;
-  settlor?: string;
-  trustees?: string[];
-  beneficiaries?: TrustBeneficiary[];
-  jurisdiction?: string;
+  status: 'Current' | 'Outdated' | 'In Progress';
+  location: string;
+  lastUpdated: string;
+}
+
+interface Trust {
+  id: string;
+  name: string;
+  settlor: string;
+  trustees: string[];
+  jurisdiction: string;
   startDate?: string;
+  beneficiaries: {
+    name: string;
+    relationship: string;
+    allocation: number;
+  }[];
   notes?: string;
+}
+
+interface Action {
+  id: string;
+  title: string;
+  description: string;
+  priority: 'High' | 'Medium' | 'Low';
+  dueDate: string;
+  assignedTo: string;
 }
 
 interface Beneficiary {
   id: string;
   name: string;
   relationship: string;
-  percentage: number;
-  amount: number;
-}
-
-interface DocumentAction {
-  id: string;
-  action: string;
-  priority: "High" | "Medium" | "Low";
+  allocation: number;
+  contact: string;
+  notes?: string;
 }
 
 export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
-  // Original estate data from EstateCard
-  const totalEstateValue = 785000;
-  const estateTaxes = 25000;
-  const netEstateValue = totalEstateValue - estateTaxes;
-
-  const estateBreakdownData = [
+  // State for documents
+  const [documents, setDocuments] = useState<Document[]>([
     {
-      category: "Total Estate",
-      amount: totalEstateValue,
-      color: "#8b5cf6"
+      id: "doc1",
+      title: "Last Will and Testament",
+      type: "Legal Document",
+      status: "Current",
+      location: "Safe Deposit Box at First National Bank",
+      lastUpdated: "2023-05-15"
     },
     {
-      category: "Estate Taxes",
-      amount: estateTaxes,
-      color: "#f59e0b"
-    },
-    {
-      category: "Net to Beneficiaries",
-      amount: netEstateValue,
-      color: "#06b6d4"
+      id: "doc2",
+      title: "Power of Attorney",
+      type: "Legal Document",
+      status: "Outdated",
+      location: "Home Office Filing Cabinet",
+      lastUpdated: "2021-03-10"
     }
-  ];
-
-  const [estateAssets] = useState([
-    { 
-      name: "Real Estate", 
-      currentValue: 620000, 
-      taxableStatus: "Capital Gains",
-      acquisitionCost: 450000,
-      color: "#3b82f6"
-    },
-    { 
-      name: "RRSP", 
-      currentValue: 52000, 
-      taxableStatus: "Fully Taxable",
-      acquisitionCost: 35000,
-      color: "#10b981"
-    },
-    { 
-      name: "TFSA", 
-      currentValue: 38000, 
-      taxableStatus: "Tax-Free",
-      acquisitionCost: 30000,
-      color: "#8b5cf6"
-    },
-    { 
-      name: "Non-Registered", 
-      currentValue: 25000, 
-      taxableStatus: "Capital Gains",
-      acquisitionCost: 20000,
-      color: "#f59e0b"
-    },
   ]);
-
-  // Individual sliders for each asset
-  const [assetSettings, setAssetSettings] = useState({
-    "Real Estate": { rateOfReturn: [5], timeFrame: [15] },
-    "RRSP": { rateOfReturn: [7], timeFrame: [15] },
-    "TFSA": { rateOfReturn: [6], timeFrame: [15] },
-    "Non-Registered": { rateOfReturn: [6], timeFrame: [15] }
+  const [showAddDocument, setShowAddDocument] = useState(false);
+  const [newDocument, setNewDocument] = useState<Partial<Document>>({
+    title: "",
+    type: "",
+    status: "Current",
+    location: "",
+    lastUpdated: new Date().toISOString().split('T')[0]
   });
 
-  // Legacy tab state
-  const [estateDocuments, setEstateDocuments] = useState<EstateDocument[]>([
-    { id: "1", name: "Last Will & Testament", lastUpdated: "Mar 2024", status: "Current", review: "Review in 5 years" },
-    { id: "2", name: "Power of Attorney", lastUpdated: "Mar 2024", status: "Current", review: "No expiry" },
-    { id: "3", name: "Living Will", lastUpdated: "Jan 2020", status: "Outdated", review: "Review needed" },
-    { id: "4", name: "Beneficiary Designations", lastUpdated: "Feb 2024", status: "Current", review: "Annual review" },
-  ]);
-
-  const [trustStructures, setTrustStructures] = useState<TrustStructure[]>([
-    { 
-      id: "1", 
-      name: "Family Trust", 
-      type: "Discretionary", 
-      assets: "$185,000", 
-      purpose: "Tax minimization",
+  // State for trusts
+  const [trusts, setTrusts] = useState<Trust[]>([
+    {
+      id: "trust1",
+      name: "Family Trust",
       settlor: "John Smith",
-      trustees: ["Jane Smith", "ABC Trust Co."],
+      trustees: ["Jane Smith", "Robert Johnson"],
       jurisdiction: "Ontario",
-      startDate: "2020-01-15"
-    },
-    { 
-      id: "2", 
-      name: "Children's Education Trust", 
-      type: "Fixed", 
-      assets: "$50,000", 
-      purpose: "Education funding",
-      settlor: "John Smith",
-      trustees: ["Jane Smith"],
-      jurisdiction: "Ontario",
-      startDate: "2022-06-01"
-    },
+      startDate: "2020-01-15",
+      beneficiaries: [
+        { name: "Emma Smith", relationship: "Daughter", allocation: 50 },
+        { name: "Michael Smith", relationship: "Son", allocation: 50 }
+      ],
+      notes: "Annual review required by January 31st"
+    }
   ]);
-
-  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
-    { id: "1", name: "Sarah Johnson", relationship: "Spouse", percentage: 60, amount: 471000 },
-    { id: "2", name: "Michael Johnson", relationship: "Son", percentage: 25, amount: 196250 },
-    { id: "3", name: "Emma Johnson", relationship: "Daughter", percentage: 15, amount: 117750 },
-  ]);
-
-  const [documentActions, setDocumentActions] = useState<DocumentAction[]>([
-    { id: "1", action: "Update Living Will", priority: "High" },
-    { id: "2", action: "Schedule Annual Review", priority: "Medium" },
-    { id: "3", action: "Review Beneficiaries", priority: "Medium" },
-  ]);
-
-  const updateAssetSetting = (assetName: string, setting: 'rateOfReturn' | 'timeFrame', value: number[]) => {
-    setAssetSettings(prev => ({
-      ...prev,
-      [assetName]: {
-        ...prev[assetName],
-        [setting]: value
-      }
-    }));
-  };
-
-  // Calculate future values and taxes for each asset
-  const calculateAssetProjections = () => {
-    return estateAssets.map(asset => {
-      const settings = assetSettings[asset.name];
-      const rateOfReturn = settings.rateOfReturn[0] / 100;
-      const timeFrame = settings.timeFrame[0];
-      
-      // Future Value calculation
-      const futureValue = asset.currentValue * Math.pow(1 + rateOfReturn, timeFrame);
-      const totalGain = futureValue - asset.acquisitionCost;
-      
-      // Tax calculations based on asset type
-      let taxableAmount = 0;
-      let taxOwed = 0;
-      const marginalTaxRate = 0.43; // Assume 43% marginal tax rate
-      const capitalGainsRate = marginalTaxRate * 0.5; // 50% inclusion rate
-      
-      switch (asset.taxableStatus) {
-        case "Fully Taxable":
-          taxableAmount = futureValue;
-          taxOwed = futureValue * marginalTaxRate;
-          break;
-        case "Capital Gains":
-          taxableAmount = totalGain > 0 ? totalGain : 0;
-          taxOwed = taxableAmount * capitalGainsRate;
-          break;
-        case "Tax-Free":
-          taxableAmount = 0;
-          taxOwed = 0;
-          break;
-        default:
-          taxableAmount = 0;
-          taxOwed = 0;
-      }
-
-      return {
-        ...asset,
-        settings,
-        futureValue,
-        totalGain,
-        taxableAmount,
-        taxOwed,
-        netValue: futureValue - taxOwed
-      };
-    });
-  };
-
-  const projectedAssets = calculateAssetProjections();
-  const totalFutureValue = projectedAssets.reduce((sum, asset) => sum + asset.futureValue, 0);
-  const totalTaxOwed = projectedAssets.reduce((sum, asset) => sum + asset.taxOwed, 0);
-  const totalNetValue = projectedAssets.reduce((sum, asset) => sum + asset.netValue, 0);
-
-  // Chart data for tax breakdown
-  const taxBreakdownData = projectedAssets.map(asset => ({
-    name: asset.name,
-    grossValue: asset.futureValue,
-    taxOwed: asset.taxOwed,
-    netValue: asset.netValue,
-    fill: asset.color
-  }));
-
-  const chartConfig = {
-    grossValue: { label: "Gross Value", color: "#3b82f6" },
-    taxOwed: { label: "Tax Owed", color: "#ef4444" },
-    netValue: { label: "Net Value", color: "#10b981" },
-    amount: { label: "Amount", color: "#8b5cf6" }
-  };
-
-  // Add dialog states for each section
-  const [showAddDocument, setShowAddDocument] = useState(false);
   const [showAddTrust, setShowAddTrust] = useState(false);
-  const [showAddAction, setShowAddAction] = useState(false);
-  const [showAddBeneficiary, setShowAddBeneficiary] = useState(false);
-
-  // Add form states
-  const [newDocument, setNewDocument] = useState({ name: "", status: "Current" as "Current" | "Outdated" | "Pending", review: "" });
-  const [newTrust, setNewTrust] = useState({ 
-    name: "", 
-    type: "", 
-    assets: "", 
-    purpose: "",
+  const [newTrust, setNewTrust] = useState<Partial<Trust>>({
+    name: "",
     settlor: "",
     trustees: [""],
-    beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
     jurisdiction: "",
     startDate: "",
+    beneficiaries: [{ name: "", relationship: "", allocation: 0 }],
     notes: ""
   });
-  const [newAction, setNewAction] = useState({ action: "", priority: "Medium" as "High" | "Medium" | "Low" });
-  const [newBeneficiary, setNewBeneficiary] = useState({ name: "", relationship: "", percentage: 0 });
 
-  // Add handlers for adding new items
+  // State for action items
+  const [actions, setActions] = useState<Action[]>([
+    {
+      id: "action1",
+      title: "Update Will",
+      description: "Schedule appointment with estate attorney to update will with new property",
+      priority: "High",
+      dueDate: "2023-12-15",
+      assignedTo: "Self"
+    }
+  ]);
+  const [showAddAction, setShowAddAction] = useState(false);
+  const [newAction, setNewAction] = useState<Partial<Action>>({
+    title: "",
+    description: "",
+    priority: "Medium",
+    dueDate: "",
+    assignedTo: ""
+  });
+
+  // State for beneficiaries
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
+    {
+      id: "ben1",
+      name: "Emma Smith",
+      relationship: "Daughter",
+      allocation: 40,
+      contact: "emma@example.com",
+      notes: "Executor of the estate"
+    },
+    {
+      id: "ben2",
+      name: "Michael Smith",
+      relationship: "Son",
+      allocation: 40,
+      contact: "michael@example.com"
+    },
+    {
+      id: "ben3",
+      name: "Children's Hospital Foundation",
+      relationship: "Charity",
+      allocation: 20,
+      contact: "donations@chf.org",
+      notes: "Annual donation acknowledgment required"
+    }
+  ]);
+  const [showAddBeneficiary, setShowAddBeneficiary] = useState(false);
+  const [newBeneficiary, setNewBeneficiary] = useState<Partial<Beneficiary>>({
+    name: "",
+    relationship: "",
+    allocation: 0,
+    contact: "",
+    notes: ""
+  });
+  
+  // Add delete confirmation state
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    type: 'document' | 'trust' | 'action' | 'beneficiary';
+    id: string;
+    title: string;
+  }>({
+    isOpen: false,
+    type: 'document',
+    id: '',
+    title: ''
+  });
+
+  // Add document function
   const handleAddDocument = () => {
-    if (newDocument.name.trim()) {
-      const document: EstateDocument = {
-        id: Date.now().toString(),
-        name: newDocument.name,
-        lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
-        status: newDocument.status,
-        review: newDocument.review || "Review annually"
+    if (newDocument.title && newDocument.type && newDocument.location) {
+      const document: Document = {
+        id: uuidv4(),
+        title: newDocument.title,
+        type: newDocument.type,
+        status: newDocument.status as 'Current' | 'Outdated' | 'In Progress',
+        location: newDocument.location,
+        lastUpdated: newDocument.lastUpdated || new Date().toISOString().split('T')[0]
       };
-      setEstateDocuments([...estateDocuments, document]);
-      setNewDocument({ name: "", status: "Current", review: "" });
+      setDocuments([...documents, document]);
+      setNewDocument({
+        title: "",
+        type: "",
+        status: "Current",
+        location: "",
+        lastUpdated: new Date().toISOString().split('T')[0]
+      });
       setShowAddDocument(false);
     }
   };
 
+  // Add trust function
   const handleAddTrust = () => {
-    if (newTrust.name.trim()) {
-      const trust: TrustStructure = {
-        id: Date.now().toString(),
+    if (newTrust.name && newTrust.settlor && newTrust.jurisdiction) {
+      const trust: Trust = {
+        id: uuidv4(),
         name: newTrust.name,
-        type: newTrust.type || "Discretionary",
-        assets: newTrust.assets || "$0",
-        purpose: newTrust.purpose || "Tax planning",
-        settlor: newTrust.settlor || undefined,
-        trustees: newTrust.trustees.filter(t => t.trim()) || undefined,
-        beneficiaries: newTrust.beneficiaries.filter(b => b.name.trim()) || undefined,
-        jurisdiction: newTrust.jurisdiction || undefined,
-        startDate: newTrust.startDate || undefined,
-        notes: newTrust.notes || undefined
+        settlor: newTrust.settlor,
+        trustees: newTrust.trustees || [""],
+        jurisdiction: newTrust.jurisdiction,
+        startDate: newTrust.startDate,
+        beneficiaries: newTrust.beneficiaries || [],
+        notes: newTrust.notes
       };
-      setTrustStructures([...trustStructures, trust]);
-      setNewTrust({ 
-        name: "", 
-        type: "", 
-        assets: "", 
-        purpose: "",
+      setTrusts([...trusts, trust]);
+      setNewTrust({
+        name: "",
         settlor: "",
         trustees: [""],
-        beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
         jurisdiction: "",
         startDate: "",
+        beneficiaries: [{ name: "", relationship: "", allocation: 0 }],
         notes: ""
       });
       setShowAddTrust(false);
     }
   };
 
+  // Add action function
   const handleAddAction = () => {
-    if (newAction.action.trim()) {
-      const action: DocumentAction = {
-        id: Date.now().toString(),
-        action: newAction.action,
-        priority: newAction.priority
+    if (newAction.title && newAction.description && newAction.dueDate) {
+      const action: Action = {
+        id: uuidv4(),
+        title: newAction.title,
+        description: newAction.description,
+        priority: newAction.priority as 'High' | 'Medium' | 'Low',
+        dueDate: newAction.dueDate,
+        assignedTo: newAction.assignedTo || "Self"
       };
-      setDocumentActions([...documentActions, action]);
-      setNewAction({ action: "", priority: "Medium" });
+      setActions([...actions, action]);
+      setNewAction({
+        title: "",
+        description: "",
+        priority: "Medium",
+        dueDate: "",
+        assignedTo: ""
+      });
       setShowAddAction(false);
     }
   };
 
+  // Add beneficiary function
   const handleAddBeneficiary = () => {
-    if (newBeneficiary.name.trim() && newBeneficiary.percentage > 0) {
-      // Calculate amount based on net estate value
-      const amount = (netEstateValue * newBeneficiary.percentage) / 100;
+    if (newBeneficiary.name && newBeneficiary.relationship && newBeneficiary.contact) {
       const beneficiary: Beneficiary = {
-        id: Date.now().toString(),
+        id: uuidv4(),
         name: newBeneficiary.name,
-        relationship: newBeneficiary.relationship || "Other",
-        percentage: newBeneficiary.percentage,
-        amount: amount
+        relationship: newBeneficiary.relationship,
+        allocation: newBeneficiary.allocation || 0,
+        contact: newBeneficiary.contact,
+        notes: newBeneficiary.notes
       };
       setBeneficiaries([...beneficiaries, beneficiary]);
-      setNewBeneficiary({ name: "", relationship: "", percentage: 0 });
+      setNewBeneficiary({
+        name: "",
+        relationship: "",
+        allocation: 0,
+        contact: "",
+        notes: ""
+      });
       setShowAddBeneficiary(false);
     }
   };
 
-  const addTrustee = () => {
-    setNewTrust(prev => ({
-      ...prev,
-      trustees: [...prev.trustees, ""]
-    }));
+  // Delete functions
+  const handleDeleteDocument = (id: string) => {
+    const document = documents.find(doc => doc.id === id);
+    if (document) {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: 'document',
+        id,
+        title: document.title
+      });
+    }
   };
 
-  const removeTrustee = (index: number) => {
-    setNewTrust(prev => ({
-      ...prev,
-      trustees: prev.trustees.filter((_, i) => i !== index)
-    }));
+  const handleDeleteTrust = (id: string) => {
+    const trust = trusts.find(t => t.id === id);
+    if (trust) {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: 'trust',
+        id,
+        title: trust.name
+      });
+    }
   };
 
-  const updateTrustee = (index: number, value: string) => {
-    setNewTrust(prev => ({
-      ...prev,
-      trustees: prev.trustees.map((trustee, i) => i === index ? value : trustee)
-    }));
+  const handleDeleteAction = (id: string) => {
+    const action = actions.find(a => a.id === id);
+    if (action) {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: 'action',
+        id,
+        title: action.title
+      });
+    }
   };
 
-  const addTrustBeneficiary = () => {
-    setNewTrust(prev => ({
-      ...prev,
-      beneficiaries: [...prev.beneficiaries, { 
-        id: Date.now().toString(), 
-        name: "", 
-        relationship: "", 
-        allocation: 0 
-      }]
-    }));
+  const handleDeleteBeneficiary = (id: string) => {
+    const beneficiary = beneficiaries.find(b => b.id === id);
+    if (beneficiary) {
+      setDeleteConfirmation({
+        isOpen: true,
+        type: 'beneficiary',
+        id,
+        title: beneficiary.name
+      });
+    }
   };
 
-  const removeTrustBeneficiary = (id: string) => {
-    setNewTrust(prev => ({
-      ...prev,
-      beneficiaries: prev.beneficiaries.filter(b => b.id !== id)
-    }));
+  const confirmDelete = () => {
+    const { type, id } = deleteConfirmation;
+    
+    switch (type) {
+      case 'document':
+        setDocuments(prev => prev.filter(doc => doc.id !== id));
+        break;
+      case 'trust':
+        setTrusts(prev => prev.filter(trust => trust.id !== id));
+        break;
+      case 'action':
+        setActions(prev => prev.filter(action => action.id !== id));
+        break;
+      case 'beneficiary':
+        setBeneficiaries(prev => prev.filter(beneficiary => beneficiary.id !== id));
+        break;
+    }
+    
+    setDeleteConfirmation({
+      isOpen: false,
+      type: 'document',
+      id: '',
+      title: ''
+    });
   };
 
-  const updateTrustBeneficiary = (id: string, field: keyof TrustBeneficiary, value: string | number) => {
-    setNewTrust(prev => ({
-      ...prev,
-      beneficiaries: prev.beneficiaries.map(b => 
-        b.id === id ? { ...b, [field]: value } : b
-      )
-    }));
+  const cancelDelete = () => {
+    setDeleteConfirmation({
+      isOpen: false,
+      type: 'document',
+      id: '',
+      title: ''
+    });
   };
-
-  const jurisdictions = [
-    "Alberta", "British Columbia", "Manitoba", "New Brunswick", 
-    "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia", 
-    "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
-    "Saskatchewan", "Yukon"
-  ];
 
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5" />
-              Estate Planning
-            </DialogTitle>
+            <DialogTitle>Estate Planning Details</DialogTitle>
           </DialogHeader>
 
-          <Tabs defaultValue="overview" className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="overview">Estate Overview</TabsTrigger>
-              <TabsTrigger value="legacy">Legacy</TabsTrigger>
+          <Tabs defaultValue="overview" className="mt-6">
+            <TabsList className="grid w-full grid-cols-3">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="legacy">Legacy Planning</TabsTrigger>
+              <TabsTrigger value="contacts">Key Contacts</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="overview" className="space-y-6">
-              {/* Original Estate Value Breakdown */}
+            <TabsContent value="overview" className="space-y-6 mt-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Current Estate Value Breakdown</CardTitle>
+                  <CardTitle className="text-lg">Estate Summary</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ChartContainer config={chartConfig} className="h-48 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={estateBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <XAxis 
-                          dataKey="category" 
-                          tick={{ fontSize: 12 }}
-                          interval={0}
-                          angle={-45}
-                          textAnchor="end"
-                          height={80}
-                        />
-                        <YAxis 
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                        />
-                        <ChartTooltip 
-                          content={<ChartTooltipContent 
-                            formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]}
-                          />}
-                        />
-                        <Bar 
-                          dataKey="amount" 
-                          radius={[4, 4, 0, 0]}
-                        >
-                          {estateBreakdownData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={entry.color} />
-                          ))}
-                        </Bar>
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <h4 className="font-medium text-sm">Estate Value</h4>
+                        <p className="text-2xl font-bold">$2,450,000</p>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-sm">Last Updated</h4>
+                        <p>March 15, 2023</p>
+                      </div>
+                    </div>
 
-                  {/* Original Summary Numbers */}
-                  <div className="grid grid-cols-3 gap-4 mt-4 text-center">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <p className="text-xs text-purple-700 font-medium">Total Estate</p>
-                      <p className="text-lg font-bold text-purple-800">${(totalEstateValue / 1000).toFixed(0)}K</p>
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Estate Executor</h4>
+                      <p>Emma Smith (Daughter)</p>
+                      <p className="text-sm text-muted-foreground">Secondary: Michael Smith (Son)</p>
                     </div>
-                    <div className="p-2 bg-amber-100 rounded-lg">
-                      <p className="text-xs text-amber-700 font-medium">Estate Taxes</p>
-                      <p className="text-lg font-bold text-amber-800">${(estateTaxes / 1000).toFixed(0)}K</p>
-                    </div>
-                    <div className="p-2 bg-cyan-100 rounded-lg">
-                      <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
-                      <p className="text-lg font-bold text-cyan-800">${(netEstateValue / 1000).toFixed(0)}K</p>
+
+                    <div>
+                      <h4 className="font-medium text-sm mb-2">Estate Attorney</h4>
+                      <p>Sarah Johnson, Johnson & Associates</p>
+                      <p className="text-sm text-muted-foreground">Contact: (555) 123-4567</p>
                     </div>
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Final Tax Projections Title */}
-              <div className="text-2xl font-bold text-foreground">Final Tax Projections</div>
-
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">${(totalFutureValue / 1000).toFixed(0)}K</p>
-                      <p className="text-sm text-muted-foreground">Total Future Value</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-red-600">${(totalTaxOwed / 1000).toFixed(0)}K</p>
-                      <p className="text-sm text-muted-foreground">Estimated Taxes</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">${(totalNetValue / 1000).toFixed(0)}K</p>
-                      <p className="text-sm text-muted-foreground">Net Estate Value</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Individual Asset Controls */}
-              <div className="space-y-6">
-                {projectedAssets.map((asset, index) => (
-                  <Card key={index}>
-                    <CardHeader>
-                      <CardTitle className="text-lg flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }}></div>
-                        {asset.name}
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      {/* Controls */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">
-                            Rate of Return: {asset.settings.rateOfReturn[0]}%
-                          </label>
-                          <Slider
-                            value={asset.settings.rateOfReturn}
-                            onValueChange={(value) => updateAssetSetting(asset.name, 'rateOfReturn', value)}
-                            min={1}
-                            max={15}
-                            step={0.5}
-                            className="w-full"
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">
-                            Time Frame: {asset.settings.timeFrame[0]} years
-                          </label>
-                          <Slider
-                            value={asset.settings.timeFrame}
-                            onValueChange={(value) => updateAssetSetting(asset.name, 'timeFrame', value)}
-                            min={1}
-                            max={30}
-                            step={1}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Asset Projections */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                        <div className="text-center p-3 bg-gray-50 rounded-lg">
-                          <p className="text-xs text-muted-foreground">Current Value</p>
-                          <p className="text-lg font-bold">${(asset.currentValue / 1000).toFixed(0)}K</p>
-                        </div>
-                        <div className="text-center p-3 bg-blue-50 rounded-lg">
-                          <p className="text-xs text-muted-foreground">Future Value</p>
-                          <p className="text-lg font-bold text-blue-600">${(asset.futureValue / 1000).toFixed(0)}K</p>
-                        </div>
-                        <div className="text-center p-3 bg-red-50 rounded-lg">
-                          <p className="text-xs text-muted-foreground">Tax Owed</p>
-                          <p className="text-lg font-bold text-red-600">${(asset.taxOwed / 1000).toFixed(0)}K</p>
-                        </div>
-                        <div className="text-center p-3 bg-green-50 rounded-lg">
-                          <p className="text-xs text-muted-foreground">Net Value</p>
-                          <p className="text-lg font-bold text-green-600">${(asset.netValue / 1000).toFixed(0)}K</p>
-                        </div>
-                      </div>
-
-                      {/* Tax Status */}
-                      <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
-                        <div className="flex items-center gap-2 mb-1">
-                          <Calculator className="h-4 w-4 text-orange-600" />
-                          <span className="text-sm font-medium text-orange-800">Tax Treatment: {asset.taxableStatus}</span>
-                        </div>
-                        <p className="text-xs text-orange-700">
-                          {asset.taxableStatus === "Fully Taxable" && "Full value subject to marginal tax rate at death"}
-                          {asset.taxableStatus === "Capital Gains" && "Only gains subject to capital gains tax (50% inclusion rate)"}
-                          {asset.taxableStatus === "Tax-Free" && "No tax implications on this asset"}
-                        </p>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Detailed Tax Calculations */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Detailed Tax Calculations</CardTitle>
+                  <CardTitle className="text-lg">Estate Distribution</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full border-collapse">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-2">Asset</th>
-                          <th className="text-right p-2">Current Value</th>
-                          <th className="text-right p-2">Future Value</th>
-                          <th className="text-right p-2">Taxable Amount</th>
-                          <th className="text-right p-2">Tax Rate</th>
-                          <th className="text-right p-2">Tax Owed</th>
-                          <th className="text-right p-2">Net Value</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {projectedAssets.map((asset, index) => {
-                          const taxRate = asset.taxableStatus === "Fully Taxable" ? 43 :
-                                         asset.taxableStatus === "Capital Gains" ? 21.5 : 0;
-                          return (
-                            <tr key={index} className="border-b">
-                              <td className="p-2 font-medium">{asset.name}</td>
-                              <td className="text-right p-2">${asset.currentValue.toLocaleString()}</td>
-                              <td className="text-right p-2 font-medium">${asset.futureValue.toLocaleString()}</td>
-                              <td className="text-right p-2">${asset.taxableAmount.toLocaleString()}</td>
-                              <td className="text-right p-2">{taxRate}%</td>
-                              <td className="text-right p-2 text-red-600 font-medium">${asset.taxOwed.toLocaleString()}</td>
-                              <td className="text-right p-2 text-green-600 font-bold">${asset.netValue.toLocaleString()}</td>
-                            </tr>
-                          );
-                        })}
-                        <tr className="border-t-2 font-bold">
-                          <td className="p-2">Total</td>
-                          <td className="text-right p-2">${estateAssets.reduce((sum, asset) => sum + asset.currentValue, 0).toLocaleString()}</td>
-                          <td className="text-right p-2">${totalFutureValue.toLocaleString()}</td>
-                          <td className="text-right p-2">${projectedAssets.reduce((sum, asset) => sum + asset.taxableAmount, 0).toLocaleString()}</td>
-                          <td className="text-right p-2">-</td>
-                          <td className="text-right p-2 text-red-600">${totalTaxOwed.toLocaleString()}</td>
-                          <td className="text-right p-2 text-green-600">${totalNetValue.toLocaleString()}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      {beneficiaries.map((ben) => (
+                        <div key={ben.id} className="flex justify-between items-center">
+                          <div>
+                            <p className="font-medium">{ben.name}</p>
+                            <p className="text-sm text-muted-foreground">{ben.relationship}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold">{ben.allocation}%</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </CardContent>
               </Card>
             </TabsContent>
 
             <TabsContent value="legacy" className="space-y-6">
-              {/* Estate Documents Status */}
-              <Card className="border-blue-200 bg-blue-50">
-                <CardHeader className="bg-blue-100 border-b border-blue-200">
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <FileText className="h-5 w-5 text-blue-600" />
-                      <span className="text-blue-800">Estate Documents Status</span>
-                    </div>
-                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowAddDocument(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Document
-                    </Button>
-                  </CardTitle>
+              {/* Estate Documents */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Estate Documents</CardTitle>
+                  <Button onClick={() => setShowAddDocument(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Document
+                  </Button>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="space-y-4">
-                    {estateDocuments.map((doc) => (
-                      <div key={doc.id} className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-white">
-                        <div>
-                          <h4 className="font-medium text-blue-900">{doc.name}</h4>
-                          <p className="text-sm text-blue-700">Last Updated: {doc.lastUpdated}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <Badge variant={doc.status === "Current" ? "secondary" : doc.status === "Outdated" ? "destructive" : "outline"}>
+                    {documents.map((doc) => (
+                      <div key={doc.id} className="relative p-4 border rounded-lg bg-gray-50">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                          onClick={() => handleDeleteDocument(doc.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="pr-8">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{doc.title}</h4>
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              doc.status === 'Current' ? 'bg-green-100 text-green-800' :
+                              doc.status === 'Outdated' ? 'bg-red-100 text-red-800' :
+                              'bg-yellow-100 text-yellow-800'
+                            }`}>
                               {doc.status}
-                            </Badge>
-                            <p className="text-xs text-blue-600 mt-1">{doc.review}</p>
+                            </span>
                           </div>
+                          <p className="text-sm text-muted-foreground mb-2">{doc.type}</p>
+                          <p className="text-sm">{doc.location}</p>
+                          <p className="text-sm text-muted-foreground">Last updated: {doc.lastUpdated}</p>
                         </div>
                       </div>
                     ))}
+                    {documents.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">No documents added yet</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Trust Structures */}
-              <Card className="border-green-200 bg-green-50">
-                <CardHeader className="bg-green-100 border-b border-green-200">
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Scale className="h-5 w-5 text-green-600" />
-                      <span className="text-green-800">Trust Structures</span>
-                    </div>
-                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowAddTrust(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Trust
-                    </Button>
-                  </CardTitle>
+              {/* Trusts */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Trusts</CardTitle>
+                  <Button onClick={() => setShowAddTrust(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Trust
+                  </Button>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="space-y-4">
-                    {trustStructures.map((trust) => (
-                      <div key={trust.id} className="p-4 border border-green-200 rounded-lg bg-white">
-                        <div className="flex items-center justify-between mb-2">
-                          <h4 className="font-medium text-green-900">{trust.name}</h4>
-                          <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
+                    {trusts.map((trust) => (
+                      <div key={trust.id} className="relative p-4 border rounded-lg bg-gray-50">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                          onClick={() => handleDeleteTrust(trust.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="pr-8">
+                          <h4 className="font-medium mb-2">{trust.name}</h4>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">Settlor:</span> {trust.settlor}
+                            </div>
+                            <div>
+                              <span className="font-medium">Jurisdiction:</span> {trust.jurisdiction}
+                            </div>
+                            <div>
+                              <span className="font-medium">Trustees:</span> {trust.trustees.join(', ')}
+                            </div>
+                            {trust.startDate && (
+                              <div>
+                                <span className="font-medium">Start Date:</span> {trust.startDate}
+                              </div>
+                            )}
+                          </div>
+                          {trust.beneficiaries.length > 0 && (
+                            <div className="mt-2">
+                              <span className="font-medium text-sm">Beneficiaries:</span>
+                              <div className="mt-1 space-y-1">
+                                {trust.beneficiaries.map((ben, index) => (
+                                  <div key={index} className="text-sm flex justify-between">
+                                    <span>{ben.name} ({ben.relationship})</span>
+                                    <span>{ben.allocation}%</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                          {trust.notes && (
+                            <div className="mt-2">
+                              <span className="font-medium text-sm">Notes:</span>
+                              <p className="text-sm text-muted-foreground">{trust.notes}</p>
+                            </div>
+                          )}
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm mb-2">
-                          <div>
-                            <p className="text-green-600">Assets</p>
-                            <p className="font-medium text-green-800">{trust.assets}</p>
-                          </div>
-                          <div>
-                            <p className="text-green-600">Purpose</p>
-                            <p className="font-medium text-green-800">{trust.purpose}</p>
-                          </div>
-                        </div>
-                        {trust.settlor && (
-                          <div className="text-sm mb-1">
-                            <span className="text-green-600">Settlor: </span>
-                            <span className="text-green-800">{trust.settlor}</span>
-                          </div>
-                        )}
-                        {trust.trustees && trust.trustees.length > 0 && (
-                          <div className="text-sm mb-1">
-                            <span className="text-green-600">Trustees: </span>
-                            <span className="text-green-800">{trust.trustees.join(", ")}</span>
-                          </div>
-                        )}
-                        {trust.jurisdiction && (
-                          <div className="text-sm mb-1">
-                            <span className="text-green-600">Jurisdiction: </span>
-                            <span className="text-green-800">{trust.jurisdiction}</span>
-                          </div>
-                        )}
-                        {trust.startDate && (
-                          <div className="text-sm">
-                            <span className="text-green-600">Start Date: </span>
-                            <span className="text-green-800">{new Date(trust.startDate).toLocaleDateString()}</span>
-                          </div>
-                        )}
                       </div>
                     ))}
+                    {trusts.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">No trusts added yet</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Document Actions */}
-              <Card className="border-orange-200 bg-orange-50">
-                <CardHeader className="bg-orange-100 border-b border-orange-200">
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="h-5 w-5 text-orange-600" />
-                      <span className="text-orange-800">Document Actions</span>
-                    </div>
-                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700" onClick={() => setShowAddAction(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Action
-                    </Button>
-                  </CardTitle>
+              {/* Action Items */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Action Items</CardTitle>
+                  <Button onClick={() => setShowAddAction(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Action
+                  </Button>
                 </CardHeader>
-                <CardContent className="p-4">
-                  <div className="space-y-3">
-                    {documentActions.map((action) => (
-                      <div key={action.id} className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-white">
-                        <span className="font-medium text-orange-900">{action.action}</span>
-                        <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
-                          {action.priority}
-                        </Badge>
+                <CardContent>
+                  <div className="space-y-4">
+                    {actions.map((action) => (
+                      <div key={action.id} className="relative p-4 border rounded-lg bg-gray-50">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                          onClick={() => handleDeleteAction(action.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="pr-8">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{action.title}</h4>
+                            <span className={`px-2 py-1 text-xs rounded-full ${
+                              action.priority === 'High' ? 'bg-red-100 text-red-800' :
+                              action.priority === 'Medium' ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-green-100 text-green-800'
+                            }`}>
+                              {action.priority}
+                            </span>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{action.description}</p>
+                          <div className="flex items-center justify-between text-sm">
+                            <span>Due: {action.dueDate}</span>
+                            <span>Assigned to: {action.assignedTo}</span>
+                          </div>
+                        </div>
                       </div>
                     ))}
+                    {actions.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">No action items added yet</p>
+                    )}
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Beneficiary Allocation */}
-              <Card className="border-purple-200 bg-purple-50">
-                <CardHeader className="bg-purple-100 border-b border-purple-200">
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-5 w-5 text-purple-600" />
-                      <span className="text-purple-800">Beneficiary Allocation</span>
-                    </div>
-                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => setShowAddBeneficiary(true)}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Beneficiary
-                    </Button>
-                  </CardTitle>
+              {/* Beneficiaries */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <CardTitle className="text-lg">Beneficiaries</CardTitle>
+                  <Button onClick={() => setShowAddBeneficiary(true)} size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Beneficiary
+                  </Button>
                 </CardHeader>
-                <CardContent className="p-4">
+                <CardContent>
                   <div className="space-y-4">
                     {beneficiaries.map((beneficiary) => (
-                      <div key={beneficiary.id} className="flex items-center justify-between p-4 border border-purple-200 rounded-lg bg-white">
-                        <div>
-                          <h4 className="font-medium text-purple-900">{beneficiary.name}</h4>
-                          <p className="text-sm text-purple-700">{beneficiary.relationship}</p>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
-                          <p className="text-sm text-purple-600">${beneficiary.amount.toLocaleString()}</p>
+                      <div key={beneficiary.id} className="relative p-4 border rounded-lg bg-gray-50">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="absolute top-2 right-2 h-6 w-6 p-0 text-red-600 hover:text-red-800 hover:bg-red-100"
+                          onClick={() => handleDeleteBeneficiary(beneficiary.id)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                        <div className="pr-8">
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-medium">{beneficiary.name}</h4>
+                            <span className="text-sm font-medium">{beneficiary.allocation}%</span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                              <span className="font-medium">Relationship:</span> {beneficiary.relationship}
+                            </div>
+                            <div>
+                              <span className="font-medium">Contact:</span> {beneficiary.contact}
+                            </div>
+                          </div>
+                          {beneficiary.notes && (
+                            <div className="mt-2">
+                              <span className="font-medium text-sm">Notes:</span>
+                              <p className="text-sm text-muted-foreground">{beneficiary.notes}</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     ))}
+                    {beneficiaries.length === 0 && (
+                      <p className="text-center text-muted-foreground py-8">No beneficiaries added yet</p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="contacts" className="space-y-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Key Contacts</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-6">
+                    <div>
+                      <h4 className="font-medium mb-2">Estate Attorney</h4>
+                      <p>Sarah Johnson</p>
+                      <p className="text-sm">Johnson & Associates</p>
+                      <p className="text-sm text-muted-foreground">(555) 123-4567</p>
+                      <p className="text-sm text-muted-foreground">sarah@johnsonlaw.com</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-2">Financial Advisor</h4>
+                      <p>Robert Chen</p>
+                      <p className="text-sm">Wealth Management Partners</p>
+                      <p className="text-sm text-muted-foreground">(555) 987-6543</p>
+                      <p className="text-sm text-muted-foreground">rchen@wealthmp.com</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-2">Accountant</h4>
+                      <p>Maria Rodriguez</p>
+                      <p className="text-sm">Rodriguez Tax Services</p>
+                      <p className="text-sm text-muted-foreground">(555) 456-7890</p>
+                      <p className="text-sm text-muted-foreground">maria@rodrigueztax.com</p>
+                    </div>
+
+                    <div>
+                      <h4 className="font-medium mb-2">Insurance Agent</h4>
+                      <p>David Wilson</p>
+                      <p className="text-sm">Wilson Insurance Group</p>
+                      <p className="text-sm text-muted-foreground">(555) 789-0123</p>
+                      <p className="text-sm text-muted-foreground">david@wilsoninsurance.com</p>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -799,42 +688,80 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         </DialogContent>
       </Dialog>
 
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteConfirmation.isOpen} onOpenChange={(open) => !open && cancelDelete()}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Deletion</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deleteConfirmation.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDelete}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       {/* Add Document Dialog */}
       <Dialog open={showAddDocument} onOpenChange={setShowAddDocument}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Estate Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Document Name</label>
-              <Input
-                value={newDocument.name}
-                onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
-                placeholder="e.g., Power of Attorney"
+              <label className="text-sm font-medium">Document Title</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newDocument.title}
+                onChange={(e) => setNewDocument({ ...newDocument, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Document Type</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newDocument.type}
+                onChange={(e) => setNewDocument({ ...newDocument, type: e.target.value })}
               />
             </div>
             <div>
               <label className="text-sm font-medium">Status</label>
               <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full p-2 border rounded mt-1"
                 value={newDocument.status}
-                onChange={(e) => setNewDocument({ ...newDocument, status: e.target.value as "Current" | "Outdated" | "Pending" })}
+                onChange={(e) => setNewDocument({ ...newDocument, status: e.target.value as 'Current' | 'Outdated' | 'In Progress' })}
               >
                 <option value="Current">Current</option>
                 <option value="Outdated">Outdated</option>
-                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
               </select>
             </div>
             <div>
-              <label className="text-sm font-medium">Review Notes</label>
-              <Input
-                value={newDocument.review}
-                onChange={(e) => setNewDocument({ ...newDocument, review: e.target.value })}
-                placeholder="e.g., Review annually"
+              <label className="text-sm font-medium">Location</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newDocument.location}
+                onChange={(e) => setNewDocument({ ...newDocument, location: e.target.value })}
               />
             </div>
-            <div className="flex gap-2 justify-end">
+            <div>
+              <label className="text-sm font-medium">Last Updated</label>
+              <input
+                type="date"
+                className="w-full p-2 border rounded mt-1"
+                value={newDocument.lastUpdated}
+                onChange={(e) => setNewDocument({ ...newDocument, lastUpdated: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddDocument(false)}>Cancel</Button>
               <Button onClick={handleAddDocument}>Add Document</Button>
             </div>
@@ -844,184 +771,56 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
       {/* Add Trust Dialog */}
       <Dialog open={showAddTrust} onOpenChange={setShowAddTrust}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Trust Structure</DialogTitle>
+            <DialogTitle>Add Trust</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Trust Name*</label>
-                <Input
-                  value={newTrust.name}
-                  onChange={(e) => setNewTrust({ ...newTrust, name: e.target.value })}
-                  placeholder="e.g., Family Trust"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Type</label>
-                <Input
-                  value={newTrust.type}
-                  onChange={(e) => setNewTrust({ ...newTrust, type: e.target.value })}
-                  placeholder="e.g., Discretionary"
-                />
-              </div>
+            <div>
+              <label className="text-sm font-medium">Trust Name</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newTrust.name}
+                onChange={(e) => setNewTrust({ ...newTrust, name: e.target.value })}
+              />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Assets</label>
-                <Input
-                  value={newTrust.assets}
-                  onChange={(e) => setNewTrust({ ...newTrust, assets: e.target.value })}
-                  placeholder="e.g., $100,000"
-                />
-              </div>
-              <div>
-                <label className="text-sm font-medium">Purpose</label>
-                <Input
-                  value={newTrust.purpose}
-                  onChange={(e) => setNewTrust({ ...newTrust, purpose: e.target.value })}
-                  placeholder="e.g., Tax minimization"
-                />
-              </div>
-            </div>
-
             <div>
               <label className="text-sm font-medium">Settlor</label>
-              <Input
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
                 value={newTrust.settlor}
                 onChange={(e) => setNewTrust({ ...newTrust, settlor: e.target.value })}
-                placeholder="Name of person who created the trust"
               />
             </div>
-
             <div>
-              <label className="text-sm font-medium">Trustee(s)</label>
-              <div className="space-y-2">
-                {newTrust.trustees.map((trustee, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      value={trustee}
-                      onChange={(e) => updateTrustee(index, e.target.value)}
-                      placeholder="Trustee name"
-                      className="flex-1"
-                    />
-                    {newTrust.trustees.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeTrustee(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addTrustee}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Trustee
-                </Button>
-              </div>
+              <label className="text-sm font-medium">Jurisdiction</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newTrust.jurisdiction}
+                onChange={(e) => setNewTrust({ ...newTrust, jurisdiction: e.target.value })}
+              />
             </div>
-
             <div>
-              <label className="text-sm font-medium">Beneficiaries</label>
-              <div className="space-y-2">
-                {newTrust.beneficiaries.map((beneficiary) => (
-                  <div key={beneficiary.id} className="flex gap-2 items-end">
-                    <div className="flex-1">
-                      <Input
-                        value={beneficiary.name}
-                        onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'name', e.target.value)}
-                        placeholder="Name"
-                        className="mb-2"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <Input
-                          value={beneficiary.relationship}
-                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'relationship', e.target.value)}
-                          placeholder="Relationship"
-                        />
-                        <Input
-                          type="number"
-                          value={beneficiary.allocation}
-                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'allocation', Number(e.target.value))}
-                          placeholder="% Allocation"
-                          min="0"
-                          max="100"
-                        />
-                      </div>
-                    </div>
-                    {newTrust.beneficiaries.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeTrustBeneficiary(beneficiary.id)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addTrustBeneficiary}
-                  className="w-full"
-                >
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Beneficiary
-                </Button>
-              </div>
+              <label className="text-sm font-medium">Start Date</label>
+              <input
+                type="date"
+                className="w-full p-2 border rounded mt-1"
+                value={newTrust.startDate}
+                onChange={(e) => setNewTrust({ ...newTrust, startDate: e.target.value })}
+              />
             </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-sm font-medium">Jurisdiction</label>
-                <select
-                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
-                  value={newTrust.jurisdiction}
-                  onChange={(e) => setNewTrust({ ...newTrust, jurisdiction: e.target.value })}
-                >
-                  <option value="">Select jurisdiction</option>
-                  {jurisdictions.map((jurisdiction) => (
-                    <option key={jurisdiction} value={jurisdiction}>
-                      {jurisdiction}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="text-sm font-medium">Trust Start Date</label>
-                <Input
-                  type="date"
-                  value={newTrust.startDate}
-                  onChange={(e) => setNewTrust({ ...newTrust, startDate: e.target.value })}
-                />
-              </div>
-            </div>
-
             <div>
               <label className="text-sm font-medium">Notes</label>
-              <Textarea
+              <textarea
+                className="w-full p-2 border rounded mt-1"
                 value={newTrust.notes}
                 onChange={(e) => setNewTrust({ ...newTrust, notes: e.target.value })}
-                placeholder="e.g., Includes private company shares, distributions tied to education milestones"
-                rows={3}
               />
             </div>
-
-            <div className="flex gap-2 justify-end">
+            <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddTrust(false)}>Cancel</Button>
               <Button onClick={handleAddTrust}>Add Trust</Button>
             </div>
@@ -1031,32 +830,59 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
       {/* Add Action Dialog */}
       <Dialog open={showAddAction} onOpenChange={setShowAddAction}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Document Action</DialogTitle>
+            <DialogTitle>Add Action Item</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium">Action</label>
-              <Input
-                value={newAction.action}
-                onChange={(e) => setNewAction({ ...newAction, action: e.target.value })}
-                placeholder="e.g., Update beneficiary designations"
+              <label className="text-sm font-medium">Title</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newAction.title}
+                onChange={(e) => setNewAction({ ...newAction, title: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Description</label>
+              <textarea
+                className="w-full p-2 border rounded mt-1"
+                value={newAction.description}
+                onChange={(e) => setNewAction({ ...newAction, description: e.target.value })}
               />
             </div>
             <div>
               <label className="text-sm font-medium">Priority</label>
               <select
-                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                className="w-full p-2 border rounded mt-1"
                 value={newAction.priority}
-                onChange={(e) => setNewAction({ ...newAction, priority: e.target.value as "High" | "Medium" | "Low" })}
+                onChange={(e) => setNewAction({ ...newAction, priority: e.target.value as 'High' | 'Medium' | 'Low' })}
               >
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
               </select>
             </div>
-            <div className="flex gap-2 justify-end">
+            <div>
+              <label className="text-sm font-medium">Due Date</label>
+              <input
+                type="date"
+                className="w-full p-2 border rounded mt-1"
+                value={newAction.dueDate}
+                onChange={(e) => setNewAction({ ...newAction, dueDate: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Assigned To</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newAction.assignedTo}
+                onChange={(e) => setNewAction({ ...newAction, assignedTo: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddAction(false)}>Cancel</Button>
               <Button onClick={handleAddAction}>Add Action</Button>
             </div>
@@ -1066,39 +892,56 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
       {/* Add Beneficiary Dialog */}
       <Dialog open={showAddBeneficiary} onOpenChange={setShowAddBeneficiary}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
             <DialogTitle>Add Beneficiary</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="text-sm font-medium">Name</label>
-              <Input
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
                 value={newBeneficiary.name}
                 onChange={(e) => setNewBeneficiary({ ...newBeneficiary, name: e.target.value })}
-                placeholder="e.g., John Smith"
               />
             </div>
             <div>
               <label className="text-sm font-medium">Relationship</label>
-              <Input
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
                 value={newBeneficiary.relationship}
                 onChange={(e) => setNewBeneficiary({ ...newBeneficiary, relationship: e.target.value })}
-                placeholder="e.g., Son"
               />
             </div>
             <div>
-              <label className="text-sm font-medium">Percentage</label>
-              <Input
+              <label className="text-sm font-medium">Allocation (%)</label>
+              <input
                 type="number"
-                value={newBeneficiary.percentage}
-                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, percentage: Number(e.target.value) })}
-                placeholder="e.g., 25"
-                min="0"
-                max="100"
+                className="w-full p-2 border rounded mt-1"
+                value={newBeneficiary.allocation}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, allocation: Number(e.target.value) })}
               />
             </div>
-            <div className="flex gap-2 justify-end">
+            <div>
+              <label className="text-sm font-medium">Contact</label>
+              <input
+                type="text"
+                className="w-full p-2 border rounded mt-1"
+                value={newBeneficiary.contact}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, contact: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Notes</label>
+              <textarea
+                className="w-full p-2 border rounded mt-1"
+                value={newBeneficiary.notes}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, notes: e.target.value })}
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
               <Button variant="outline" onClick={() => setShowAddBeneficiary(false)}>Cancel</Button>
               <Button onClick={handleAddBeneficiary}>Add Beneficiary</Button>
             </div>
