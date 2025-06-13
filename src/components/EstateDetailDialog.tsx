@@ -14,6 +14,29 @@ interface EstateDetailDialogProps {
 }
 
 export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
+  // Original estate data from EstateCard
+  const totalEstateValue = 785000;
+  const estateTaxes = 25000;
+  const netEstateValue = totalEstateValue - estateTaxes;
+
+  const estateBreakdownData = [
+    {
+      category: "Total Estate",
+      amount: totalEstateValue,
+      color: "#8b5cf6"
+    },
+    {
+      category: "Estate Taxes",
+      amount: estateTaxes,
+      color: "#f59e0b"
+    },
+    {
+      category: "Net to Beneficiaries",
+      amount: netEstateValue,
+      color: "#06b6d4"
+    }
+  ];
+
   const [estateAssets] = useState([
     { 
       name: "Real Estate", 
@@ -127,7 +150,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
   const chartConfig = {
     grossValue: { label: "Gross Value", color: "#3b82f6" },
     taxOwed: { label: "Tax Owed", color: "#ef4444" },
-    netValue: { label: "Net Value", color: "#10b981" }
+    netValue: { label: "Net Value", color: "#10b981" },
+    amount: { label: "Amount", color: "#8b5cf6" }
   };
 
   return (
@@ -140,12 +164,90 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="projections" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
+        <Tabs defaultValue="overview" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="overview">Estate Overview</TabsTrigger>
             <TabsTrigger value="projections">Asset Projections</TabsTrigger>
             <TabsTrigger value="taxes">Tax Analysis</TabsTrigger>
             <TabsTrigger value="summary">Estate Summary</TabsTrigger>
           </TabsList>
+
+          <TabsContent value="overview" className="space-y-6">
+            {/* Original Estate Value Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Current Estate Value Breakdown</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-48 w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={estateBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                      <XAxis 
+                        dataKey="category" 
+                        tick={{ fontSize: 12 }}
+                        interval={0}
+                        angle={-45}
+                        textAnchor="end"
+                        height={80}
+                      />
+                      <YAxis 
+                        tick={{ fontSize: 12 }}
+                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                      />
+                      <ChartTooltip 
+                        content={<ChartTooltipContent 
+                          formatter={(value) => [`$${Number(value).toLocaleString()}`, "Amount"]}
+                        />}
+                      />
+                      <Bar 
+                        dataKey="amount" 
+                        radius={[4, 4, 0, 0]}
+                      >
+                        {estateBreakdownData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Bar>
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+
+                {/* Original Summary Numbers */}
+                <div className="grid grid-cols-3 gap-4 mt-4 text-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <p className="text-xs text-purple-700 font-medium">Total Estate</p>
+                    <p className="text-lg font-bold text-purple-800">${(totalEstateValue / 1000).toFixed(0)}K</p>
+                  </div>
+                  <div className="p-2 bg-amber-100 rounded-lg">
+                    <p className="text-xs text-amber-700 font-medium">Estate Taxes</p>
+                    <p className="text-lg font-bold text-amber-800">${(estateTaxes / 1000).toFixed(0)}K</p>
+                  </div>
+                  <div className="p-2 bg-cyan-100 rounded-lg">
+                    <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
+                    <p className="text-lg font-bold text-cyan-800">${(netEstateValue / 1000).toFixed(0)}K</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Current Asset Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Current Asset Distribution</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {estateAssets.map((asset, index) => (
+                    <div key={index} className="text-center p-4 bg-gray-50 rounded-lg">
+                      <div className="w-4 h-4 rounded-full mx-auto mb-2" style={{ backgroundColor: asset.color }}></div>
+                      <p className="text-sm font-medium">{asset.name}</p>
+                      <p className="text-lg font-bold">${(asset.currentValue / 1000).toFixed(0)}K</p>
+                      <p className="text-xs text-gray-600">{asset.taxableStatus}</p>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </TabsContent>
 
           <TabsContent value="projections" className="space-y-6">
             {/* Summary Cards */}
