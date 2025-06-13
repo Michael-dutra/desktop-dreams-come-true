@@ -3,22 +3,24 @@ import { PiggyBank, TrendingUp, Eye, Calendar, Target } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Slider } from "@/components/ui/slider";
 import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   
-  // Static retirement values for main card
-  const retirementAge = 65;
-  const netMonthlyIncomeNeeded = 4500;
+  // Interactive retirement values
+  const [retirementAge, setRetirementAge] = useState([65]);
+  const [netMonthlyIncomeNeeded, setNetMonthlyIncomeNeeded] = useState([4500]);
+  
   const totalRetirementSavings = 90000;
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
-  const yearsInRetirement = lifeExpectancy - retirementAge;
+  const yearsInRetirement = lifeExpectancy - retirementAge[0];
   
   // Calculate total retirement needs and percentage saved
-  const totalRetirementNeeded = netMonthlyIncomeNeeded * 12 * yearsInRetirement;
+  const totalRetirementNeeded = netMonthlyIncomeNeeded[0] * 12 * yearsInRetirement;
   const savingsPercentage = Math.min(100, (totalRetirementSavings / totalRetirementNeeded) * 100);
 
   return (
@@ -47,6 +49,38 @@ const RetirementCard = () => {
           <div className="text-center p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
             <p className="text-3xl font-bold text-purple-600 mb-1">$90,000</p>
             <p className="text-sm text-purple-700 font-medium">Total Retirement Savings</p>
+          </div>
+
+          {/* Interactive Controls */}
+          <div className="space-y-4 p-4 bg-gradient-to-r from-slate-50 to-gray-50 rounded-xl border border-slate-200">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Retirement Age: {retirementAge[0]}
+                </label>
+                <Slider
+                  value={retirementAge}
+                  onValueChange={setRetirementAge}
+                  min={55}
+                  max={70}
+                  step={1}
+                  className="w-full"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-700">
+                  Monthly Income Needed: ${netMonthlyIncomeNeeded[0].toLocaleString()}
+                </label>
+                <Slider
+                  value={netMonthlyIncomeNeeded}
+                  onValueChange={setNetMonthlyIncomeNeeded}
+                  min={2000}
+                  max={8000}
+                  step={100}
+                  className="w-full"
+                />
+              </div>
+            </div>
           </div>
 
           {/* Retirement Savings Progress Meter */}
@@ -82,14 +116,14 @@ const RetirementCard = () => {
                   <Calendar className="h-4 w-4 text-orange-600" />
                   <span className="text-sm font-medium text-orange-800">Retirement Age</span>
                 </div>
-                <p className="text-lg font-bold text-orange-600">{retirementAge}</p>
+                <p className="text-lg font-bold text-orange-600">{retirementAge[0]}</p>
               </div>
               <div className="p-3 bg-emerald-50 rounded-lg border border-emerald-200">
                 <div className="flex items-center space-x-2 mb-1">
                   <Target className="h-4 w-4 text-emerald-600" />
                   <span className="text-sm font-medium text-emerald-800">Monthly Need</span>
                 </div>
-                <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded.toLocaleString()}</p>
+                <p className="text-lg font-bold text-emerald-600">${netMonthlyIncomeNeeded[0].toLocaleString()}</p>
               </div>
             </div>
           </div>
