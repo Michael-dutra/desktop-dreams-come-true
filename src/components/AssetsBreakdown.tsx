@@ -1,6 +1,5 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
@@ -34,15 +33,8 @@ const AssetsBreakdown = () => {
   const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
-  const chartConfig = {
-    projectedValue: { label: "Projected Value", color: "#3b82f6" },
-  };
-
-  const chartData = projectedAssets.map(asset => ({
-    name: asset.name.replace(/\s+/g, '\n'),
-    projected: asset.projectedValue,
-    fill: asset.color
-  }));
+  // Find the maximum projected value for scaling the bars
+  const maxProjectedValue = Math.max(...projectedAssets.map(asset => asset.projectedValue));
 
   return (
     <>
@@ -124,37 +116,41 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Asset Projected Values Bar Chart */}
+            {/* Horizontal Bar Chart for Projected Values */}
             <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
               <div className="mb-3">
                 <h3 className="text-sm font-semibold text-gray-900 mb-1">Projected Asset Values</h3>
                 <p className="text-xs text-gray-600">Future values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
               </div>
               
-              <ChartContainer config={chartConfig} className="h-80 w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
-                    <XAxis 
-                      dataKey="name" 
-                      tick={{ fontSize: 12 }}
-                      interval={0}
-                      angle={-45}
-                      textAnchor="end"
-                      height={80}
-                    />
-                    <YAxis 
-                      tick={{ fontSize: 12 }}
-                      tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    />
-                    <ChartTooltip 
-                      content={<ChartTooltipContent 
-                        formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Projected Value']}
-                      />}
-                    />
-                    <Bar dataKey="projected" fill="#3b82f6" name="projected" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </ChartContainer>
+              <div className="space-y-3">
+                {projectedAssets.map((asset, index) => {
+                  const widthPercentage = (asset.projectedValue / maxProjectedValue) * 100;
+                  
+                  return (
+                    <div key={index} className="space-y-1">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="font-medium">{asset.name}</span>
+                        <span className="font-bold">${(asset.projectedValue / 1000).toFixed(0)}K</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden">
+                        <div 
+                          className="h-full rounded-full transition-all duration-300 ease-out"
+                          style={{ 
+                            width: `${widthPercentage}%`,
+                            backgroundColor: asset.color
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center px-2">
+                          <span className="text-xs font-medium text-white drop-shadow-sm">
+                            ${(asset.projectedValue / 1000).toFixed(0)}K
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </CardContent>
