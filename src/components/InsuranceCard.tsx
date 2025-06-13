@@ -1,8 +1,9 @@
 
+
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
@@ -11,30 +12,20 @@ import { useState } from "react";
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
 
-  // Life Insurance needs toggles
-  const [needsToggles, setNeedsToggles] = useState({
-    incomeReplacement: true,
-    debtCoverage: true,
-    emergencyFund: true,
-    education: true,
-    finalExpenses: true,
-    charitable: false
+  // Life Insurance needs with slider values (0 to max amount)
+  const [needsValues, setNeedsValues] = useState({
+    incomeReplacement: [450000],
+    debtCoverage: [120000],
+    emergencyFund: [35000],
+    education: [80000],
+    finalExpenses: [25000],
+    charitable: [0]
   });
 
-  // Base amounts for each need
-  const baseAmounts = {
-    incomeReplacement: 450000,
-    debtCoverage: 120000,
-    emergencyFund: 35000,
-    education: 80000,
-    finalExpenses: 25000,
-    charitable: 50000
-  };
-
-  // Calculate total need based on active toggles
+  // Calculate total need based on slider values
   const calculateTotalNeed = () => {
-    return Object.entries(needsToggles).reduce((total, [key, isActive]) => {
-      return total + (isActive ? baseAmounts[key as keyof typeof baseAmounts] : 0);
+    return Object.values(needsValues).reduce((total, valueArray) => {
+      return total + valueArray[0];
     }, 0);
   };
 
@@ -64,20 +55,20 @@ const InsuranceCard = () => {
     amount: { label: "Amount", color: "#3b82f6" }
   };
 
-  const handleToggleChange = (key: keyof typeof needsToggles) => {
-    setNeedsToggles(prev => ({
+  const handleSliderChange = (key: keyof typeof needsValues, value: number[]) => {
+    setNeedsValues(prev => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: value
     }));
   };
 
-  const needsLabels = {
-    incomeReplacement: "Income Replacement",
-    debtCoverage: "Debt Coverage", 
-    emergencyFund: "Emergency Fund",
-    education: "Education Costs",
-    finalExpenses: "Final Expenses",
-    charitable: "Charitable Legacy"
+  const needsConfig = {
+    incomeReplacement: { label: "Income Replacement", max: 1000000 },
+    debtCoverage: { label: "Debt Coverage", max: 500000 },
+    emergencyFund: { label: "Emergency Fund", max: 100000 },
+    education: { label: "Education Costs", max: 200000 },
+    finalExpenses: { label: "Final Expenses", max: 100000 },
+    charitable: { label: "Charitable Legacy", max: 200000 }
   };
 
   return (
@@ -158,24 +149,32 @@ const InsuranceCard = () => {
             </div>
           </div>
 
-          {/* Life Insurance Needs Toggles */}
+          {/* Life Insurance Needs Sliders */}
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
-            <h4 className="font-medium text-gray-900 mb-3">Life Insurance Needs</h4>
-            <div className="grid grid-cols-2 gap-3">
-              {Object.entries(needsToggles).map(([key, isActive]) => (
-                <div key={key} className="flex items-center justify-between p-2 bg-white rounded-lg border">
-                  <div className="flex-1">
+            <h4 className="font-medium text-gray-900 mb-4">Life Insurance Needs</h4>
+            <div className="space-y-4">
+              {Object.entries(needsConfig).map(([key, config]) => (
+                <div key={key} className="space-y-2">
+                  <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">
-                      {needsLabels[key as keyof typeof needsLabels]}
+                      {config.label}
                     </span>
-                    <p className="text-xs text-gray-500">
-                      ${(baseAmounts[key as keyof typeof baseAmounts] / 1000).toFixed(0)}K
-                    </p>
+                    <span className="text-sm font-bold text-gray-900">
+                      ${(needsValues[key as keyof typeof needsValues][0] / 1000).toFixed(0)}K
+                    </span>
                   </div>
-                  <Switch
-                    checked={isActive}
-                    onCheckedChange={() => handleToggleChange(key as keyof typeof needsToggles)}
+                  <Slider
+                    value={needsValues[key as keyof typeof needsValues]}
+                    onValueChange={(value) => handleSliderChange(key as keyof typeof needsValues, value)}
+                    max={config.max}
+                    min={0}
+                    step={5000}
+                    className="w-full"
                   />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>$0</span>
+                    <span>${(config.max / 1000).toFixed(0)}K</span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -192,3 +191,4 @@ const InsuranceCard = () => {
 };
 
 export default InsuranceCard;
+
