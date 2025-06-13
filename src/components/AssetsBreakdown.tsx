@@ -36,13 +36,11 @@ const AssetsBreakdown = () => {
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
   const chartConfig = {
-    currentValue: { label: "Current Value", color: "#6b7280" },
     projectedValue: { label: "Projected Value", color: "#3b82f6" },
   };
 
   const chartData = projectedAssets.map(asset => ({
     name: asset.name.replace(/\s+/g, '\n'),
-    current: asset.currentValue,
     projected: asset.projectedValue,
     fill: asset.color
   }));
@@ -69,13 +67,29 @@ const AssetsBreakdown = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-6">
+            {/* Current Asset Breakdown List */}
+            <div className="space-y-3">
+              <h3 className="text-lg font-semibold text-gray-900">Current Holdings</h3>
+              {assets.map((asset, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                  <div className="flex items-center space-x-3">
+                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
+                    <span className="text-lg font-medium">{asset.name}</span>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <span className="text-lg font-semibold">{asset.amount}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
             {/* Total Values Summary */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+              <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
                 <p className="text-sm text-gray-600 font-medium">Current Total</p>
                 <p className="text-2xl font-bold text-gray-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
               </div>
-              <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="p-4 bg-blue-50 rounded-xl border border-blue-200">
                 <p className="text-sm text-blue-600 font-medium">Projected Total</p>
                 <p className="text-2xl font-bold text-blue-800">${(totalProjectedValue / 1000).toFixed(0)}K</p>
                 <p className="text-xs text-green-600 font-medium">+${(totalGrowth / 1000).toFixed(0)}K growth</p>
@@ -83,7 +97,7 @@ const AssetsBreakdown = () => {
             </div>
 
             {/* Interactive Controls */}
-            <div className="p-4 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl border border-orange-200">
+            <div className="p-4 bg-orange-50 rounded-xl border border-orange-200">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-orange-700">
@@ -114,14 +128,14 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Asset Growth Bar Chart */}
-            <div className="p-4 bg-gradient-to-r from-gray-50 to-slate-50 rounded-xl border border-gray-200">
+            {/* Asset Projected Values Bar Chart - Larger Size */}
+            <div className="p-4 bg-gray-50 rounded-xl border border-gray-200">
               <div className="mb-4">
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Asset Growth Projection</h3>
-                <p className="text-sm text-gray-600">Current vs projected values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">Projected Asset Values</h3>
+                <p className="text-sm text-gray-600">Future values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
               </div>
               
-              <ChartContainer config={chartConfig} className="h-80 w-full">
+              <ChartContainer config={chartConfig} className="h-96 w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
                     <XAxis 
@@ -138,33 +152,13 @@ const AssetsBreakdown = () => {
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent 
-                        formatter={(value, name) => [
-                          `$${Number(value).toLocaleString()}`, 
-                          name === 'current' ? 'Current Value' : 'Projected Value'
-                        ]}
+                        formatter={(value) => [`$${Number(value).toLocaleString()}`, 'Projected Value']}
                       />}
                     />
-                    <Bar dataKey="current" fill="#6b7280" name="current" radius={[2, 2, 0, 0]} />
-                    <Bar dataKey="projected" fill="#3b82f6" name="projected" radius={[2, 2, 0, 0]} />
+                    <Bar dataKey="projected" fill="#3b82f6" name="projected" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
-            </div>
-
-            {/* Asset Breakdown List */}
-            <div className="space-y-3">
-              <h3 className="text-lg font-semibold text-gray-900">Current Holdings</h3>
-              {assets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-lg font-medium">{asset.name}</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <span className="text-lg font-semibold">{asset.amount}</span>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </CardContent>
