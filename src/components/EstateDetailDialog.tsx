@@ -6,9 +6,10 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Calculator, DollarSign, TrendingUp, AlertTriangle, FileText, Users, Plus, Edit, Calendar, Heart, BookOpen, Scale } from "lucide-react";
+import { Calculator, DollarSign, TrendingUp, AlertTriangle, FileText, Users, Plus, Edit, Calendar, Heart, BookOpen, Scale, X } from "lucide-react";
 
 interface EstateDetailDialogProps {
   isOpen: boolean;
@@ -23,12 +24,25 @@ interface EstateDocument {
   review: string;
 }
 
+interface TrustBeneficiary {
+  id: string;
+  name: string;
+  relationship: string;
+  allocation: number;
+}
+
 interface TrustStructure {
   id: string;
   name: string;
   type: string;
   assets: string;
   purpose: string;
+  settlor?: string;
+  trustees?: string[];
+  beneficiaries?: TrustBeneficiary[];
+  jurisdiction?: string;
+  startDate?: string;
+  notes?: string;
 }
 
 interface Beneficiary {
@@ -117,8 +131,28 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
   ]);
 
   const [trustStructures, setTrustStructures] = useState<TrustStructure[]>([
-    { id: "1", name: "Family Trust", type: "Discretionary", assets: "$185,000", purpose: "Tax minimization" },
-    { id: "2", name: "Children's Education Trust", type: "Fixed", assets: "$50,000", purpose: "Education funding" },
+    { 
+      id: "1", 
+      name: "Family Trust", 
+      type: "Discretionary", 
+      assets: "$185,000", 
+      purpose: "Tax minimization",
+      settlor: "John Smith",
+      trustees: ["Jane Smith", "ABC Trust Co."],
+      jurisdiction: "Ontario",
+      startDate: "2020-01-15"
+    },
+    { 
+      id: "2", 
+      name: "Children's Education Trust", 
+      type: "Fixed", 
+      assets: "$50,000", 
+      purpose: "Education funding",
+      settlor: "John Smith",
+      trustees: ["Jane Smith"],
+      jurisdiction: "Ontario",
+      startDate: "2022-06-01"
+    },
   ]);
 
   const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
@@ -219,7 +253,18 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
   // Add form states
   const [newDocument, setNewDocument] = useState({ name: "", status: "Current" as "Current" | "Outdated" | "Pending", review: "" });
-  const [newTrust, setNewTrust] = useState({ name: "", type: "", assets: "", purpose: "" });
+  const [newTrust, setNewTrust] = useState({ 
+    name: "", 
+    type: "", 
+    assets: "", 
+    purpose: "",
+    settlor: "",
+    trustees: [""],
+    beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
+    jurisdiction: "",
+    startDate: "",
+    notes: ""
+  });
   const [newAction, setNewAction] = useState({ action: "", priority: "Medium" as "High" | "Medium" | "Low" });
   const [newBeneficiary, setNewBeneficiary] = useState({ name: "", relationship: "", percentage: 0 });
 
@@ -246,10 +291,27 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         name: newTrust.name,
         type: newTrust.type || "Discretionary",
         assets: newTrust.assets || "$0",
-        purpose: newTrust.purpose || "Tax planning"
+        purpose: newTrust.purpose || "Tax planning",
+        settlor: newTrust.settlor || undefined,
+        trustees: newTrust.trustees.filter(t => t.trim()) || undefined,
+        beneficiaries: newTrust.beneficiaries.filter(b => b.name.trim()) || undefined,
+        jurisdiction: newTrust.jurisdiction || undefined,
+        startDate: newTrust.startDate || undefined,
+        notes: newTrust.notes || undefined
       };
       setTrustStructures([...trustStructures, trust]);
-      setNewTrust({ name: "", type: "", assets: "", purpose: "" });
+      setNewTrust({ 
+        name: "", 
+        type: "", 
+        assets: "", 
+        purpose: "",
+        settlor: "",
+        trustees: [""],
+        beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
+        jurisdiction: "",
+        startDate: "",
+        notes: ""
+      });
       setShowAddTrust(false);
     }
   };
@@ -283,6 +345,62 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
       setShowAddBeneficiary(false);
     }
   };
+
+  const addTrustee = () => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: [...prev.trustees, ""]
+    }));
+  };
+
+  const removeTrustee = (index: number) => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: prev.trustees.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateTrustee = (index: number, value: string) => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: prev.trustees.map((trustee, i) => i === index ? value : trustee)
+    }));
+  };
+
+  const addTrustBeneficiary = () => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: [...prev.beneficiaries, { 
+        id: Date.now().toString(), 
+        name: "", 
+        relationship: "", 
+        allocation: 0 
+      }]
+    }));
+  };
+
+  const removeTrustBeneficiary = (id: string) => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: prev.beneficiaries.filter(b => b.id !== id)
+    }));
+  };
+
+  const updateTrustBeneficiary = (id: string, field: keyof TrustBeneficiary, value: string | number) => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: prev.beneficiaries.map(b => 
+        b.id === id ? { ...b, [field]: value } : b
+      )
+    }));
+  };
+
+  const jurisdictions = [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+    "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia", 
+    "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+    "Saskatchewan", "Yukon"
+  ];
 
   return (
     <>
@@ -577,7 +695,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                           <h4 className="font-medium text-green-900">{trust.name}</h4>
                           <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div className="grid grid-cols-2 gap-4 text-sm mb-2">
                           <div>
                             <p className="text-green-600">Assets</p>
                             <p className="font-medium text-green-800">{trust.assets}</p>
@@ -587,6 +705,30 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                             <p className="font-medium text-green-800">{trust.purpose}</p>
                           </div>
                         </div>
+                        {trust.settlor && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Settlor: </span>
+                            <span className="text-green-800">{trust.settlor}</span>
+                          </div>
+                        )}
+                        {trust.trustees && trust.trustees.length > 0 && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Trustees: </span>
+                            <span className="text-green-800">{trust.trustees.join(", ")}</span>
+                          </div>
+                        )}
+                        {trust.jurisdiction && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Jurisdiction: </span>
+                            <span className="text-green-800">{trust.jurisdiction}</span>
+                          </div>
+                        )}
+                        {trust.startDate && (
+                          <div className="text-sm">
+                            <span className="text-green-600">Start Date: </span>
+                            <span className="text-green-800">{new Date(trust.startDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -702,43 +844,183 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
 
       {/* Add Trust Dialog */}
       <Dialog open={showAddTrust} onOpenChange={setShowAddTrust}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Add Trust Structure</DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Trust Name*</label>
+                <Input
+                  value={newTrust.name}
+                  onChange={(e) => setNewTrust({ ...newTrust, name: e.target.value })}
+                  placeholder="e.g., Family Trust"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Type</label>
+                <Input
+                  value={newTrust.type}
+                  onChange={(e) => setNewTrust({ ...newTrust, type: e.target.value })}
+                  placeholder="e.g., Discretionary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Assets</label>
+                <Input
+                  value={newTrust.assets}
+                  onChange={(e) => setNewTrust({ ...newTrust, assets: e.target.value })}
+                  placeholder="e.g., $100,000"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Purpose</label>
+                <Input
+                  value={newTrust.purpose}
+                  onChange={(e) => setNewTrust({ ...newTrust, purpose: e.target.value })}
+                  placeholder="e.g., Tax minimization"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="text-sm font-medium">Trust Name</label>
+              <label className="text-sm font-medium">Settlor</label>
               <Input
-                value={newTrust.name}
-                onChange={(e) => setNewTrust({ ...newTrust, name: e.target.value })}
-                placeholder="e.g., Family Trust"
+                value={newTrust.settlor}
+                onChange={(e) => setNewTrust({ ...newTrust, settlor: e.target.value })}
+                placeholder="Name of person who created the trust"
               />
             </div>
+
             <div>
-              <label className="text-sm font-medium">Type</label>
-              <Input
-                value={newTrust.type}
-                onChange={(e) => setNewTrust({ ...newTrust, type: e.target.value })}
-                placeholder="e.g., Discretionary"
+              <label className="text-sm font-medium">Trustee(s)</label>
+              <div className="space-y-2">
+                {newTrust.trustees.map((trustee, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={trustee}
+                      onChange={(e) => updateTrustee(index, e.target.value)}
+                      placeholder="Trustee name"
+                      className="flex-1"
+                    />
+                    {newTrust.trustees.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTrustee(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTrustee}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Trustee
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Beneficiaries</label>
+              <div className="space-y-2">
+                {newTrust.beneficiaries.map((beneficiary) => (
+                  <div key={beneficiary.id} className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Input
+                        value={beneficiary.name}
+                        onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'name', e.target.value)}
+                        placeholder="Name"
+                        className="mb-2"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          value={beneficiary.relationship}
+                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'relationship', e.target.value)}
+                          placeholder="Relationship"
+                        />
+                        <Input
+                          type="number"
+                          value={beneficiary.allocation}
+                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'allocation', Number(e.target.value))}
+                          placeholder="% Allocation"
+                          min="0"
+                          max="100"
+                        />
+                      </div>
+                    </div>
+                    {newTrust.beneficiaries.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTrustBeneficiary(beneficiary.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTrustBeneficiary}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Beneficiary
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Jurisdiction</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                  value={newTrust.jurisdiction}
+                  onChange={(e) => setNewTrust({ ...newTrust, jurisdiction: e.target.value })}
+                >
+                  <option value="">Select jurisdiction</option>
+                  {jurisdictions.map((jurisdiction) => (
+                    <option key={jurisdiction} value={jurisdiction}>
+                      {jurisdiction}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Trust Start Date</label>
+                <Input
+                  type="date"
+                  value={newTrust.startDate}
+                  onChange={(e) => setNewTrust({ ...newTrust, startDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Notes</label>
+              <Textarea
+                value={newTrust.notes}
+                onChange={(e) => setNewTrust({ ...newTrust, notes: e.target.value })}
+                placeholder="e.g., Includes private company shares, distributions tied to education milestones"
+                rows={3}
               />
             </div>
-            <div>
-              <label className="text-sm font-medium">Assets</label>
-              <Input
-                value={newTrust.assets}
-                onChange={(e) => setNewTrust({ ...newTrust, assets: e.target.value })}
-                placeholder="e.g., $100,000"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium">Purpose</label>
-              <Input
-                value={newTrust.purpose}
-                onChange={(e) => setNewTrust({ ...newTrust, purpose: e.target.value })}
-                placeholder="e.g., Tax minimization"
-              />
-            </div>
+
             <div className="flex gap-2 justify-end">
               <Button variant="outline" onClick={() => setShowAddTrust(false)}>Cancel</Button>
               <Button onClick={handleAddTrust}>Add Trust</Button>
