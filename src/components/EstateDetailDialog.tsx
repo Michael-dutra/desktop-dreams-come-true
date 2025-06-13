@@ -4,13 +4,46 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis } from "recharts";
-import { Calculator, DollarSign, TrendingUp, AlertTriangle } from "lucide-react";
+import { Calculator, DollarSign, TrendingUp, AlertTriangle, FileText, Users, Plus, Edit, Calendar, Heart, BookOpen, Scale } from "lucide-react";
 
 interface EstateDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
+}
+
+interface EstateDocument {
+  id: string;
+  name: string;
+  lastUpdated: string;
+  status: "Current" | "Outdated" | "Pending";
+  review: string;
+}
+
+interface TrustStructure {
+  id: string;
+  name: string;
+  type: string;
+  assets: string;
+  purpose: string;
+}
+
+interface Beneficiary {
+  id: string;
+  name: string;
+  relationship: string;
+  percentage: number;
+  amount: number;
+}
+
+interface DocumentAction {
+  id: string;
+  action: string;
+  priority: "High" | "Medium" | "Low";
 }
 
 export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
@@ -75,6 +108,31 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
     "TFSA": { rateOfReturn: [6], timeFrame: [15] },
     "Non-Registered": { rateOfReturn: [6], timeFrame: [15] }
   });
+
+  // Legacy tab state
+  const [estateDocuments, setEstateDocuments] = useState<EstateDocument[]>([
+    { id: "1", name: "Last Will & Testament", lastUpdated: "Mar 2024", status: "Current", review: "Review in 5 years" },
+    { id: "2", name: "Power of Attorney", lastUpdated: "Mar 2024", status: "Current", review: "No expiry" },
+    { id: "3", name: "Living Will", lastUpdated: "Jan 2020", status: "Outdated", review: "Review needed" },
+    { id: "4", name: "Beneficiary Designations", lastUpdated: "Feb 2024", status: "Current", review: "Annual review" },
+  ]);
+
+  const [trustStructures, setTrustStructures] = useState<TrustStructure[]>([
+    { id: "1", name: "Family Trust", type: "Discretionary", assets: "$185,000", purpose: "Tax minimization" },
+    { id: "2", name: "Children's Education Trust", type: "Fixed", assets: "$50,000", purpose: "Education funding" },
+  ]);
+
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
+    { id: "1", name: "Sarah Johnson", relationship: "Spouse", percentage: 60, amount: 471000 },
+    { id: "2", name: "Michael Johnson", relationship: "Son", percentage: 25, amount: 196250 },
+    { id: "3", name: "Emma Johnson", relationship: "Daughter", percentage: 15, amount: 117750 },
+  ]);
+
+  const [documentActions, setDocumentActions] = useState<DocumentAction[]>([
+    { id: "1", action: "Update Living Will", priority: "High" },
+    { id: "2", action: "Schedule Annual Review", priority: "Medium" },
+    { id: "3", action: "Review Beneficiaries", priority: "Medium" },
+  ]);
 
   const updateAssetSetting = (assetName: string, setting: 'rateOfReturn' | 'timeFrame', value: number[]) => {
     setAssetSettings(prev => ({
@@ -165,11 +223,12 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="overview">Estate Overview</TabsTrigger>
             <TabsTrigger value="projections">Asset Projections</TabsTrigger>
             <TabsTrigger value="taxes">Tax Analysis</TabsTrigger>
             <TabsTrigger value="summary">Estate Summary</TabsTrigger>
+            <TabsTrigger value="legacy">Legacy</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
@@ -507,6 +566,192 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="legacy" className="space-y-6">
+            {/* Estate Documents Status */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <FileText className="h-5 w-5" />
+                    <span>Estate Documents Status</span>
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Document
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {estateDocuments.map((doc) => (
+                    <div key={doc.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{doc.name}</h4>
+                        <p className="text-sm text-muted-foreground">Last Updated: {doc.lastUpdated}</p>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <div className="text-right">
+                          <Badge variant={doc.status === "Current" ? "secondary" : doc.status === "Outdated" ? "destructive" : "outline"}>
+                            {doc.status}
+                          </Badge>
+                          <p className="text-xs text-muted-foreground mt-1">{doc.review}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Trust Structures */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Scale className="h-5 w-5" />
+                    <span>Trust Structures</span>
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Trust
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {trustStructures.map((trust) => (
+                    <div key={trust.id} className="p-4 border rounded-lg">
+                      <div className="flex items-center justify-between mb-2">
+                        <h4 className="font-medium">{trust.name}</h4>
+                        <Badge variant="outline">{trust.type}</Badge>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-muted-foreground">Assets</p>
+                          <p className="font-medium">{trust.assets}</p>
+                        </div>
+                        <div>
+                          <p className="text-muted-foreground">Purpose</p>
+                          <p className="font-medium">{trust.purpose}</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Document Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Calendar className="h-5 w-5" />
+                    <span>Document Actions</span>
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Action
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {documentActions.map((action) => (
+                    <div key={action.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <span className="font-medium">{action.action}</span>
+                      <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
+                        {action.priority}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Beneficiary Allocation */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Beneficiary Allocation</span>
+                  </div>
+                  <Button size="sm">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Beneficiary
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {beneficiaries.map((beneficiary) => (
+                    <div key={beneficiary.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{beneficiary.name}</h4>
+                        <p className="text-sm text-muted-foreground">{beneficiary.relationship}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold">{beneficiary.percentage}%</p>
+                        <p className="text-sm text-muted-foreground">${beneficiary.amount.toLocaleString()}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Distribution Timeline */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Distribution Timeline</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Calendar className="h-4 w-4 text-blue-600" />
+                    <h4 className="font-medium text-blue-800">Immediate Distribution</h4>
+                  </div>
+                  <p className="text-sm text-blue-700 mb-2">Available immediately upon probate</p>
+                  <p className="text-lg font-bold text-blue-800">$300,000</p>
+                </div>
+                
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Scale className="h-4 w-4 text-green-600" />
+                    <h4 className="font-medium text-green-800">Trust Distribution</h4>
+                  </div>
+                  <p className="text-sm text-green-700 mb-2">Through family trust over time</p>
+                  <p className="text-lg font-bold text-green-800">$485,000</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Special Provisions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Special Provisions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="p-4 bg-purple-50 border border-purple-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <BookOpen className="h-4 w-4 text-purple-600" />
+                    <h4 className="font-medium text-purple-800">Education Fund</h4>
+                  </div>
+                  <p className="text-sm text-purple-700">$50,000 allocated for grandchildren's education</p>
+                </div>
+                
+                <div className="p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Heart className="h-4 w-4 text-orange-600" />
+                    <h4 className="font-medium text-orange-800">Charitable Bequest</h4>
+                  </div>
+                  <p className="text-sm text-orange-700">$25,000 to local hospital foundation</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </DialogContent>

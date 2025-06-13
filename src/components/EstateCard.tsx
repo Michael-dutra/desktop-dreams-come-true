@@ -46,7 +46,7 @@ const EstateCard = () => {
             <div className="p-2 bg-orange-100 rounded-lg">
               <Crown className="h-6 w-6 text-orange-700" />
             </div>
-            <span>Legacy</span>
+            <span>Estate</span>
           </CardTitle>
           <Button 
             variant="outline" 
