@@ -5,6 +5,7 @@ import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -33,6 +34,14 @@ const AssetsBreakdown = () => {
   const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
+  };
+
   return (
     <>
       <Card>
@@ -55,32 +64,6 @@ const AssetsBreakdown = () => {
         </CardHeader>
         <CardContent className="pb-4">
           <div className="space-y-4">
-            {/* Current Asset Breakdown List */}
-            <div className="space-y-3">
-              {assets.map((asset, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-3 h-3 rounded-full`} style={{ backgroundColor: asset.color }}></div>
-                    <span className="text-lg font-medium">{asset.name}</span>
-                  </div>
-                  <span className="text-lg font-semibold">{asset.amount}</span>
-                </div>
-              ))}
-            </div>
-
-            {/* Current and Projected Totals - Compact Horizontal Layout */}
-            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-              <div className="text-center">
-                <p className="text-xs text-gray-600 font-medium">Current Total</p>
-                <p className="text-lg font-bold text-gray-800">${(totalCurrentValue / 1000).toFixed(0)}K</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs text-blue-600 font-medium">Projected Total</p>
-                <p className="text-lg font-bold text-blue-800">${(totalProjectedValue / 1000).toFixed(0)}K</p>
-                <p className="text-xs text-green-600 font-medium">+${(totalGrowth / 1000).toFixed(0)}K</p>
-              </div>
-            </div>
-
             {/* Interactive Controls */}
             <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
               <div className="grid grid-cols-2 gap-4">
@@ -113,41 +96,58 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Horizontal Bar Chart for Projected Values */}
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <div className="mb-3">
-                <h3 className="text-sm font-semibold text-gray-900 mb-1">Projected Asset Values</h3>
-                <p className="text-xs text-gray-600">Future values at {rateOfReturn[0]}% return over {timeHorizon[0]} years</p>
-              </div>
-              
-              <div className="space-y-3">
-                {projectedAssets.map((asset, index) => {
-                  // Use a consistent bar width for better comparison
-                  const maxBarWidth = 100; // Full width
-                  const widthPercentage = Math.max((asset.projectedValue / 1000000) * 100, 5); // Min 5% width for visibility
-                  
-                  return (
-                    <div key={index} className="flex items-center space-x-3">
-                      <div className="w-20 text-right">
-                        <span className="text-xs font-medium">{asset.name}</span>
-                      </div>
-                      <div className="flex-1 relative">
-                        <div className="w-full bg-gray-200 rounded-full h-6 relative overflow-hidden">
+            {/* Assets Table */}
+            <div className="rounded-lg border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-semibold text-gray-900">Asset</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-right">Current</TableHead>
+                    <TableHead className="font-semibold text-gray-900 text-right">Projected</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {projectedAssets.map((asset, index) => (
+                    <TableRow key={index} className="hover:bg-gray-50">
+                      <TableCell className="font-medium">
+                        <div className="flex items-center space-x-2">
                           <div 
-                            className="h-full rounded-full transition-all duration-300 ease-out"
-                            style={{ 
-                              width: `${Math.min(widthPercentage, maxBarWidth)}%`,
-                              backgroundColor: asset.color
-                            }}
+                            className="w-3 h-3 rounded-full" 
+                            style={{ backgroundColor: asset.color }}
                           />
+                          <span>{asset.name}</span>
                         </div>
-                      </div>
-                      <div className="w-16 text-left">
-                        <span className="text-xs font-bold">${(asset.projectedValue / 1000).toFixed(0)}K</span>
-                      </div>
-                    </div>
-                  );
-                })}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold">
+                        {formatCurrency(asset.currentValue)}
+                      </TableCell>
+                      <TableCell className="text-right font-semibold text-blue-600">
+                        {formatCurrency(asset.projectedValue)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="border-t-2 bg-gray-50 font-bold">
+                    <TableCell className="font-bold text-gray-900">Total</TableCell>
+                    <TableCell className="text-right font-bold text-gray-900">
+                      {formatCurrency(totalCurrentValue)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-blue-600">
+                      {formatCurrency(totalProjectedValue)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Growth Summary */}
+            <div className="flex items-center justify-between p-3 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+              <div className="text-center">
+                <p className="text-xs text-gray-600 font-medium">Total Growth</p>
+                <p className="text-lg font-bold text-green-600">+{formatCurrency(totalGrowth)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-xs text-blue-600 font-medium">Projection Period</p>
+                <p className="text-lg font-bold text-blue-800">{timeHorizon[0]} years at {rateOfReturn[0]}%</p>
               </div>
             </div>
           </div>
