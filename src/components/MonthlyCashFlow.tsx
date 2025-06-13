@@ -1,4 +1,3 @@
-
 import { TrendingUp, TrendingDown, DollarSign, Eye, PiggyBank, Zap, Shield, Target, AlertCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +23,14 @@ const MonthlyCashFlow = () => {
   const targetAmount = monthlyExpenses * targetMonths;
   const shortfall = Math.max(0, targetAmount - currentFund);
   const progressPercentage = targetAmount > 0 ? Math.min(100, (currentFund / targetAmount) * 100) : 0;
+
+  // Calculate progress bar color (red at 0% to green at 100%)
+  const getProgressBarColor = (percentage: number) => {
+    const normalizedProgress = Math.min(100, Math.max(0, percentage)) / 100;
+    const red = Math.round(255 * (1 - normalizedProgress));
+    const green = Math.round(255 * normalizedProgress);
+    return `rgb(${red}, ${green}, 0)`;
+  };
 
   return (
     <>
@@ -108,7 +115,16 @@ const MonthlyCashFlow = () => {
                 <span className="text-sm font-medium text-blue-700">Progress to Target</span>
                 <span className="text-sm font-bold text-blue-800">{progressPercentage.toFixed(0)}%</span>
               </div>
-              <Progress value={progressPercentage} className="h-2" />
+              <div className="relative">
+                <Progress value={progressPercentage} className="h-2" />
+                <div 
+                  className="absolute top-0 left-0 h-2 rounded-full transition-all"
+                  style={{
+                    width: `${progressPercentage}%`,
+                    backgroundColor: getProgressBarColor(progressPercentage)
+                  }}
+                />
+              </div>
             </div>
 
             {/* Target Analysis */}
