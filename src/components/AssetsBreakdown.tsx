@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
@@ -157,7 +156,6 @@ const AssetsBreakdown = () => {
       <AssetsDetailDialog 
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
-        assets={assets}
       />
     </>
   );
