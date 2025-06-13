@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -533,8 +534,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 </Card>
               </div>
 
-              {/* Individual Asset Controls */}
-              <div className="space-y-6">
+              {/* Individual Asset Controls - 2 Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {projectedAssets.map((asset, index) => (
                   <Card key={index}>
                     <CardHeader>
@@ -544,8 +545,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      {/* Controls */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      {/* Controls - Vertical Stack */}
+                      <div className="space-y-4">
                         <div className="space-y-2">
                           <label className="text-sm font-medium">
                             Rate of Return: {asset.settings.rateOfReturn[0]}%
@@ -574,23 +575,23 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                         </div>
                       </div>
 
-                      {/* Asset Projections */}
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      {/* Asset Projections - 2x2 Grid */}
+                      <div className="grid grid-cols-2 gap-3">
                         <div className="text-center p-3 bg-gray-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Current Value</p>
-                          <p className="text-lg font-bold">{formatCurrency(asset.currentValue)}</p>
+                          <p className="text-sm font-bold">{formatCurrency(asset.currentValue)}</p>
                         </div>
                         <div className="text-center p-3 bg-blue-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Future Value</p>
-                          <p className="text-lg font-bold text-blue-600">{formatCurrency(asset.futureValue)}</p>
+                          <p className="text-sm font-bold text-blue-600">{formatCurrency(asset.futureValue)}</p>
                         </div>
                         <div className="text-center p-3 bg-red-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Tax Owed</p>
-                          <p className="text-lg font-bold text-red-600">{formatCurrency(asset.taxOwed)}</p>
+                          <p className="text-sm font-bold text-red-600">{formatCurrency(asset.taxOwed)}</p>
                         </div>
                         <div className="text-center p-3 bg-green-50 rounded-lg">
                           <p className="text-xs text-muted-foreground">Net Value</p>
-                          <p className="text-lg font-bold text-green-600">{formatCurrency(asset.netValue)}</p>
+                          <p className="text-sm font-bold text-green-600">{formatCurrency(asset.netValue)}</p>
                         </div>
                       </div>
 
