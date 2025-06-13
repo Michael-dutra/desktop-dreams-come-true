@@ -127,19 +127,22 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
   };
 
-  const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, maxMonths = 60) => {
+  const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number) => {
     const data = [];
     let currentBalance = balance;
     let optimizedBalance = balance;
     const currentMonthlyRate = currentRate / 100 / 12;
     const newMonthlyRate = newRate / 100 / 12;
     
-    const maxPayoffMonths = Math.max(
-      Math.ceil(calculateDebtFreeDate(balance, currentPayment, currentRate)),
-      Math.ceil(calculateDebtFreeDate(balance, newPayment, newRate))
-    );
+    // Calculate actual payoff times to determine chart range
+    const currentPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, currentPayment, currentRate));
+    const optimizedPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, newPayment, newRate));
+    const maxPayoffMonths = Math.max(currentPayoffMonths, optimizedPayoffMonths);
     
-    for (let month = 0; month <= Math.min(maxMonths, maxPayoffMonths); month++) {
+    // Use the actual payoff timeline, but cap at reasonable maximum for display
+    const chartMaxMonths = Math.min(maxPayoffMonths + 12, 600); // Add 12 months buffer, max 50 years
+    
+    for (let month = 0; month <= chartMaxMonths; month++) {
       data.push({
         month,
         current: Math.max(0, currentBalance),
@@ -273,8 +276,7 @@ This projection assumes consistent payment performance. Actual results may vary 
       liability.monthlyPayment,
       liability.interestRate,
       newPayment,
-      liability.newRate,
-      60
+      liability.newRate
     );
 
     // Calculate amortization for mortgage
@@ -520,11 +522,25 @@ This projection assumes consistent payment performance. Actual results may vary 
             <ChartContainer config={chartConfig} className="h-48">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData}>
-                  <XAxis dataKey="month" tick={{ fontSize: 10 }} />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 10 }} 
+                    tickFormatter={(value) => {
+                      // Format X-axis labels based on timeline length
+                      if (chartData.length > 120) { // More than 10 years
+                        return value % 12 === 0 ? `${Math.floor(value / 12)}y` : '';
+                      } else if (chartData.length > 60) { // More than 5 years  
+                        return value % 6 === 0 ? `${value}m` : '';
+                      } else {
+                        return `${value}m`;
+                      }
+                    }}
+                  />
                   <YAxis tick={{ fontSize: 10 }} tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`} />
                   <ChartTooltip 
                     content={<ChartTooltipContent />}
                     formatter={(value, name) => [`$${Number(value).toLocaleString()}`, name]}
+                    labelFormatter={(value) => `Month ${value}`}
                   />
                   <ChartLegend 
                     content={<ChartLegendContent />}
