@@ -79,53 +79,51 @@ const NetWorthCard = () => {
         </div>
         
         {/* 5-Year Projection Chart */}
-        <div className="bg-white/5 rounded-lg p-4">
+        <div className="bg-white rounded-lg p-4">
           <div className="text-center mb-4">
-            <h4 className="text-lg font-medium text-white">5-Year Projection</h4>
-            <p className="text-xs text-white/70">Expected growth trajectory</p>
+            <h4 className="text-lg font-medium text-gray-800">5-Year Projection</h4>
+            <p className="text-xs text-gray-600">Expected growth trajectory</p>
           </div>
           <div className="w-full overflow-hidden">
             <ChartContainer config={chartConfig} className="h-44 w-full">
-              <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                <defs>
-                  <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                  </linearGradient>
-                </defs>
+              <LineChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 11, fill: 'white' }}
-                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                  tickLine={{ stroke: 'white' }}
+                  tick={{ fontSize: 11, fill: '#374151' }}
+                  axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#6b7280' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 11, fill: 'white' }}
-                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                  tickLine={{ stroke: 'white' }}
+                  tick={{ fontSize: 11, fill: '#374151' }}
+                  axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
+                  tickLine={{ stroke: '#6b7280' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                   width={55}
                 />
                 <ChartTooltip 
                   content={<ChartTooltipContent 
-                    formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
-                    labelStyle={{ color: 'black' }}
+                    formatter={(value) => [`$${Number(value).toLocaleString()}`, "Net Worth"]}
+                    labelStyle={{ color: '#1f2937', fontWeight: 'bold' }}
                     contentStyle={{ 
                       backgroundColor: 'white', 
-                      border: '1px solid #ccc',
-                      color: 'black'
+                      border: '2px solid #10b981',
+                      borderRadius: '8px',
+                      color: '#1f2937',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'
                     }}
                   />} 
                 />
-                <Area 
+                <Line 
                   type="monotone" 
                   dataKey="netWorth" 
                   stroke="#10b981" 
-                  strokeWidth={2}
-                  fill="url(#netWorthGradient)"
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 3, stroke: "white" }}
+                  strokeWidth={3}
+                  dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
+                  activeDot={{ r: 7, fill: "#10b981", stroke: "white", strokeWidth: 3 }}
                 />
-              </AreaChart>
+              </LineChart>
             </ChartContainer>
           </div>
         </div>
