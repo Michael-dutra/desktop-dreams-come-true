@@ -1,10 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { TrendingUp, TrendingDown, DollarSign, Shield, FileText } from "lucide-react";
 import { useState } from "react";
 
@@ -49,15 +50,15 @@ You currently have $${currentCoverage.toLocaleString()} in monthly disability co
 ${coverageGap > 0 ? `Consider securing additional disability insurance to ensure comprehensive income protection. Look for policies with features like cost-of-living adjustments and partial disability benefits.` : `Review your coverage annually to ensure it keeps pace with any income increases or changes in your financial obligations.`}`;
   };
 
-  // Chart data
+  // Chart data with colors
   const coverageComparison = [
-    { category: "Current Coverage", amount: currentCoverage },
-    { category: "Recommended", amount: recommendedCoverage },
-    { category: "Monthly Expenses", amount: monthlyExpenses },
+    { category: "Current Coverage", amount: currentCoverage, color: "#3b82f6" }, // Blue
+    { category: "Recommended", amount: recommendedCoverage, color: "#10b981" }, // Green
+    { category: "Monthly Expenses", amount: monthlyExpenses, color: "#f59e0b" }, // Orange
   ];
 
   const chartConfig = {
-    amount: { label: "Monthly Amount", color: "#3b82f6" },
+    amount: { label: "Monthly Amount" },
   };
 
   return (
@@ -196,7 +197,11 @@ ${coverageGap > 0 ? `Consider securing additional disability insurance to ensure
                     content={<ChartTooltipContent />}
                     formatter={(value) => [`$${Number(value).toLocaleString()}`, "Monthly Amount"]}
                   />
-                  <Bar dataKey="amount" fill="#3b82f6" />
+                  <Bar dataKey="amount">
+                    {coverageComparison.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Bar>
                 </BarChart>
               </ResponsiveContainer>
             </ChartContainer>
