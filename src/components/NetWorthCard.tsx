@@ -1,5 +1,5 @@
 
-import { TrendingUp, DollarSign } from "lucide-react";
+import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, Area, AreaChart } from "recharts";
@@ -18,9 +18,13 @@ const NetWorthCard = () => {
     netWorth: { label: "Net Worth", color: "#10b981" },
   };
 
+  const monthlyGrowth = 32500;
+  const yearlyGrowthRate = 12.8;
+  const projectedIncrease = 242500; // 530K - 287.5K
+
   return (
-    <Card className="bg-gradient-to-br from-blue-500 to-purple-600 border-none text-white">
-      <CardHeader className="pb-3">
+    <Card className="bg-gradient-to-br from-blue-500 to-purple-600 border-none text-white h-full">
+      <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="text-xl flex items-center space-x-3 text-white">
             <div className="p-2 bg-white/20 rounded-lg">
@@ -28,83 +32,109 @@ const NetWorthCard = () => {
             </div>
             <span>Net Worth</span>
           </CardTitle>
+          <div className="flex items-center space-x-1 text-green-300">
+            <TrendingUp className="h-4 w-4" />
+            <span className="text-sm font-medium">{yearlyGrowthRate}%</span>
+          </div>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <div>
-            <p className="text-4xl font-bold text-white">$287,500</p>
-            <div className="flex items-center space-x-1 text-green-300">
-              <TrendingUp className="h-5 w-5" />
-              <span className="text-base font-medium text-white">+$32,500 this month</span>
-            </div>
+      <CardContent className="space-y-4">
+        {/* Main Net Worth Display */}
+        <div className="text-center">
+          <p className="text-4xl font-bold text-white mb-2">$287,500</p>
+          <div className="flex items-center justify-center space-x-2 text-green-300">
+            <TrendingUp className="h-5 w-5" />
+            <span className="text-lg font-medium">+${monthlyGrowth.toLocaleString()} this month</span>
           </div>
-          
-          <div className="grid grid-cols-2 gap-4 pt-2">
+        </div>
+        
+        {/* Assets vs Liabilities Grid */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="bg-white/10 rounded-lg p-3 text-center">
+            <p className="text-sm text-white/80 mb-1">Total Assets</p>
+            <p className="text-xl font-bold text-white">$735,000</p>
+          </div>
+          <div className="bg-white/10 rounded-lg p-3 text-center">
+            <p className="text-sm text-white/80 mb-1">Total Liabilities</p>
+            <p className="text-xl font-bold text-white">$447,500</p>
+          </div>
+        </div>
+
+        {/* Key Metrics Row */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex items-center space-x-2 bg-white/5 rounded-lg p-2">
+            <Target className="h-4 w-4 text-green-300" />
             <div>
-              <p className="text-base text-white opacity-80">Total Assets</p>
-              <p className="text-xl font-semibold text-white">$735,000</p>
+              <p className="text-xs text-white/70">5-Year Goal</p>
+              <p className="text-sm font-semibold text-white">$530K</p>
             </div>
+          </div>
+          <div className="flex items-center space-x-2 bg-white/5 rounded-lg p-2">
+            <Calendar className="h-4 w-4 text-blue-300" />
             <div>
-              <p className="text-base text-white opacity-80">Total Liabilities</p>
-              <p className="text-xl font-semibold text-white">$447,500</p>
+              <p className="text-xs text-white/70">Growth</p>
+              <p className="text-sm font-semibold text-white">+${(projectedIncrease / 1000).toFixed(0)}K</p>
             </div>
           </div>
-          
-          <div className="border-t border-white/20 pt-3">
-            <div className="text-center mb-3">
-              <h4 className="text-lg font-medium text-white">5-Year Projection</h4>
-            </div>
-            <div className="w-full overflow-hidden">
-              <ChartContainer config={chartConfig} className="h-48 w-full">
-                <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                  <defs>
-                    <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                      <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis 
-                    dataKey="year" 
-                    tick={{ fontSize: 12, fill: 'white' }}
-                    axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                    tickLine={{ stroke: 'white' }}
-                  />
-                  <YAxis 
-                    tick={{ fontSize: 12, fill: 'white' }}
-                    axisLine={{ stroke: 'white', strokeWidth: 1 }}
-                    tickLine={{ stroke: 'white' }}
-                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                    width={60}
-                  />
-                  <ChartTooltip 
-                    content={<ChartTooltipContent 
-                      formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
-                      labelStyle={{ color: 'black' }}
-                      contentStyle={{ 
-                        backgroundColor: 'white', 
-                        border: '1px solid #ccc',
-                        color: 'black'
-                      }}
-                    />} 
-                  />
-                  <Area 
-                    type="monotone" 
-                    dataKey="netWorth" 
-                    stroke="#10b981" 
-                    strokeWidth={2}
-                    fill="url(#netWorthGradient)"
-                    dot={{ fill: "#10b981", strokeWidth: 2, r: 4, stroke: "white" }}
-                  />
-                </AreaChart>
-              </ChartContainer>
-            </div>
-            <div className="text-center mt-2">
-              <p className="text-sm text-white">
-                Projected to reach $530K by 2029
-              </p>
-            </div>
+        </div>
+        
+        {/* 5-Year Projection Chart */}
+        <div className="bg-white/5 rounded-lg p-3">
+          <div className="text-center mb-3">
+            <h4 className="text-lg font-medium text-white">5-Year Projection</h4>
+            <p className="text-xs text-white/70">Expected growth trajectory</p>
           </div>
+          <div className="w-full overflow-hidden">
+            <ChartContainer config={chartConfig} className="h-40 w-full">
+              <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                <defs>
+                  <linearGradient id="netWorthGradient" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                  </linearGradient>
+                </defs>
+                <XAxis 
+                  dataKey="year" 
+                  tick={{ fontSize: 11, fill: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                  tickLine={{ stroke: 'white' }}
+                />
+                <YAxis 
+                  tick={{ fontSize: 11, fill: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                  tickLine={{ stroke: 'white' }}
+                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  width={55}
+                />
+                <ChartTooltip 
+                  content={<ChartTooltipContent 
+                    formatter={(value) => [`$${value.toLocaleString()}`, "Net Worth"]}
+                    labelStyle={{ color: 'black' }}
+                    contentStyle={{ 
+                      backgroundColor: 'white', 
+                      border: '1px solid #ccc',
+                      color: 'black'
+                    }}
+                  />} 
+                />
+                <Area 
+                  type="monotone" 
+                  dataKey="netWorth" 
+                  stroke="#10b981" 
+                  strokeWidth={2}
+                  fill="url(#netWorthGradient)"
+                  dot={{ fill: "#10b981", strokeWidth: 2, r: 3, stroke: "white" }}
+                />
+              </AreaChart>
+            </ChartContainer>
+          </div>
+        </div>
+
+        {/* Bottom Summary */}
+        <div className="text-center bg-white/5 rounded-lg p-2">
+          <p className="text-sm text-white/90">
+            On track to reach <span className="font-bold text-green-300">$530K</span> by 2029
+          </p>
         </div>
       </CardContent>
     </Card>
