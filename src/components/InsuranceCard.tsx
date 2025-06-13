@@ -1,5 +1,4 @@
 
-
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -16,10 +15,7 @@ const InsuranceCard = () => {
   const [needsValues, setNeedsValues] = useState({
     incomeReplacement: [450000],
     debtCoverage: [120000],
-    emergencyFund: [35000],
-    education: [80000],
-    finalExpenses: [25000],
-    charitable: [0]
+    finalExpenses: [25000]
   });
 
   // Calculate total need based on slider values
@@ -65,10 +61,7 @@ const InsuranceCard = () => {
   const needsConfig = {
     incomeReplacement: { label: "Income Replacement", max: 1000000 },
     debtCoverage: { label: "Debt Coverage", max: 500000 },
-    emergencyFund: { label: "Emergency Fund", max: 100000 },
-    education: { label: "Education Costs", max: 200000 },
-    finalExpenses: { label: "Final Expenses", max: 100000 },
-    charitable: { label: "Charitable Legacy", max: 200000 }
+    finalExpenses: { label: "Final Expenses", max: 100000 }
   };
 
   return (
@@ -191,4 +184,3 @@ const InsuranceCard = () => {
 };
 
 export default InsuranceCard;
-
