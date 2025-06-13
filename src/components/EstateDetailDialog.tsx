@@ -218,9 +218,9 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
   const [showAddBeneficiary, setShowAddBeneficiary] = useState(false);
 
   // Add form states
-  const [newDocument, setNewDocument] = useState({ name: "", status: "Current" as const, review: "" });
+  const [newDocument, setNewDocument] = useState({ name: "", status: "Current" as "Current" | "Outdated" | "Pending", review: "" });
   const [newTrust, setNewTrust] = useState({ name: "", type: "", assets: "", purpose: "" });
-  const [newAction, setNewAction] = useState({ action: "", priority: "Medium" as const });
+  const [newAction, setNewAction] = useState({ action: "", priority: "Medium" as "High" | "Medium" | "Low" });
   const [newBeneficiary, setNewBeneficiary] = useState({ name: "", relationship: "", percentage: 0 });
 
   // Add handlers for adding new items
