@@ -63,9 +63,9 @@ const AssetsBreakdown = () => {
           </Button>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-6 pt-0">
-          <div className="space-y-6 flex-1 flex flex-col">
+          <div className="flex-1 flex flex-col">
             {/* Interactive Controls */}
-            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 mb-6">
               <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-orange-700">
@@ -97,7 +97,7 @@ const AssetsBreakdown = () => {
             </div>
             
             {/* Assets Table - Takes up remaining space */}
-            <div className="rounded-lg border flex-1 flex flex-col min-h-0">
+            <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
               <Table className="h-full">
                 <TableHeader>
                   <TableRow>
