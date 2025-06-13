@@ -131,19 +131,19 @@ const NetWorthCard = () => {
         <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-4">
           <div className="text-center mb-4">
             <h4 className="text-lg font-medium text-white">{timeHorizon[0]}-Year Projection</h4>
-            <p className="text-xs text-white/70">At {rateOfReturn[0]}% annual growth</p>
+            <p className="text-xs text-gray-300">At {rateOfReturn[0]}% annual growth</p>
           </div>
           <div className="w-full overflow-hidden">
             <ChartContainer config={chartConfig} className="h-44 w-full">
               <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 11, fill: 'white' }}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 11, fill: 'white' }}
+                  tick={{ fontSize: 11, fill: '#9ca3af' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
@@ -167,12 +167,12 @@ const NetWorthCard = () => {
                 <Area 
                   type="monotone" 
                   dataKey="netWorth" 
-                  stroke="#10b981" 
+                  stroke="white" 
                   strokeWidth={3}
                   fill="#10b981"
                   fillOpacity={0.3}
-                  dot={{ fill: "#10b981", strokeWidth: 2, r: 5, stroke: "white" }}
-                  activeDot={{ r: 7, fill: "#10b981", stroke: "white", strokeWidth: 3 }}
+                  dot={{ fill: "white", strokeWidth: 2, r: 4, stroke: "#10b981" }}
+                  activeDot={{ r: 6, fill: "white", stroke: "#10b981", strokeWidth: 3 }}
                 />
               </AreaChart>
             </ChartContainer>
