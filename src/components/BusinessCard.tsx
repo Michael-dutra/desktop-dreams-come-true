@@ -89,10 +89,6 @@ const BusinessCard = () => {
                   <p className="text-xs text-muted-foreground">{currentYear + yearsProjection[0]}</p>
                 </div>
               </div>
-              <div className="flex items-center justify-center space-x-1 text-green-600 mt-3 pt-3 border-t border-blue-200">
-                <TrendingUp className="h-4 w-4" />
-                <span className="text-sm font-medium">+{projectedGrowth.toFixed(1)}% growth potential</span>
-              </div>
             </div>
 
             <div className="grid grid-cols-2 gap-6">
