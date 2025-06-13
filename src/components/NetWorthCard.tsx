@@ -34,6 +34,16 @@ const NetWorthCard = () => {
   const finalValue = projectionData[projectionData.length - 1]?.netWorth || currentNetWorth;
   const totalGrowth = finalValue - currentNetWorth;
 
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else if (value >= 1000) {
+      return `$${(value / 1000).toFixed(0)}K`;
+    } else {
+      return `$${value.toFixed(0)}`;
+    }
+  };
+
   const chartConfig = {
     netWorth: { label: "Net Worth", color: "#10b981" },
   };
@@ -115,14 +125,14 @@ const NetWorthCard = () => {
             <Target className="h-5 w-5 text-green-300" />
             <div>
               <p className="text-xs text-white/70">Projected Value</p>
-              <p className="text-sm font-semibold text-white">${(finalValue / 1000).toFixed(0)}K</p>
+              <p className="text-sm font-semibold text-white">{formatCurrency(finalValue)}</p>
             </div>
           </div>
           <div className="flex items-center space-x-3 bg-white/5 rounded-lg p-3">
             <Calendar className="h-5 w-5 text-blue-300" />
             <div>
               <p className="text-xs text-white/70">Total Growth</p>
-              <p className="text-sm font-semibold text-white">+${(totalGrowth / 1000).toFixed(0)}K</p>
+              <p className="text-sm font-semibold text-white">+{formatCurrency(totalGrowth)}</p>
             </div>
           </div>
         </div>
@@ -146,7 +156,7 @@ const NetWorthCard = () => {
                   tick={{ fontSize: 11, fill: '#9ca3af' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
-                  tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  tickFormatter={(value) => formatCurrency(value)}
                   width={55}
                 />
                 <ChartTooltip 
@@ -156,7 +166,7 @@ const NetWorthCard = () => {
                         <div className="bg-white border-2 border-green-500 rounded-lg p-3 shadow-lg">
                           <p className="text-gray-900 font-bold text-sm mb-1">{label}</p>
                           <p className="text-green-600 font-semibold text-base">
-                            Net Worth: ${Number(payload[0].value).toLocaleString()}
+                            Net Worth: {formatCurrency(Number(payload[0].value))}
                           </p>
                         </div>
                       );
@@ -182,7 +192,7 @@ const NetWorthCard = () => {
         {/* Bottom Summary */}
         <div className="text-center bg-white/5 rounded-lg p-3">
           <p className="text-sm text-white/90">
-            Projected to reach <span className="font-bold text-green-300">${(finalValue / 1000).toFixed(0)}K</span> in {timeHorizon[0]} years
+            Projected to reach <span className="font-bold text-green-300">{formatCurrency(finalValue)}</span> in {timeHorizon[0]} years
           </p>
         </div>
       </CardContent>
