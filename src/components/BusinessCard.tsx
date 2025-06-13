@@ -97,17 +97,14 @@ const BusinessCard = () => {
 
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-sm text-muted-foreground">Business Value</p>
-                <p className="text-2xl font-bold">${(currentValuation / 1000).toFixed(0)}K</p>
-                <div className="flex items-center space-x-1 text-green-600 mt-1">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-sm">+{projectedGrowth.toFixed(1)}% projected</span>
-                </div>
+                <p className="text-sm text-muted-foreground">Current Annual Revenue</p>
+                <p className="text-2xl font-bold">${(grossRevenue / 1000).toFixed(0)}K</p>
+                <p className="text-sm text-muted-foreground mt-1">Base 2024</p>
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Annual Revenue</p>
-                <p className="text-2xl font-bold">${(grossRevenue / 1000).toFixed(0)}K</p>
-                <p className="text-sm text-muted-foreground mt-1">Current 2024</p>
+                <p className="text-sm text-muted-foreground">Projected Growth</p>
+                <p className="text-2xl font-bold text-green-600">+{projectedGrowth.toFixed(1)}%</p>
+                <p className="text-sm text-muted-foreground mt-1">{yearsProjection[0]} year potential</p>
               </div>
             </div>
 
