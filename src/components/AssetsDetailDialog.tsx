@@ -1,33 +1,25 @@
-import React from "react";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-interface FinancialFieldProps {
-  fieldId: string;
-  value: number;
-  label: string;
-  prefix?: string;
+import React from "react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+
+interface AssetsDetailDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
-const FinancialField = ({ fieldId, value, label, prefix }: FinancialFieldProps) => {
+const AssetsDetailDialog = ({ open, onOpenChange }: AssetsDetailDialogProps) => {
   return (
-    <div>
-      <Label htmlFor={fieldId}>{label}</Label>
-      <div className="relative">
-        {prefix && (
-          <div className="absolute inset-y-0 left-0 flex items-center pl-2 pointer-events-none text-gray-500">
-            {prefix}
-          </div>
-        )}
-        <Input
-          type="number"
-          id={fieldId}
-          value={value}
-          className="pl-8"
-        />
-      </div>
-    </div>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Assets Details</DialogTitle>
+        </DialogHeader>
+        <div className="p-4">
+          <p>Assets details content goes here.</p>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 
-export default FinancialField;
+export default AssetsDetailDialog;
