@@ -44,7 +44,7 @@ const AssetsBreakdown = () => {
 
   return (
     <>
-      <Card>
+      <Card className="h-full flex flex-col">
         <CardHeader className="flex flex-row items-center justify-between pb-3">
           <CardTitle className="text-2xl flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -62,8 +62,8 @@ const AssetsBreakdown = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent className="pb-4">
-          <div className="space-y-6">
+        <CardContent className="pb-6 flex-1 flex flex-col">
+          <div className="space-y-8 flex-1 flex flex-col">
             {/* Interactive Controls */}
             <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
               <div className="grid grid-cols-2 gap-6">
@@ -96,42 +96,42 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Assets Table */}
-            <div className="rounded-lg border">
-              <Table>
+            {/* Assets Table - Takes up remaining space */}
+            <div className="rounded-lg border flex-1 flex flex-col">
+              <Table className="h-full">
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="font-bold text-gray-900 text-lg">Asset</TableHead>
-                    <TableHead className="font-bold text-gray-900 text-lg text-right">Current</TableHead>
-                    <TableHead className="font-bold text-gray-900 text-lg text-right">Projected</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl h-16">Asset</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Current</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Projected</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {projectedAssets.map((asset, index) => (
-                    <TableRow key={index} className="hover:bg-gray-50">
-                      <TableCell className="font-semibold text-base py-4">
+                    <TableRow key={index} className="hover:bg-gray-50 h-20">
+                      <TableCell className="font-semibold text-xl py-6">
                         <div className="flex items-center space-x-3">
                           <div 
-                            className="w-4 h-4 rounded-full" 
+                            className="w-5 h-5 rounded-full" 
                             style={{ backgroundColor: asset.color }}
                           />
                           <span>{asset.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-base py-4">
+                      <TableCell className="text-right font-bold text-xl py-6">
                         {formatCurrency(asset.currentValue)}
                       </TableCell>
-                      <TableCell className="text-right font-bold text-blue-600 text-base py-4">
+                      <TableCell className="text-right font-bold text-blue-600 text-xl py-6">
                         {formatCurrency(asset.projectedValue)}
                       </TableCell>
                     </TableRow>
                   ))}
-                  <TableRow className="border-t-2 bg-gray-50 font-bold">
-                    <TableCell className="font-bold text-gray-900 text-lg py-4">Total</TableCell>
-                    <TableCell className="text-right font-bold text-gray-900 text-lg py-4">
+                  <TableRow className="border-t-2 bg-gray-50 font-bold h-20">
+                    <TableCell className="font-bold text-gray-900 text-2xl py-6">Total</TableCell>
+                    <TableCell className="text-right font-bold text-gray-900 text-2xl py-6">
                       {formatCurrency(totalCurrentValue)}
                     </TableCell>
-                    <TableCell className="text-right font-bold text-blue-600 text-lg py-4">
+                    <TableCell className="text-right font-bold text-blue-600 text-2xl py-6">
                       {formatCurrency(totalProjectedValue)}
                     </TableCell>
                   </TableRow>
