@@ -15,19 +15,22 @@ const LiabilitiesBreakdown = () => {
       name: "Mortgage", 
       amount: "$420,000", 
       monthlyPayment: 2800,
-      color: "#8b5cf6" // Purple
+      color: "#8b5cf6", // Purple
+      value: 420000 // Add missing value property
     },
     { 
       name: "Car Loan", 
       amount: "$18,000", 
       monthlyPayment: 450,
-      color: "#f59e0b" // Amber
+      color: "#f59e0b", // Amber
+      value: 18000 // Add missing value property
     },
     { 
       name: "Credit Cards", 
       amount: "$7,500", 
       monthlyPayment: 250,
-      color: "#06b6d4" // Cyan
+      color: "#06b6d4", // Cyan
+      value: 7500 // Add missing value property
     },
   ];
 
