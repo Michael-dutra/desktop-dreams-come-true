@@ -79,24 +79,24 @@ const NetWorthCard = () => {
         </div>
         
         {/* 5-Year Projection Chart */}
-        <div className="bg-white rounded-lg p-4">
+        <div className="bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg p-4">
           <div className="text-center mb-4">
-            <h4 className="text-lg font-medium text-gray-800">5-Year Projection</h4>
-            <p className="text-xs text-gray-600">Expected growth trajectory</p>
+            <h4 className="text-lg font-medium text-white">5-Year Projection</h4>
+            <p className="text-xs text-white/70">Expected growth trajectory</p>
           </div>
           <div className="w-full overflow-hidden">
             <ChartContainer config={chartConfig} className="h-44 w-full">
               <LineChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 11, fill: '#374151' }}
-                  axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
-                  tickLine={{ stroke: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                  tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 11, fill: '#374151' }}
-                  axisLine={{ stroke: '#6b7280', strokeWidth: 1 }}
-                  tickLine={{ stroke: '#6b7280' }}
+                  tick={{ fontSize: 11, fill: 'white' }}
+                  axisLine={{ stroke: 'white', strokeWidth: 1 }}
+                  tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
                   width={55}
                 />
