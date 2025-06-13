@@ -17,6 +17,7 @@ const AssetsBreakdown = () => {
     { name: "RRSP", amount: "$52,000", value: 52000, color: "#10b981" },
     { name: "TFSA", amount: "$38,000", value: 38000, color: "#8b5cf6" },
     { name: "Non-Registered", amount: "$25,000", value: 25000, color: "#f59e0b" },
+    { name: "Digital Asset", amount: "$15,000", value: 15000, color: "#ef4444" },
   ]);
 
   // Calculate projected values
