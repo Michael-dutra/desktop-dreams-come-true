@@ -1,5 +1,3 @@
-
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -448,7 +446,38 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
             </TabsList>
 
             <TabsContent value="overview" className="space-y-6">
-              {/* Original Estate Value Breakdown */}
+              {/* Final Tax Projections Title */}
+              <div className="text-2xl font-bold text-foreground">Final Tax Projections</div>
+
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-foreground">{formatCurrency(totalFutureValue)}</p>
+                      <p className="text-sm text-muted-foreground">Total Future Value</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-600">{formatCurrency(totalTaxOwed)}</p>
+                      <p className="text-sm text-muted-foreground">Estimated Taxes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetValue)}</p>
+                      <p className="text-sm text-muted-foreground">Net Estate Value</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Current Estate Value Breakdown */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Current Estate Value Breakdown</CardTitle>
@@ -486,7 +515,7 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                     </ResponsiveContainer>
                   </ChartContainer>
 
-                  {/* Original Summary Numbers */}
+                  {/* Summary Numbers */}
                   <div className="grid grid-cols-3 gap-4 mt-4 text-center">
                     <div className="p-2 bg-purple-100 rounded-lg">
                       <p className="text-xs text-purple-700 font-medium">Total Estate</p>
@@ -501,87 +530,6 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                       <p className="text-lg font-bold text-cyan-800">{formatCurrency(netEstateValue)}</p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Final Tax Projections Title */}
-              <div className="text-2xl font-bold text-foreground">Final Tax Projections</div>
-
-              {/* Summary Cards */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-foreground">{formatCurrency(totalFutureValue)}</p>
-                      <p className="text-sm text-muted-foreground">Total Future Value</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-red-600">{formatCurrency(totalTaxOwed)}</p>
-                      <p className="text-sm text-muted-foreground">Estimated Taxes</p>
-                    </div>
-                  </CardContent>
-                </Card>
-                <Card>
-                  <CardContent className="p-4">
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetValue)}</p>
-                      <p className="text-sm text-muted-foreground">Net Estate Value</p>
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-
-              {/* Tax Projections Chart */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Tax Impact by Asset</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-64 w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                        <XAxis 
-                          dataKey="name" 
-                          tick={{ fontSize: 12 }}
-                          interval={0}
-                          angle={-45}
-                          textAnchor="end"
-                          height={80}
-                        />
-                        <YAxis 
-                          tick={{ fontSize: 12 }}
-                          tickFormatter={(value) => formatCurrency(value)}
-                        />
-                        <ChartTooltip 
-                          content={<ChartTooltipContent 
-                            formatter={(value, name) => [formatCurrency(Number(value)), name]}
-                          />}
-                        />
-                        <Bar 
-                          dataKey="grossValue" 
-                          fill="#3b82f6"
-                          name="Gross Value"
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Bar 
-                          dataKey="taxOwed" 
-                          fill="#ef4444"
-                          name="Tax Owed"
-                          radius={[4, 4, 0, 0]}
-                        />
-                        <Bar 
-                          dataKey="netValue" 
-                          fill="#10b981"
-                          name="Net Value"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </ChartContainer>
                 </CardContent>
               </Card>
 
@@ -1224,4 +1172,3 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
     </>
   );
 };
-
