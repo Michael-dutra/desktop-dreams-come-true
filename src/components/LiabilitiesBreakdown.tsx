@@ -100,6 +100,45 @@ const LiabilitiesBreakdown = () => {
     sum + liability.monthlyPayment + liability.extraPayment, 0
   );
 
+  // Timeline component for visualizing time saved
+  const TimelineSaved = ({ monthsSaved, color }: { monthsSaved: number, color: string }) => {
+    if (monthsSaved <= 0) return null;
+    
+    const maxMonths = 60; // Max timeline length
+    const progressWidth = Math.min((monthsSaved / maxMonths) * 100, 100);
+    
+    return (
+      <div className="mt-2">
+        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+          <span>Time Saved:</span>
+          <span className="font-bold text-green-600">{Math.round(monthsSaved)} months</span>
+        </div>
+        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+          <div 
+            className="h-full rounded-full transition-all duration-500 ease-out"
+            style={{ 
+              width: `${progressWidth}%`,
+              backgroundColor: color,
+              opacity: 0.7
+            }}
+          />
+          <div 
+            className="absolute top-0 h-full w-1 bg-white border-2 transition-all duration-500 ease-out"
+            style={{ 
+              left: `${progressWidth}%`,
+              borderColor: color,
+              transform: 'translateX(-50%)'
+            }}
+          />
+        </div>
+        <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <span>0</span>
+          <span>{maxMonths}+ months</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -138,20 +177,20 @@ const LiabilitiesBreakdown = () => {
                 const monthsSaved = originalPayoff.months - newPayoff.months;
                 
                 return (
-                  <div key={index} className="p-3 rounded-lg border-2 space-y-2" style={{ borderColor: liability.color }}>
-                    {/* Compact Header: Name + Balance + Payment in one line */}
-                    <div className="flex items-center justify-between">
+                  <div key={index} className="p-3 rounded-lg border space-y-2" style={{ borderColor: liability.color }}>
+                    {/* Compact Header */}
+                    <div className="flex items-center justify-between text-sm">
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 rounded-full" style={{ backgroundColor: liability.color }}></div>
-                        <span className="font-bold text-sm">{liability.name}</span>
+                        <span className="font-bold">{liability.name}</span>
                       </div>
-                      <div className="flex items-center space-x-3 text-sm">
+                      <div className="flex items-center space-x-3">
                         <span className="font-medium">{liability.amount}</span>
                         <span className="text-gray-600">${liability.monthlyPayment}/mo</span>
                       </div>
                     </div>
                     
-                    {/* Compact Sliders - Side by Side */}
+                    {/* Compact Sliders */}
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <label className="text-xs font-medium text-gray-700">
@@ -191,13 +230,12 @@ const LiabilitiesBreakdown = () => {
                         <span className="text-gray-600">New:</span>
                         <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
                       </div>
-                      {monthsSaved > 0 && (
-                        <div className="col-span-2 flex justify-between">
-                          <span className="text-gray-600">Time Saved:</span>
-                          <span className="font-bold text-blue-600">{Math.round(monthsSaved)} months</span>
-                        </div>
-                      )}
                     </div>
+
+                    {/* Visual Timeline for Time Saved */}
+                    {monthsSaved > 0 && (
+                      <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
+                    )}
                   </div>
                 );
               })}
