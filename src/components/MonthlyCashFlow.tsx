@@ -47,13 +47,37 @@ const MonthlyCashFlow = () => {
         </CardHeader>
         
         <CardContent className="space-y-6">
-          {/* Net Cash Flow */}
-          <div className="text-center p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100">
-            <div className="flex items-center justify-center mb-2">
-              <Zap className="h-5 w-5 text-green-600 mr-2" />
-              <p className="text-3xl font-bold text-green-600">+$7,500</p>
+          {/* Income, Expenses, and Net Cash Flow in one row */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="p-1 bg-green-100 rounded-lg">
+                  <TrendingUp className="h-3 w-3 text-green-600" />
+                </div>
+                <span className="text-xs font-medium text-green-800">Income</span>
+              </div>
+              <p className="text-lg font-bold text-green-700">$22,500</p>
             </div>
-            <p className="text-sm text-green-700 font-medium">Net Monthly Flow</p>
+            
+            <div className="p-3 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="p-1 bg-red-100 rounded-lg">
+                  <TrendingDown className="h-3 w-3 text-red-600" />
+                </div>
+                <span className="text-xs font-medium text-red-800">Expenses</span>
+              </div>
+              <p className="text-lg font-bold text-red-700">$15,000</p>
+            </div>
+
+            <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
+              <div className="flex items-center space-x-2 mb-2">
+                <div className="p-1 bg-blue-100 rounded-lg">
+                  <Zap className="h-3 w-3 text-blue-600" />
+                </div>
+                <span className="text-xs font-medium text-blue-800">Net Flow</span>
+              </div>
+              <p className="text-lg font-bold text-blue-700">+$7,500</p>
+            </div>
           </div>
 
           {/* Emergency Fund Calculator */}
@@ -168,42 +192,6 @@ const MonthlyCashFlow = () => {
                   }
                 </span>
               </div>
-            </div>
-          </div>
-          
-          {/* Income vs Expenses */}
-          <div className="grid grid-cols-2 gap-4">
-            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <TrendingUp className="h-4 w-4 text-green-600" />
-                </div>
-                <span className="text-sm font-medium text-green-800">Income</span>
-              </div>
-              <p className="text-2xl font-bold text-green-700">$22,500</p>
-            </div>
-            
-            <div className="p-4 bg-gradient-to-r from-red-50 to-rose-50 rounded-xl border border-red-200">
-              <div className="flex items-center space-x-2 mb-3">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  <TrendingDown className="h-4 w-4 text-red-600" />
-                </div>
-                <span className="text-sm font-medium text-red-800">Expenses</span>
-              </div>
-              <p className="text-2xl font-bold text-red-700">$15,000</p>
-            </div>
-          </div>
-          
-          {/* Key Metrics */}
-          <div className="space-y-3 pt-2 border-t border-gray-200">
-            <div className="flex justify-between items-center p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div className="flex items-center space-x-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <PiggyBank className="h-5 w-5 text-blue-600" />
-                </div>
-                <span className="text-sm font-medium text-blue-800">Savings Rate</span>
-              </div>
-              <span className="text-xl font-bold text-blue-700">33.3%</span>
             </div>
           </div>
         </CardContent>
