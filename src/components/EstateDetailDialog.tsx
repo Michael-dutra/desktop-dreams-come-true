@@ -222,9 +222,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
         </DialogHeader>
 
         <Tabs defaultValue="overview" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="overview">Estate Overview</TabsTrigger>
-            <TabsTrigger value="taxes">Tax Analysis</TabsTrigger>
             <TabsTrigger value="summary">Estate Summary</TabsTrigger>
             <TabsTrigger value="legacy">Legacy</TabsTrigger>
           </TabsList>
@@ -394,49 +393,8 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                 </Card>
               ))}
             </div>
-          </TabsContent>
 
-          <TabsContent value="taxes" className="space-y-6">
-            {/* Tax Overview */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Tax Impact by Asset</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-80">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={taxBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-                      <XAxis 
-                        dataKey="name" 
-                        tick={{ fontSize: 12 }}
-                        interval={0}
-                        angle={-45}
-                        textAnchor="end"
-                        height={80}
-                      />
-                      <YAxis 
-                        tick={{ fontSize: 12 }}
-                        tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
-                      />
-                      <ChartTooltip 
-                        content={<ChartTooltipContent 
-                          formatter={(value, name) => [`$${Number(value).toLocaleString()}`, 
-                            name === 'grossValue' ? 'Gross Value' :
-                            name === 'taxOwed' ? 'Tax Owed' :
-                            name === 'netValue' ? 'Net Value' : name
-                          ]}
-                        />}
-                      />
-                      <Bar dataKey="grossValue" fill="#3b82f6" name="Gross Value" />
-                      <Bar dataKey="taxOwed" fill="#ef4444" name="Tax Owed" />
-                      <Bar dataKey="netValue" fill="#10b981" name="Net Value" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            {/* Detailed Tax Breakdown Table */}
+            {/* Detailed Tax Calculations */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg">Detailed Tax Calculations</CardTitle>
