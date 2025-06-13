@@ -116,6 +116,7 @@ const EstateCard = () => {
             Details
           </Button>
         </CardHeader>
+        
         <CardContent className="space-y-6">
           {/* Interactive Controls */}
           <div className="p-4 bg-orange-50 rounded-lg border border-orange-200">
@@ -190,16 +191,16 @@ const EstateCard = () => {
             {/* Summary Numbers */}
             <div className="grid grid-cols-3 gap-4 mt-6">
               <div className="text-center">
-                <p className="text-lg font-bold text-purple-800">Total Estate</p>
-                <p className="text-2xl font-bold text-purple-900">${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold" style={{ color: '#8b5cf6' }}>Total Estate</p>
+                <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>${(estateValues.totalEstate / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-red-800">Estate Taxes</p>
-                <p className="text-2xl font-bold text-red-900">${(estateValues.finalTaxes / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold" style={{ color: '#ef4444' }}>Estate Taxes</p>
+                <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>${(estateValues.finalTaxes / 1000).toFixed(0)}K</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold text-green-800">Net Amount</p>
-                <p className="text-2xl font-bold text-green-900">${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
+                <p className="text-lg font-bold" style={{ color: '#10b981' }}>Net Amount</p>
+                <p className="text-2xl font-bold" style={{ color: '#10b981' }}>${(estateValues.netToBeneficiaries / 1000).toFixed(0)}K</p>
               </div>
             </div>
           </div>
