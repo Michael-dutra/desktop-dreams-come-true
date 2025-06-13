@@ -1,4 +1,3 @@
-
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -59,9 +58,9 @@ const InsuranceCard = () => {
   };
 
   const needsConfig = {
-    incomeReplacement: { label: "Income Replacement", max: 1000000 },
-    debtCoverage: { label: "Debt Coverage", max: 500000 },
-    finalExpenses: { label: "Final Expenses", max: 100000 }
+    incomeReplacement: { label: "Income Replacement", max: 5000000 },
+    debtCoverage: { label: "Debt Coverage", max: 5000000 },
+    finalExpenses: { label: "Final Expenses", max: 5000000 }
   };
 
   return (
