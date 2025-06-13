@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2, FileText, Calendar, Share2 } from "lucide-react";
+import { Building2, TrendingUp, Shield, Users, DollarSign, Target, Plus, Edit, Trash2, FileText, Calendar, Share2, Wallet, Home } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 
@@ -110,6 +110,32 @@ interface ProjectionsData {
   revenue2025: number;
   profit2025: number;
   valuation2025: number;
+}
+
+interface BankAccount {
+  id: string;
+  name: string;
+  type: string;
+  balance: number;
+  accountNumber: string;
+}
+
+interface Investment {
+  id: string;
+  name: string;
+  type: string;
+  value: number;
+  quantity?: number;
+  purchasePrice?: number;
+}
+
+interface RealEstate {
+  id: string;
+  name: string;
+  type: string;
+  value: number;
+  address: string;
+  acquisitionCost: number;
 }
 
 const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) => {
@@ -243,6 +269,52 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
 
   const [isEditingOpportunities, setIsEditingOpportunities] = useState(false);
 
+  // Assets State
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([
+    { id: "1", name: "Business Chequing", type: "Chequing", balance: 75000, accountNumber: "****-1234" },
+    { id: "2", name: "Business Savings", type: "Savings", balance: 125000, accountNumber: "****-5678" },
+  ]);
+
+  const [investments, setInvestments] = useState<Investment[]>([
+    { id: "1", name: "Corporate Bonds", type: "Bonds", value: 50000, quantity: 50, purchasePrice: 48000 },
+    { id: "2", name: "Blue Chip Stocks", type: "Stocks", value: 85000, quantity: 100, purchasePrice: 75000 },
+  ]);
+
+  const [realEstate, setRealEstate] = useState<RealEstate[]>([
+    { id: "1", name: "Office Building", type: "Commercial", value: 450000, address: "123 Business St, Toronto ON", acquisitionCost: 375000 },
+  ]);
+
+  const [isEditingBankAccounts, setIsEditingBankAccounts] = useState(false);
+  const [isEditingInvestments, setIsEditingInvestments] = useState(false);
+  const [isEditingRealEstate, setIsEditingRealEstate] = useState(false);
+
+  const [isAddingBankAccount, setIsAddingBankAccount] = useState(false);
+  const [isAddingInvestment, setIsAddingInvestment] = useState(false);
+  const [isAddingRealEstate, setIsAddingRealEstate] = useState(false);
+
+  const [newBankAccount, setNewBankAccount] = useState({
+    name: "",
+    type: "",
+    balance: 0,
+    accountNumber: ""
+  });
+
+  const [newInvestment, setNewInvestment] = useState({
+    name: "",
+    type: "",
+    value: 0,
+    quantity: 0,
+    purchasePrice: 0
+  });
+
+  const [newRealEstate, setNewRealEstate] = useState({
+    name: "",
+    type: "",
+    value: 0,
+    address: "",
+    acquisitionCost: 0
+  });
+
   // Revenue Stream Functions
   const addRevenueStream = () => {
     if (newRevenueName && newRevenueValue > 0) {
@@ -300,6 +372,55 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     setBusinessInsurances(businessInsurances.filter(insurance => insurance.id !== id));
   };
 
+  // Asset Functions
+  const addBankAccount = () => {
+    if (newBankAccount.name && newBankAccount.type) {
+      const account: BankAccount = {
+        id: Date.now().toString(),
+        ...newBankAccount,
+      };
+      setBankAccounts([...bankAccounts, account]);
+      setNewBankAccount({ name: "", type: "", balance: 0, accountNumber: "" });
+      setIsAddingBankAccount(false);
+    }
+  };
+
+  const deleteBankAccount = (id: string) => {
+    setBankAccounts(bankAccounts.filter(account => account.id !== id));
+  };
+
+  const addInvestment = () => {
+    if (newInvestment.name && newInvestment.type) {
+      const investment: Investment = {
+        id: Date.now().toString(),
+        ...newInvestment,
+      };
+      setInvestments([...investments, investment]);
+      setNewInvestment({ name: "", type: "", value: 0, quantity: 0, purchasePrice: 0 });
+      setIsAddingInvestment(false);
+    }
+  };
+
+  const deleteInvestment = (id: string) => {
+    setInvestments(investments.filter(investment => investment.id !== id));
+  };
+
+  const addRealEstate = () => {
+    if (newRealEstate.name && newRealEstate.type) {
+      const property: RealEstate = {
+        id: Date.now().toString(),
+        ...newRealEstate,
+      };
+      setRealEstate([...realEstate, property]);
+      setNewRealEstate({ name: "", type: "", value: 0, address: "", acquisitionCost: 0 });
+      setIsAddingRealEstate(false);
+    }
+  };
+
+  const deleteRealEstate = (id: string) => {
+    setRealEstate(realEstate.filter(property => property.id !== id));
+  };
+
   // Helper function to format large numbers
   const formatLargeNumber = (value: number): string => {
     if (value >= 1000000) {
@@ -332,8 +453,9 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="assets">Assets</TabsTrigger>
             <TabsTrigger value="insurance">Insurance</TabsTrigger>
             <TabsTrigger value="important">Important</TabsTrigger>
           </TabsList>
@@ -726,6 +848,476 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
+
+          <TabsContent value="assets" className="space-y-6">
+            {/* Bank Accounts Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Wallet className="h-5 w-5" />
+                    <span>Bank Accounts</span>
+                  </div>
+                  <Button onClick={() => setIsAddingBankAccount(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Account
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {bankAccounts.map((account) => (
+                    <div key={account.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {isEditingBankAccounts ? (
+                        <div className="grid grid-cols-4 gap-4 w-full">
+                          <Input
+                            value={account.name}
+                            onChange={(e) => setBankAccounts(bankAccounts.map(a => 
+                              a.id === account.id ? {...a, name: e.target.value} : a
+                            ))}
+                          />
+                          <Input
+                            value={account.type}
+                            onChange={(e) => setBankAccounts(bankAccounts.map(a => 
+                              a.id === account.id ? {...a, type: e.target.value} : a
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={account.balance}
+                            onChange={(e) => setBankAccounts(bankAccounts.map(a => 
+                              a.id === account.id ? {...a, balance: Number(e.target.value)} : a
+                            ))}
+                          />
+                          <Input
+                            value={account.accountNumber}
+                            onChange={(e) => setBankAccounts(bankAccounts.map(a => 
+                              a.id === account.id ? {...a, accountNumber: e.target.value} : a
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-medium">{account.name}</h4>
+                            <p className="text-sm text-muted-foreground">{account.type} • {account.accountNumber}</p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-lg font-bold">${formatLargeNumber(account.balance)}</p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteBankAccount(account.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingBankAccounts(!isEditingBankAccounts)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {isEditingBankAccounts ? 'Save' : 'Edit'}
+                  </Button>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Total Balance</p>
+                    <p className="text-xl font-bold">${formatLargeNumber(bankAccounts.reduce((sum, account) => sum + account.balance, 0))}</p>
+                  </div>
+                </div>
+
+                {isAddingBankAccount && (
+                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium mb-4">Add New Bank Account</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Account Name</Label>
+                        <Input
+                          placeholder="Business Chequing"
+                          value={newBankAccount.name}
+                          onChange={(e) => setNewBankAccount({...newBankAccount, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Account Type</Label>
+                        <Select 
+                          value={newBankAccount.type} 
+                          onValueChange={(value) => setNewBankAccount({...newBankAccount, type: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select account type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Chequing">Chequing</SelectItem>
+                            <SelectItem value="Savings">Savings</SelectItem>
+                            <SelectItem value="Investment">Investment</SelectItem>
+                            <SelectItem value="Line of Credit">Line of Credit</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Balance</Label>
+                        <Input
+                          type="number"
+                          placeholder="75000"
+                          value={newBankAccount.balance || ""}
+                          onChange={(e) => setNewBankAccount({...newBankAccount, balance: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Account Number</Label>
+                        <Input
+                          placeholder="****-1234"
+                          value={newBankAccount.accountNumber}
+                          onChange={(e) => setNewBankAccount({...newBankAccount, accountNumber: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={addBankAccount}>Add Account</Button>
+                      <Button variant="outline" onClick={() => setIsAddingBankAccount(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Investments Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Investments</span>
+                  </div>
+                  <Button onClick={() => setIsAddingInvestment(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Investment
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {investments.map((investment) => (
+                    <div key={investment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {isEditingInvestments ? (
+                        <div className="grid grid-cols-5 gap-4 w-full">
+                          <Input
+                            value={investment.name}
+                            onChange={(e) => setInvestments(investments.map(i => 
+                              i.id === investment.id ? {...i, name: e.target.value} : i
+                            ))}
+                          />
+                          <Input
+                            value={investment.type}
+                            onChange={(e) => setInvestments(investments.map(i => 
+                              i.id === investment.id ? {...i, type: e.target.value} : i
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={investment.value}
+                            onChange={(e) => setInvestments(investments.map(i => 
+                              i.id === investment.id ? {...i, value: Number(e.target.value)} : i
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={investment.quantity}
+                            onChange={(e) => setInvestments(investments.map(i => 
+                              i.id === investment.id ? {...i, quantity: Number(e.target.value)} : i
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={investment.purchasePrice}
+                            onChange={(e) => setInvestments(investments.map(i => 
+                              i.id === investment.id ? {...i, purchasePrice: Number(e.target.value)} : i
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-medium">{investment.name}</h4>
+                            <p className="text-sm text-muted-foreground">{investment.type} • Qty: {investment.quantity}</p>
+                            <p className="text-xs text-muted-foreground">Purchase Price: ${formatLargeNumber(investment.purchasePrice || 0)}</p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-lg font-bold">${formatLargeNumber(investment.value)}</p>
+                              {investment.purchasePrice && (
+                                <p className="text-sm text-green-600">
+                                  +${formatLargeNumber(investment.value - investment.purchasePrice)}
+                                </p>
+                              )}
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteInvestment(investment.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingInvestments(!isEditingInvestments)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {isEditingInvestments ? 'Save' : 'Edit'}
+                  </Button>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-xl font-bold">${formatLargeNumber(investments.reduce((sum, investment) => sum + investment.value, 0))}</p>
+                  </div>
+                </div>
+
+                {isAddingInvestment && (
+                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium mb-4">Add New Investment</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Investment Name</Label>
+                        <Input
+                          placeholder="Corporate Bonds"
+                          value={newInvestment.name}
+                          onChange={(e) => setNewInvestment({...newInvestment, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Investment Type</Label>
+                        <Select 
+                          value={newInvestment.type} 
+                          onValueChange={(value) => setNewInvestment({...newInvestment, type: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select investment type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Stocks">Stocks</SelectItem>
+                            <SelectItem value="Bonds">Bonds</SelectItem>
+                            <SelectItem value="Mutual Funds">Mutual Funds</SelectItem>
+                            <SelectItem value="ETFs">ETFs</SelectItem>
+                            <SelectItem value="GICs">GICs</SelectItem>
+                            <SelectItem value="Other">Other</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Current Value</Label>
+                        <Input
+                          type="number"
+                          placeholder="50000"
+                          value={newInvestment.value || ""}
+                          onChange={(e) => setNewInvestment({...newInvestment, value: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Quantity</Label>
+                        <Input
+                          type="number"
+                          placeholder="50"
+                          value={newInvestment.quantity || ""}
+                          onChange={(e) => setNewInvestment({...newInvestment, quantity: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Purchase Price (Total)</Label>
+                        <Input
+                          type="number"
+                          placeholder="48000"
+                          value={newInvestment.purchasePrice || ""}
+                          onChange={(e) => setNewInvestment({...newInvestment, purchasePrice: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={addInvestment}>Add Investment</Button>
+                      <Button variant="outline" onClick={() => setIsAddingInvestment(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Real Estate Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Home className="h-5 w-5" />
+                    <span>Real Estate</span>
+                  </div>
+                  <Button onClick={() => setIsAddingRealEstate(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Property
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {realEstate.map((property) => (
+                    <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
+                      {isEditingRealEstate ? (
+                        <div className="grid grid-cols-5 gap-4 w-full">
+                          <Input
+                            value={property.name}
+                            onChange={(e) => setRealEstate(realEstate.map(p => 
+                              p.id === property.id ? {...p, name: e.target.value} : p
+                            ))}
+                          />
+                          <Input
+                            value={property.type}
+                            onChange={(e) => setRealEstate(realEstate.map(p => 
+                              p.id === property.id ? {...p, type: e.target.value} : p
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={property.value}
+                            onChange={(e) => setRealEstate(realEstate.map(p => 
+                              p.id === property.id ? {...p, value: Number(e.target.value)} : p
+                            ))}
+                          />
+                          <Input
+                            value={property.address}
+                            onChange={(e) => setRealEstate(realEstate.map(p => 
+                              p.id === property.id ? {...p, address: e.target.value} : p
+                            ))}
+                          />
+                          <Input
+                            type="number"
+                            value={property.acquisitionCost}
+                            onChange={(e) => setRealEstate(realEstate.map(p => 
+                              p.id === property.id ? {...p, acquisitionCost: Number(e.target.value)} : p
+                            ))}
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <h4 className="font-medium">{property.name}</h4>
+                            <p className="text-sm text-muted-foreground">{property.type}</p>
+                            <p className="text-xs text-muted-foreground">{property.address}</p>
+                            <p className="text-xs text-muted-foreground">Acquisition Cost: ${formatLargeNumber(property.acquisitionCost)}</p>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="text-right">
+                              <p className="text-lg font-bold">${formatLargeNumber(property.value)}</p>
+                              <p className="text-sm text-green-600">
+                                +${formatLargeNumber(property.value - property.acquisitionCost)}
+                              </p>
+                            </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteRealEstate(property.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-between mt-4">
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsEditingRealEstate(!isEditingRealEstate)}
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    {isEditingRealEstate ? 'Save' : 'Edit'}
+                  </Button>
+                  <div className="text-right">
+                    <p className="text-sm text-muted-foreground">Total Value</p>
+                    <p className="text-xl font-bold">${formatLargeNumber(realEstate.reduce((sum, property) => sum + property.value, 0))}</p>
+                  </div>
+                </div>
+
+                {isAddingRealEstate && (
+                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium mb-4">Add New Property</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label className="text-sm font-medium">Property Name</Label>
+                        <Input
+                          placeholder="Office Building"
+                          value={newRealEstate.name}
+                          onChange={(e) => setNewRealEstate({...newRealEstate, name: e.target.value})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Property Type</Label>
+                        <Select 
+                          value={newRealEstate.type} 
+                          onValueChange={(value) => setNewRealEstate({...newRealEstate, type: value})}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select property type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Commercial">Commercial</SelectItem>
+                            <SelectItem value="Residential">Residential</SelectItem>
+                            <SelectItem value="Industrial">Industrial</SelectItem>
+                            <SelectItem value="Land">Land</SelectItem>
+                            <SelectItem value="Mixed Use">Mixed Use</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Current Value</Label>
+                        <Input
+                          type="number"
+                          placeholder="450000"
+                          value={newRealEstate.value || ""}
+                          onChange={(e) => setNewRealEstate({...newRealEstate, value: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Acquisition Cost</Label>
+                        <Input
+                          type="number"
+                          placeholder="375000"
+                          value={newRealEstate.acquisitionCost || ""}
+                          onChange={(e) => setNewRealEstate({...newRealEstate, acquisitionCost: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <Label className="text-sm font-medium">Address</Label>
+                        <Input
+                          placeholder="123 Business St, Toronto ON"
+                          value={newRealEstate.address}
+                          onChange={(e) => setNewRealEstate({...newRealEstate, address: e.target.value})}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button onClick={addRealEstate}>Add Property</Button>
+                      <Button variant="outline" onClick={() => setIsAddingRealEstate(false)}>Cancel</Button>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="insurance" className="space-y-6">
