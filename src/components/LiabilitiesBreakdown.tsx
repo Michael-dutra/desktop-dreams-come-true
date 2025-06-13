@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
@@ -104,14 +105,14 @@ const LiabilitiesBreakdown = () => {
     const progressWidth = Math.min((monthsSaved / 60) * 100, 100);
     
     return (
-      <div className="mt-2">
-        <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
+      <div className="mt-3">
+        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
           <span>Time Saved:</span>
           <span className={`font-bold ${monthsSaved > 0 ? 'text-green-600' : 'text-gray-400'}`}>
             {Math.round(monthsSaved)} months
           </span>
         </div>
-        <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
+        <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-500 ease-out"
             style={{ 
@@ -130,9 +131,6 @@ const LiabilitiesBreakdown = () => {
             }}
           />
         </div>
-        <div className="flex justify-between text-xs text-gray-500 mt-1">
-          <span>0</span>
-        </div>
       </div>
     );
   };
@@ -140,7 +138,7 @@ const LiabilitiesBreakdown = () => {
   return (
     <>
       <Card className="h-full flex flex-col">
-        <CardHeader className="flex flex-row items-center justify-between pb-3">
+        <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-2xl flex items-center space-x-3">
             <div className="p-2 bg-red-100 rounded-lg">
               <CreditCard className="h-6 w-6 text-red-600" />
@@ -157,85 +155,83 @@ const LiabilitiesBreakdown = () => {
             Details
           </Button>
         </CardHeader>
-        <CardContent className="pb-4 flex-1 flex flex-col">
-          <div className="space-y-3 flex-1">
-            {/* Total Monthly Payments Summary */}
-            <div className="p-3 bg-gray-50 rounded-lg border">
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-medium">Total Monthly Payments</span>
-                <span className="text-xl font-bold text-red-600">${totalMonthlyPayments.toLocaleString()}</span>
-              </div>
+        <CardContent className="pb-4 flex-1 flex flex-col space-y-4">
+          {/* Total Monthly Payments Summary */}
+          <div className="p-4 bg-gray-50 rounded-lg border">
+            <div className="flex items-center justify-between">
+              <span className="text-lg font-medium">Total Monthly Payments</span>
+              <span className="text-xl font-bold text-red-600">${totalMonthlyPayments.toLocaleString()}</span>
             </div>
-            
-            {/* Compact Individual Debt Cards */}
-            <div className="space-y-3 flex-1">
-              {liabilities.map((liability, index) => {
-                const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
-                const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
-                const monthsSaved = originalPayoff.months - newPayoff.months;
-                
-                return (
-                  <div key={index} className="p-3 rounded-lg border space-y-2" style={{ borderColor: liability.color }}>
-                    {/* Compact Header */}
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center space-x-2">
-                        <div className="w-3 h-3 rounded-full" style={{ backgroundColor: liability.color }}></div>
-                        <span className="font-bold">{liability.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span className="font-medium">{liability.amount}</span>
-                        <span className="text-gray-600">${liability.monthlyPayment}/mo</span>
-                      </div>
+          </div>
+          
+          {/* Individual Debt Cards - Bigger and Better Spaced */}
+          <div className="space-y-4 flex-1">
+            {liabilities.map((liability, index) => {
+              const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
+              const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
+              const monthsSaved = originalPayoff.months - newPayoff.months;
+              
+              return (
+                <div key={index} className="p-4 rounded-lg border-2 space-y-3" style={{ borderColor: liability.color }}>
+                  {/* Header */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-4 h-4 rounded-full" style={{ backgroundColor: liability.color }}></div>
+                      <span className="font-bold text-base">{liability.name}</span>
                     </div>
-                    
-                    {/* Compact Sliders */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">
-                          Rate: {liability.rate.toFixed(1)}%
-                        </label>
-                        <Slider
-                          value={[liability.rate]}
-                          onValueChange={liability.setRate}
-                          min={liability.minRate}
-                          max={liability.maxRate}
-                          step={0.1}
-                          className="w-full"
-                        />
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-xs font-medium text-gray-700">
-                          Extra: ${liability.extraPayment}
-                        </label>
-                        <Slider
-                          value={[liability.extraPayment]}
-                          onValueChange={liability.setExtra}
-                          min={0}
-                          max={5000}
-                          step={25}
-                          className="w-full"
-                        />
-                      </div>
+                    <div className="flex items-center space-x-4">
+                      <span className="font-medium text-base">{liability.amount}</span>
+                      <span className="text-gray-600">${liability.monthlyPayment}/mo</span>
                     </div>
-                    
-                    {/* Compact Results */}
-                    <div className="grid grid-cols-2 gap-2 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">Original:</span>
-                        <span className="font-medium">{formatMonthsToDate(originalPayoff.months)}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-gray-600">New:</span>
-                        <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
-                      </div>
-                    </div>
-
-                    {/* Visual Timeline for Time Saved - Always Show */}
-                    <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
                   </div>
-                );
-              })}
-            </div>
+                  
+                  {/* Sliders */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Rate: {liability.rate.toFixed(1)}%
+                      </label>
+                      <Slider
+                        value={[liability.rate]}
+                        onValueChange={liability.setRate}
+                        min={liability.minRate}
+                        max={liability.maxRate}
+                        step={0.1}
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-medium text-gray-700">
+                        Extra: ${liability.extraPayment}
+                      </label>
+                      <Slider
+                        value={[liability.extraPayment]}
+                        onValueChange={liability.setExtra}
+                        min={0}
+                        max={5000}
+                        step={25}
+                        className="w-full"
+                      />
+                    </div>
+                  </div>
+                  
+                  {/* Results */}
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Original:</span>
+                      <span className="font-medium">{formatMonthsToDate(originalPayoff.months)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">New:</span>
+                      <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
+                    </div>
+                  </div>
+
+                  {/* Visual Timeline for Time Saved */}
+                  <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
+                </div>
+              );
+            })}
           </div>
         </CardContent>
       </Card>
