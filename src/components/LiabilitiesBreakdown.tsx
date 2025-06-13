@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
@@ -102,31 +101,32 @@ const LiabilitiesBreakdown = () => {
 
   // Timeline component for visualizing time saved
   const TimelineSaved = ({ monthsSaved, color }: { monthsSaved: number, color: string }) => {
-    if (monthsSaved <= 0) return null;
-    
     const progressWidth = Math.min((monthsSaved / 60) * 100, 100);
     
     return (
       <div className="mt-2">
         <div className="flex items-center justify-between text-xs text-gray-600 mb-1">
           <span>Time Saved:</span>
-          <span className="font-bold text-green-600">{Math.round(monthsSaved)} months</span>
+          <span className={`font-bold ${monthsSaved > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+            {Math.round(monthsSaved)} months
+          </span>
         </div>
         <div className="relative h-2 bg-gray-200 rounded-full overflow-hidden">
           <div 
             className="h-full rounded-full transition-all duration-500 ease-out"
             style={{ 
               width: `${progressWidth}%`,
-              backgroundColor: color,
-              opacity: 0.7
+              backgroundColor: monthsSaved > 0 ? color : '#e5e7eb',
+              opacity: monthsSaved > 0 ? 0.7 : 0.3
             }}
           />
           <div 
             className="absolute top-0 h-full w-1 bg-white border-2 transition-all duration-500 ease-out"
             style={{ 
               left: `${progressWidth}%`,
-              borderColor: color,
-              transform: 'translateX(-50%)'
+              borderColor: monthsSaved > 0 ? color : '#9ca3af',
+              transform: 'translateX(-50%)',
+              opacity: monthsSaved > 0 ? 1 : 0.5
             }}
           />
         </div>
@@ -230,10 +230,8 @@ const LiabilitiesBreakdown = () => {
                       </div>
                     </div>
 
-                    {/* Visual Timeline for Time Saved */}
-                    {monthsSaved > 0 && (
-                      <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
-                    )}
+                    {/* Visual Timeline for Time Saved - Always Show */}
+                    <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
                   </div>
                 );
               })}
