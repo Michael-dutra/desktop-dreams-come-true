@@ -286,7 +286,9 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
               </CardContent>
             </Card>
 
-            {/* Moved Tax Projections Content */}
+            {/* Final Tax Projections Title */}
+            <div className="text-2xl font-bold text-foreground">Final Tax Projections</div>
+
             {/* Summary Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
