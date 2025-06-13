@@ -95,6 +95,24 @@ interface TaxOpportunity {
   type: string;
 }
 
+interface CurrentYearData {
+  revenue: number;
+  profit: number;
+  valuation: number;
+}
+
+interface GrowthRatesData {
+  revenueGrowth: number;
+  profitGrowth: number;
+  valuationGrowth: number;
+}
+
+interface ProjectionsData {
+  revenue2025: number;
+  profit2025: number;
+  valuation2025: number;
+}
+
 const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) => {
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -119,6 +137,33 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   ]);
 
   const [isEditingFinancials, setIsEditingFinancials] = useState(false);
+
+  // Current Year Data State
+  const [currentYearData, setCurrentYearData] = useState<CurrentYearData>({
+    revenue: 485000,
+    profit: 105000,
+    valuation: 325000
+  });
+
+  const [isEditingCurrentYear, setIsEditingCurrentYear] = useState(false);
+
+  // Growth Rates State
+  const [growthRatesData, setGrowthRatesData] = useState<GrowthRatesData>({
+    revenueGrowth: 18,
+    profitGrowth: 25,
+    valuationGrowth: 18
+  });
+
+  const [isEditingGrowthRates, setIsEditingGrowthRates] = useState(false);
+
+  // Projections State
+  const [projectionsData, setProjectionsData] = useState<ProjectionsData>({
+    revenue2025: 572000,
+    profit2025: 131000,
+    valuation2025: 384000
+  });
+
+  const [isEditingProjections, setIsEditingProjections] = useState(false);
 
   // Insurance State
   const [businessInsurances, setBusinessInsurances] = useState<BusinessInsurance[]>([
@@ -257,13 +302,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   };
 
   const businessGrowthData = financialData;
-
-  const businessMetrics = [
-    { metric: "Gross Margin", value: "68%", trend: "+5%", positive: true },
-    { metric: "Net Margin", value: "22%", trend: "+3%", positive: true },
-    { metric: "Employee Count", value: "12", trend: "+2", positive: true },
-    { metric: "Customer Retention", value: "94%", trend: "+2%", positive: true },
-  ];
 
   const chartConfig = {
     valuation: { label: "Valuation", color: "#8b5cf6" },
@@ -419,25 +457,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </Card>
             </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Key Business Metrics</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {businessMetrics.map((metric) => (
-                    <div key={metric.metric} className="text-center p-4 bg-gray-50 rounded-lg">
-                      <p className="text-sm text-muted-foreground">{metric.metric}</p>
-                      <p className="text-2xl font-bold">{metric.value}</p>
-                      <p className={`text-sm ${metric.positive ? 'text-green-600' : 'text-red-600'}`}>
-                        {metric.trend}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Financials Section - Now part of Overview */}
             <Card>
               <CardHeader>
@@ -520,61 +539,181 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Current Year</CardTitle>
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    <span>Current Year</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingCurrentYear(!isEditingCurrentYear)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Revenue</p>
-                    <p className="text-2xl font-bold">$485,000</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Profit</p>
-                    <p className="text-2xl font-bold text-green-600">$105,000</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valuation</p>
-                    <p className="text-2xl font-bold text-purple-600">$325,000</p>
-                  </div>
+                  {isEditingCurrentYear ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Revenue</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.revenue}
+                          onChange={(e) => setCurrentYearData({...currentYearData, revenue: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Profit</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.profit}
+                          onChange={(e) => setCurrentYearData({...currentYearData, profit: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Valuation</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.valuation}
+                          onChange={(e) => setCurrentYearData({...currentYearData, valuation: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Revenue</p>
+                        <p className="text-2xl font-bold">${currentYearData.revenue.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Profit</p>
+                        <p className="text-2xl font-bold text-green-600">${currentYearData.profit.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valuation</p>
+                        <p className="text-2xl font-bold text-purple-600">${currentYearData.valuation.toLocaleString()}</p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Growth Rates</CardTitle>
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    <span>Growth Rates</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingGrowthRates(!isEditingGrowthRates)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Revenue Growth</p>
-                    <p className="text-xl font-bold text-green-600">+18% YoY</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Profit Growth</p>
-                    <p className="text-xl font-bold text-green-600">+25% YoY</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Valuation Growth</p>
-                    <p className="text-xl font-bold text-green-600">+18% YoY</p>
-                  </div>
+                  {isEditingGrowthRates ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Revenue Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.revenueGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, revenueGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Profit Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.profitGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, profitGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">Valuation Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.valuationGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, valuationGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Revenue Growth</p>
+                        <p className="text-xl font-bold text-green-600">+{growthRatesData.revenueGrowth}% YoY</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Profit Growth</p>
+                        <p className="text-xl font-bold text-green-600">+{growthRatesData.profitGrowth}% YoY</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valuation Growth</p>
+                        <p className="text-xl font-bold text-green-600">+{growthRatesData.valuationGrowth}% YoY</p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
 
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg">Projections</CardTitle>
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    <span>Projections</span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingProjections(!isEditingProjections)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">2025 Revenue</p>
-                    <p className="text-xl font-bold">$572,000</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">2025 Profit</p>
-                    <p className="text-xl font-bold">$131,000</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">2025 Valuation</p>
-                    <p className="text-xl font-bold">$384,000</p>
-                  </div>
+                  {isEditingProjections ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm text-muted-foreground">2025 Revenue</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.revenue2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, revenue2025: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">2025 Profit</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.profit2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, profit2025: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm text-muted-foreground">2025 Valuation</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.valuation2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, valuation2025: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <>
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Revenue</p>
+                        <p className="text-xl font-bold">${projectionsData.revenue2025.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Profit</p>
+                        <p className="text-xl font-bold">${projectionsData.profit2025.toLocaleString()}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Valuation</p>
+                        <p className="text-xl font-bold">${projectionsData.valuation2025.toLocaleString()}</p>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             </div>
