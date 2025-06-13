@@ -466,7 +466,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </Card>
             </div>
 
-            {/* Financials Section - Now part of Overview */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center justify-between">
@@ -842,51 +841,75 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </CardContent>
             </Card>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Coverage Summary</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Coverage</p>
-                    <p className="text-2xl font-bold">$4.25M</p>
+            {/* Enhanced Risk Assessment Section - Coverage Summary Removed */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Risk Assessment</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-start justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">General Liability</span>
+                        <Badge variant="secondary">Well Covered</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your $2M General Liability coverage provides excellent protection against third-party claims for bodily injury, property damage, and personal injury. This amount is well-suited for your business size and industry, offering comprehensive protection against common business risks. The coverage limit exceeds typical industry requirements and provides a strong defense against potential lawsuits.
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Annual Premiums</p>
-                    <p className="text-xl font-bold">$12,400</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Coverage Ratio</p>
-                    <p className="text-xl font-bold">13:1</p>
-                  </div>
-                </CardContent>
-              </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>Risk Assessment</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">General Liability</span>
-                    <Badge variant="secondary">Well Covered</Badge>
+                  <div className="flex items-start justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Key Person Risk</span>
+                        <Badge variant="secondary">Covered</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your $500K Key Person Insurance provides adequate protection for the immediate financial impact of losing a key executive. This coverage will help maintain business operations and provide time to find suitable replacements. However, given your business growth trajectory and increasing valuation, consider reviewing this amount annually to ensure it keeps pace with the actual financial impact a key person loss would have on your revenue and operations.
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Key Person Risk</span>
-                    <Badge variant="secondary">Covered</Badge>
+
+                  <div className="flex items-start justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Business Interruption</span>
+                        <Badge variant="outline">Consider Increase</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your current $750K Business Interruption coverage may be insufficient given your projected revenue growth to $572K in 2025. This coverage should typically represent 12-18 months of gross revenue to ensure adequate protection. Consider increasing this to $850K-$1M to better align with your revenue projections and ensure you can maintain operations during an extended interruption period. The relatively low premium increase would provide significantly better protection.
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Business Interruption</span>
-                    <Badge variant="outline">Consider Increase</Badge>
+
+                  <div className="flex items-start justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Cyber Liability</span>
+                        <Badge variant="destructive">Not Covered</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        You currently lack Cyber Liability insurance, which represents a significant gap in your risk management strategy. Given the increasing frequency of cyber attacks on businesses of all sizes, this coverage is essential. Cyber incidents can result in data breaches, ransomware attacks, business interruption, and regulatory fines. For a business of your size, consider $1M-$2M in cyber liability coverage. This should include first-party costs (data recovery, business interruption) and third-party liability (customer notification, legal defense, regulatory fines). The annual premium would typically be $2,000-$4,000, which is minimal compared to the potential exposure.
+                      </p>
+                    </div>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm">Cyber Liability</span>
-                    <Badge variant="destructive">Not Covered</Badge>
+
+                  <div className="flex items-start justify-between p-4 border rounded-lg">
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="font-medium">Professional Liability</span>
+                        <Badge variant="secondary">Well Covered</Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        Your $1M Professional Liability coverage provides solid protection against errors and omissions claims related to your professional services. This coverage is appropriate for your current business size and client base. The policy protects against claims alleging negligent acts, errors, or omissions in your professional services, and covers legal defense costs and settlements. Monitor this coverage as your business grows and consider increasing if you take on larger clients or higher-risk projects.
+                      </p>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="important" className="space-y-6">
