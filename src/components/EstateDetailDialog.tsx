@@ -402,6 +402,23 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
     "Saskatchewan", "Yukon"
   ];
 
+  // Add delete handlers
+  const handleDeleteDocument = (id: string) => {
+    setEstateDocuments(estateDocuments.filter(doc => doc.id !== id));
+  };
+
+  const handleDeleteTrust = (id: string) => {
+    setTrustStructures(trustStructures.filter(trust => trust.id !== id));
+  };
+
+  const handleDeleteAction = (id: string) => {
+    setDocumentActions(documentActions.filter(action => action.id !== id));
+  };
+
+  const handleDeleteBeneficiary = (id: string) => {
+    setBeneficiaries(beneficiaries.filter(beneficiary => beneficiary.id !== id));
+  };
+
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
@@ -666,6 +683,14 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                             </Badge>
                             <p className="text-xs text-blue-600 mt-1">{doc.review}</p>
                           </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
@@ -693,7 +718,17 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                       <div key={trust.id} className="p-4 border border-green-200 rounded-lg bg-white">
                         <div className="flex items-center justify-between mb-2">
                           <h4 className="font-medium text-green-900">{trust.name}</h4>
-                          <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTrust(trust.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </div>
                         <div className="grid grid-cols-2 gap-4 text-sm mb-2">
                           <div>
@@ -754,9 +789,19 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                     {documentActions.map((action) => (
                       <div key={action.id} className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-white">
                         <span className="font-medium text-orange-900">{action.action}</span>
-                        <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
-                          {action.priority}
-                        </Badge>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
+                            {action.priority}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteAction(action.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -785,9 +830,19 @@ export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps)
                           <h4 className="font-medium text-purple-900">{beneficiary.name}</h4>
                           <p className="text-sm text-purple-700">{beneficiary.relationship}</p>
                         </div>
-                        <div className="text-right">
-                          <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
-                          <p className="text-sm text-purple-600">${beneficiary.amount.toLocaleString()}</p>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
+                            <p className="text-sm text-purple-600">${beneficiary.amount.toLocaleString()}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteBeneficiary(beneficiary.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
                         </div>
                       </div>
                     ))}
