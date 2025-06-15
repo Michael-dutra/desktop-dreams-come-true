@@ -35,15 +35,29 @@ const MonthlyCashFlow = () => {
     return `rgb(${red}, ${green}, 0)`;
   };
 
+  // Enhanced AI Analysis for Cash Flow
   const generateAIAnalysis = () => {
-    let text = `Cash Flow Analysis:\n\n`;
-    text += `- Total Income: $22,500\n- Expenses: $15,000\n- Net Flow: +$7,500\n\n`;
-    text += `Emergency Fund Analysis:\n`;
-    text += `- Current fund: $${(currentFund/1000).toFixed(1)}K, covers ${monthsCovered.toFixed(1)} months.\n`;
-    text += `- Target: ${targetMonths} months ($${(targetAmount/1000).toFixed(1)}K). Shortfall: $${(shortfall/1000).toFixed(1)}K.\n`;
-    text += monthsCovered >= targetMonths
-      ? "✅ You have achieved your emergency fund target!\n"
-      : "⚠️ Build up your fund to cover emergencies.";
+    let text = `Cash Flow & Emergency Planning – Personalized Analysis:\n\n`;
+
+    text += `🟢 **Income:** $22,500/mo\n🔴 **Expenses:** $15,000/mo\n🟦 **Net Flow:** +$7,500/mo\n\n`;
+    text += `Your strong positive monthly cash flow means you're well-positioned to save, invest, or pay down debt faster. Congrats on disciplined spending!\n\n`;
+
+    text += `🔰 **Emergency Fund Evaluation:**\n`;
+    text += `  - Current Emergency Fund: $${(currentFund / 1000).toFixed(1)}K  – covers approximately ${monthsCovered.toFixed(1)} months of essential expenses.\n`;
+    text += `  - Target: ${targetMonths} months coverage ($${(targetAmount / 1000).toFixed(1)}K needed).\n`;
+    text += `  - Shortfall: $${(shortfall / 1000).toFixed(1)}K\n`;
+    if (monthsCovered >= targetMonths) {
+      text += `✅ You have reached your emergency fund target! This strong position provides security if you face job loss, medical events, or major life changes. Maintain this cushion as your expenses evolve.\n`;
+    } else if (monthsCovered >= targetMonths * 0.5) {
+      text += `⚠️ You're over halfway to your goal. Prioritizing a bit more savings will get you to full coverage soon, granting you even more peace of mind.\n`;
+    } else {
+      text += `❗ Building your emergency fund should be a top priority. Setting up an automatic monthly transfer can help you reach your goal faster.\n`;
+    }
+
+    text += `\n🔎 **Advisor's Tip:** A fully funded emergency reserve is the foundation for wealth-building. Once your safety net is set, consider increasing retirement contributions or investing excess cash for long-term growth.\n`;
+
+    text += `\n📈 As your financial circumstances change (income boost, expense changes, milestones), revisit your cash flow plan and adjust targets as needed. You're on a great path – keep up the momentum!`;
+
     return text;
   };
 

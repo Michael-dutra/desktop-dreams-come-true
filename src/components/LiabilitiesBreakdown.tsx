@@ -137,20 +137,35 @@ const LiabilitiesBreakdown = () => {
     );
   };
 
+  // Enhanced AI Analysis for Liabilities
   const generateAIAnalysis = () => {
-    let text = `Liabilities Analysis:\n\nTotal monthly payments: $${totalMonthlyPayments.toLocaleString()}\n\n`;
+    let text = `Liabilities Analysis – Personalized Insights:\n\n`;
+    text += `Here's a detailed breakdown of your current debts and what they mean for your financial journey.\n\n`;
+
+    text += `🔔 **Total Monthly Debt Payments:** $${totalMonthlyPayments.toLocaleString()}\n`;
+
     liabilities.forEach(liab => {
       const original = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate);
-      text += `• ${liab.name}: ${liab.amount} at ${liab.rate.toFixed(1)}%. Original payoff: ${formatMonthsToDate(original.months)}.`;
+      const origDate = formatMonthsToDate(original.months);
+      text += `\n• **${liab.name}:**\n`;
+      text += `  - Balance: ${liab.amount}\n`;
+      text += `  - Interest Rate: ${liab.rate.toFixed(1)}%\n`;
+      text += `  - Standard Payment: $${liab.monthlyPayment}/mo\n`;
+      text += `  - Estimated Payoff Date: ${origDate}\n`;
+
       if (liab.extraPayment > 0) {
         const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment);
         const saved = original.months - accelerated.months;
-        text += ` With $${liab.extraPayment}/mo extra, payoff reduced to ${formatMonthsToDate(accelerated.months)} (saves ${Math.round(saved)} months).\n`;
-      } else {
-        text += "\n";
+        const accDate = formatMonthsToDate(accelerated.months);
+        text += `  - **Accelerated Payments:** Paying an extra $${liab.extraPayment}/mo reduces your payoff to ${accDate}, saving approximately ${Math.round(saved)} months of payments and interest.\n`;
       }
+
+      text += `  - Estimated Total Interest: $${(original.totalInterest).toLocaleString(undefined, { maximumFractionDigits: 0 })}\n`;
     });
-    text += `\nAccelerating payments reduces overall interest and debt period.`;
+
+    text += `\n💡 **Advisor's Note:** Maintaining manageable debt payments ensures long-term financial health. Speeding up repayments (even small acceleration) saves you thousands in interest and helps you reach your goals sooner. Review your rates and look for consolidation or refinancing opportunities.\n\n`;
+    text += `Tip: Regularly revisiting your repayment strategy keeps you motivated and can accommodate life's changes. Good luck on your debt-free journey!`;
+
     return text;
   };
 
