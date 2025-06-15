@@ -1,4 +1,3 @@
-
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -65,12 +64,20 @@ const BusinessCard = () => {
   };
 
   const generateAIAnalysis = () => {
-    let text = `Business Analysis:\n\n`;
-    text += `- Current revenue: $${formatLargeNumber(grossRevenue)}\n`;
-    text += `- Valuation: $${formatLargeNumber(currentValuation)} (x${valuationMultiplier[0]})\n`;
-    text += `- Projected ${yearsProjection[0]}-year value: $${formatLargeNumber(finalValuation)}\n`;
-    text += `- Growth potential: +${projectedGrowth.toFixed(1)}%\n\n`;
-    text += `Changing the growth rate, years, or valuation multiple affects these estimates.`;
+    // Enhanced, personalized AI analysis
+    let text = `Business Analysis for You:\n\n`;
+    text += `Hello! Let's look at your business, titled as "Business" on this dashboard.\n\n`;
+    text += `🏢 Business Snapshot:\n`;
+    text += `• Current annual revenue: $${formatLargeNumber(grossRevenue)}\n`;
+    text += `• Current valuation: $${formatLargeNumber(currentValuation)} (x${valuationMultiplier[0]} revenue)\n`;
+    text += `• Projected valuation in ${yearsProjection[0]} years: $${formatLargeNumber(finalValuation)}\n`;
+    text += `• Projected growth: +${projectedGrowth.toFixed(1)}%\n\n`;
+    text += `📈 Using a growth rate of ${annualGrowthRate[0]}% and a valuation multiple of ${valuationMultiplier[0]}, your business's value could more than double over ${yearsProjection[0]} years, if projections hold true.\n\n`;
+    text += `💡 Recommendations:\n`;
+    text += `- Consider what key drivers would increase your annual growth rate. This could include new products, service lines, or expanding to new markets.\n`;
+    text += `- Evaluate your valuation multiple: industry benchmarks, profitability, and recurring revenue can all boost this.\n`;
+    text += `- Review and revisit these estimates annually as your business evolves.\n\n`;
+    text += `If you'd like, we can personalize further based on real data or other business strengths/challenges you share. Adjust the sliders above to see different scenarios and their impact.`;
     return text;
   };
 
@@ -266,4 +273,3 @@ const BusinessCard = () => {
 };
 
 export default BusinessCard;
-

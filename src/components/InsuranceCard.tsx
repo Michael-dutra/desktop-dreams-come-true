@@ -77,17 +77,19 @@ const InsuranceCard = () => {
   };
 
   const generateAIAnalysis = () => {
-    let text = `Insurance Analysis:\n\n`;
-    text += `- Current life insurance coverage: ${formatCurrency(currentLifeCoverage)}\n`;
-    text += `- Calculated needs: ${formatCurrency(calculatedLifeNeed)}\n`;
-    text += `- Coverage gap: ${formatCurrency(lifeGap)}\n\n`;
-    text += `Needs Breakdown:\n`;
+    let text = `Personalized Insurance Coverage Review:\n\n`;
+    text += `Hi! Let's review your insurance needs based on your current profile:\n\n`;
+    text += `• Current coverage: ${formatCurrency(currentLifeCoverage)}\n`;
+    text += `• Coverage needed (based on your sliders): ${formatCurrency(calculatedLifeNeed)}\n`;
+    text += `• Coverage gap: ${formatCurrency(lifeGap)}\n\n`;
+    text += `🔍 Needs breakdown:\n`;
     Object.entries(needsConfig).forEach(([key, config]) => {
-      text += `• ${config.label}: ${formatCurrency(needsValues[key as keyof typeof needsValues][0])}\n`;
+      text += `  - ${config.label}: ${formatCurrency(needsValues[key as keyof typeof needsValues][0])}\n`;
     });
     text += lifeGap > 0
-      ? "\n⚠️ Consider increasing your coverage to close the gap."
-      : "\n✅ Your coverage meets or exceeds your calculated needs.";
+      ? `\n🚨 You have a shortfall in coverage. It's a good time to discuss additional protection for your family's income, debts, and final expenses.\n`
+      : `\n✅ Your insurance coverage meets your current needs! Review annually or after major life events.\n`;
+    text += `\n👉 For even more precision, consider adding data on other insurance types, family changes, or liabilities.\n\nYou can adjust the sliders to instantly see how different needs affect your gap.`;
     return text;
   };
 

@@ -47,15 +47,19 @@ const AssetsBreakdown = () => {
 
   // Generate AI write-up based on live section data
   const generateAIAnalysis = () => {
-    let text = `Assets Analysis:\n\n`;
-    text += `- Total current assets: ${formatCurrency(totalCurrentValue)}\n`;
-    text += `- Projected value in ${timeHorizon[0]} years at ${rateOfReturn[0]}%: ${formatCurrency(totalProjectedValue)}\n`;
-    text += `- Total projected growth: +${formatCurrency(totalGrowth)}\n\n`;
-    text += `Breakdown by asset type:\n`;
+    let text = `Your Personalized Asset Overview:\n\n`;
+    text += `Hello! Here’s a breakdown of your current and projected net worth:\n\n`;
+    text += `- Current total assets: ${formatCurrency(totalCurrentValue)}\n`;
+    text += `- Projected asset value in ${timeHorizon[0]} years (at ${rateOfReturn[0]}%): ${formatCurrency(totalProjectedValue)}\n`;
+    text += `- Anticipated growth: +${formatCurrency(totalGrowth)}\n\n`;
+    text += `Detailed by asset type:\n`;
     projectedAssets.forEach(asset => {
-      text += `• ${asset.name}: now ${formatCurrency(asset.currentValue)}, projected ${formatCurrency(asset.projectedValue)} (${asset.growth >= 0 ? "+" : ""}${formatCurrency(asset.growth)} growth)\n`;
+      text += `• ${asset.name}: starts at ${formatCurrency(asset.currentValue)}, could reach ${formatCurrency(asset.projectedValue)} (growth: ${asset.growth >= 0 ? "+" : ""}${formatCurrency(asset.growth)})\n`;
     });
-    text += `\nConsider adjusting your rate of return or time horizon to see various future scenarios.`;
+    text += `\nTips:\n`;
+    text += `- A diverse asset allocation helps reduce risk while building wealth.\n`;
+    text += `- Regular review of your portfolio and rate of return assumptions is wise, especially as markets and your risk tolerance change.\n\n`;
+    text += `Have other assets not listed? Add them for an even more tailored plan.\n\nAdjust Rate of Return and Time Horizon sliders to visualize different outcomes.`;
     return text;
   };
 

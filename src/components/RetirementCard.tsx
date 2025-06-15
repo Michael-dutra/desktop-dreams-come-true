@@ -26,18 +26,19 @@ const RetirementCard = () => {
   const savingsPercentage = Math.min(100, (totalRetirementSavings / totalRetirementNeeded) * 100);
 
   const generateAIAnalysis = () => {
-    let text = `Retirement Analysis:\n\n`;
-    text += `- Targeted retirement age: ${retirementAge[0]}\n`;
-    text += `- Net monthly income needed: $${netMonthlyIncomeNeeded[0].toLocaleString()}\n`;
-    text += `- Total savings: $${totalRetirementSavings.toLocaleString()}\n`;
-    text += `- Projected monthly income: $${projectedMonthlyIncome.toLocaleString()}\n`;
-    text += `- Life expectancy: ${lifeExpectancy}\n`;
-    text += `- Years in retirement: ${yearsInRetirement}\n`;
-    text += `- Total needed: $${(totalRetirementNeeded/1000).toFixed(1)}K\n`;
-    text += `- % funded with current savings: ${savingsPercentage.toFixed(1)}%\n\n`;
-    text += savingsPercentage >= 100 
-      ? "✅ Based on your inputs, you are on track to fully fund your retirement."
-      : "⚠️ You may need to save more or reduce your retirement income expectations.";
+    let text = `Personalized Retirement Analysis:\n\n`;
+    text += `Hi there, here's an overview based on your selections:\n\n`;
+    text += `🎂 Target retirement age: ${retirementAge[0]}\n`;
+    text += `💸 Monthly income goal in retirement: $${netMonthlyIncomeNeeded[0].toLocaleString()}\n`;
+    text += `💰 Current savings: $${totalRetirementSavings.toLocaleString()}\n`;
+    text += `📈 Projected monthly income (pensions & savings): $${projectedMonthlyIncome.toLocaleString()}\n`;
+    text += `⏳ Estimated years in retirement: ${yearsInRetirement} (up to age ${lifeExpectancy})\n\n`;
+    text += `🔢 Based on your needs, your total retirement funding requirement is $${(totalRetirementNeeded/1000).toFixed(1)}K.\n`;
+    text += `So far, you've achieved ${savingsPercentage.toFixed(1)}% of your goal.\n\n`;
+    text += savingsPercentage >= 100
+      ? "🎉 Congratulations! You are well-positioned to fund your retirement goals. Maintain your course and review your plan annually to account for life and market changes.\n"
+      : "⚠️ There's a funding gap. Consider increasing your savings, delaying retirement, or reducing monthly expenses for a more secure plan.\n";
+    text += `\n👤 Looking for more? Add info like other pensions, expected inheritances, or part-time work for an even more personalized analysis.\n\nAdjust the sliders to explore different retirement scenarios!`;
     return text;
   };
 
