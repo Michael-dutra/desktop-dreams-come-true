@@ -1,17 +1,43 @@
-
 import { Crown, Eye } from "lucide-react";
+import { Bot } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { EstateDetailDialog } from "./EstateDetailDialog";
+import { SectionAIDialog } from "./SectionAIDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+
+const generateEstateAIAnalysis = ({
+  totalEstate,
+  finalTaxes,
+  netToBeneficiaries,
+  rateOfReturn,
+  timeHorizon,
+}: {
+  totalEstate: number;
+  finalTaxes: number;
+  netToBeneficiaries: number;
+  rateOfReturn: number;
+  timeHorizon: number;
+}) => {
+  return `
+Your estate plan demonstrates a robust growth trajectory and reflects thoughtful long-term preparation. With an anticipated rate of return of ${rateOfReturn}% over the next ${timeHorizon} years, your projected total estate value could reach ${formatCurrency(totalEstate)}.
+
+Based on your current portfolio distribution—including real estate, registered accounts (such as RRSP and TFSA), and non-registered investments—the estimated taxes payable at the end of this period would be approximately ${formatCurrency(finalTaxes)}. This assessment accounts for capital gains, tax-advantaged accounts, and asset composition.
+
+After these obligations, your beneficiaries are projected to receive a net amount of ${formatCurrency(netToBeneficiaries)}, enabling impactful legacy contributions or providing loved ones with additional financial security. If you'd like to explore advanced strategies for reducing your estate tax burden—such as trusts, charitable giving, or asset reallocation—consider scheduling a review to optimize your plan further.
+
+Your proactive approach today positions your family for future security and generational success.
+`.trim();
+};
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [rateOfReturn, setRateOfReturn] = useState([6]);
   const [timeHorizon, setTimeHorizon] = useState([15]);
+  const [showAIDialog, setShowAIDialog] = useState(false);
 
   // Current estate assets with tax implications
   const estateAssets = [
@@ -116,15 +142,26 @@ const EstateCard = () => {
             </div>
             <span>Estate</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2 border-orange-700 text-orange-700 hover:bg-orange-50"
-            onClick={() => setShowDetailDialog(true)}
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-orange-700 text-orange-700 hover:bg-orange-50"
+              onClick={() => setShowDetailDialog(true)}
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex items-center gap-2 border-indigo-700 text-indigo-700 hover:bg-indigo-50"
+              onClick={() => setShowAIDialog(true)}
+            >
+              <Bot className="w-4 h-4" />
+              AI Analysis
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent className="space-y-6">
@@ -220,6 +257,18 @@ const EstateCard = () => {
       <EstateDetailDialog 
         isOpen={showDetailDialog} 
         onClose={() => setShowDetailDialog(false)} 
+      />
+      <SectionAIDialog
+        isOpen={showAIDialog}
+        onClose={() => setShowAIDialog(false)}
+        title="Estate"
+        content={generateEstateAIAnalysis({
+          totalEstate: estateValues.totalEstate,
+          finalTaxes: estateValues.finalTaxes,
+          netToBeneficiaries: estateValues.netToBeneficiaries,
+          rateOfReturn: rateOfReturn[0],
+          timeHorizon: timeHorizon[0],
+        })}
       />
     </>
   );
