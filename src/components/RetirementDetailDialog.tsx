@@ -6,7 +6,7 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area, AreaChart } from "recharts";
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, BarChart, Bar, PieChart, Pie, Cell, ComposedChart, Area } from "recharts";
 import { TrendingUp, AlertTriangle, CheckCircle, Calculator, DollarSign, Calendar, Clock, Plus, Minus } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -18,13 +18,13 @@ interface RetirementDetailDialogProps {
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [netMonthlyIncome, setNetMonthlyIncome] = useState([4500]);
-  const [cppAdjustment, setCppAdjustment] = useState(0); // Years adjustment from normal retirement
-  const [oasAdjustment, setOasAdjustment] = useState(0); // Years adjustment from normal retirement
+  const [cppAdjustment, setCppAdjustment] = useState(0);
+  const [oasAdjustment, setOasAdjustment] = useState(0);
 
-  // Income allocation state
+  // Now dynamic: incomeAllocation affects ALL calculations
   const [incomeAllocation, setIncomeAllocation] = useState<[number, number, number]>([60, 30, 10]); // RRSP, TFSA, Non-Reg
 
-  // Helper: keep sliders summed to 100%
+  // Helper: force sum = 100
   const setSyncedAllocation = (idx: number, newValue: number) => {
     let [rrsp, tfsa, nonReg] = incomeAllocation;
     if (idx === 0) rrsp = newValue;
@@ -49,10 +49,10 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     setIncomeAllocation([Math.round(values[0]), Math.round(values[1]), Math.round(values[2])]);
   };
 
-  // Derived allocation percentages
+  // Shorthands
   const [rrspPct, tfsaPct, nonRegPct] = incomeAllocation;
 
-  // Current data
+  // Current state
   const currentAge = 35;
   const currentSavings = 90000;
   const yearsToRetirement = retirementAge[0] - currentAge;
@@ -62,9 +62,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   // Asset allocation (from current total)
   const currentRRSP = 52000;
   const currentTFSA = 38000;
-  const currentNonReg = 25000; // From AssetsBreakdown data
-
-  // Fixed monthly contribution for calculations
+  const currentNonReg = 25000;
   const monthlyContribution = 1000;
 
   // Calculations
@@ -84,239 +82,161 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const adjustedCPP = projectedCPP * cppAdjustmentFactor;
   const adjustedOAS = projectedOAS * oasAdjustmentFactor;
 
-  // Future value of current savings and contributions
-  const futureCurrentSavings = currentSavings * Math.pow(1 + investmentReturn, yearsToRetirement);
-  const futureContributions = monthlyContribution * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn;
-  const totalRetirementSavings = futureCurrentSavings + futureContributions;
+  // Projected future values using the sliders' allocation
+  function futureValue(principal: number, pctAllocation: number) {
+    return principal * Math.pow(1 + investmentReturn, yearsToRetirement) +
+      (monthlyContribution * (pctAllocation / 100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
+  }
+  const futureRRSP = futureValue(currentRRSP, rrspPct);
+  const futureTFSA = futureValue(currentTFSA, tfsaPct);
+  const futureNonReg = futureValue(currentNonReg, nonRegPct);
 
-  // Allocation share for each account
-  const rrspIncomeShare = netMonthlyIncome[0] * (rrspPct/100);
-  const tfsaIncomeShare = netMonthlyIncome[0] * (tfsaPct/100);
-  const nonRegIncomeShare = netMonthlyIncome[0] * (nonRegPct/100);
+  // Total projected savings at retirement (should reflect allocation sliders)
+  const totalRetirementSavings = futureRRSP + futureTFSA + futureNonReg;
 
-  // Future value for each at retirement (already calculated)
-  const futureRRSP = currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) +
-    (monthlyContribution * (rrspPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
-  const futureTFSA = currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) +
-    (monthlyContribution * (tfsaPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
-  const futureNonReg = currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) +
-    (monthlyContribution * (nonRegPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
+  // How much each account needs to provide monthly (income allocation)
+  const rrspIncomeShare = netMonthlyIncome[0] * (rrspPct / 100);
+  const tfsaIncomeShare = netMonthlyIncome[0] * (tfsaPct / 100);
+  const nonRegIncomeShare = netMonthlyIncome[0] * (nonRegPct / 100);
 
-  // For each, how many years can that account fund its share of income (ignore growth after retirement for simplicity)
-  const rrspYears = rrspIncomeShare > 0 ? futureRRSP / (rrspIncomeShare*12) : 0;
-  const tfsaYears = tfsaIncomeShare > 0 ? futureTFSA / (tfsaIncomeShare*12) : 0;
-  const nonRegYears = nonRegIncomeShare > 0 ? futureNonReg / (nonRegIncomeShare*12) : 0;
+  // For each, how many years that account can fund its share of income
+  const rrspYears = rrspIncomeShare > 0 ? futureRRSP / (rrspIncomeShare * 12) : 0;
+  const tfsaYears = tfsaIncomeShare > 0 ? futureTFSA / (tfsaIncomeShare * 12) : 0;
+  const nonRegYears = nonRegIncomeShare > 0 ? futureNonReg / (nonRegIncomeShare * 12) : 0;
 
-  // Bar chart data: track depletion
-  const allocationDepletionData = Array.from({length: yearsInRetirement+1}).map((_, i) => {
-    // Each year, assets deplete by their income share * 12 (ignore growth for simplicity here)
-    return {
-      year: i,
-      RRSP: Math.max(0, futureRRSP - rrspIncomeShare * 12 * i),
-      TFSA: Math.max(0, futureTFSA - tfsaIncomeShare * 12 * i),
-      NonReg: Math.max(0, futureNonReg - nonRegIncomeShare * 12 * i)
-    }
-  });
+  // Asset depletion over retirement: for each year, subtract account's monthly allocation * 12 from its bucket
+  const allocationDepletionData = Array.from({ length: yearsInRetirement + 1 }).map((_, i) => ({
+    year: i,
+    RRSP: Math.max(0, futureRRSP - rrspIncomeShare * 12 * i),
+    TFSA: Math.max(0, futureTFSA - tfsaIncomeShare * 12 * i),
+    NonReg: Math.max(0, futureNonReg - nonRegIncomeShare * 12 * i)
+  }));
 
-  // Tax calculation (simple): RRSP fully taxable, TFSA non-taxable, NonReg: 50% capital gains on growth
-  const rrspTax = Math.floor(Math.min(futureRRSP, rrspYears*rrspIncomeShare*12)*0.3);
-  const tfsaTax = 0;
-  const nonRegGain = Math.max(0, futureNonReg - currentNonReg); // capital gain only
-  const nonRegTax = Math.floor(nonRegGain*0.5*0.25); // 50% cg at 25%
-  const totalDepletionTax = rrspTax + tfsaTax + nonRegTax;
-
-  // Drawdown implication text
-  let drawdownNote = "";
-  if (rrspPct >= 70) drawdownNote = "Front-loading RRSP withdrawals reduces long-term tax risk, but taxes are higher initially.";
-  else if (rrspPct <= 20) drawdownNote = "Delaying RRSP drawdown risks higher taxes later (higher balance, higher bracket).";
-  else drawdownNote = "Balanced withdrawals help manage steady tax rates over retirement.";
-
-  // How long assets will last calculation
+  // Asset funding duration and percent calculation
   const governmentBenefits = adjustedCPP + adjustedOAS;
   const annualIncomeNeed = netMonthlyIncome[0] * 12;
   const incomeGap = Math.max(0, annualIncomeNeed - governmentBenefits);
-  
-  // Years assets will last (if there's an income gap)
   const yearsAssetsFunded = incomeGap > 0 ? totalRetirementSavings / incomeGap : yearsInRetirement;
   const assetsFundedPercentage = Math.min(100, (yearsAssetsFunded / yearsInRetirement) * 100);
 
-  // RRIF minimum withdrawal rates by age
-  const rrfWithdrawalRates: { [key: number]: number } = {
-    65: 0.04, 66: 0.0417, 67: 0.0435, 68: 0.0455, 69: 0.0476,
-    70: 0.05, 71: 0.0519, 72: 0.054, 73: 0.0563, 74: 0.0588,
-    75: 0.0615, 76: 0.0645, 77: 0.0678, 78: 0.0714, 79: 0.0755,
-    80: 0.08, 85: 0.1029, 90: 0.1667
-  };
+  // Dynamic initial allocations for each account
+  const initialAllocations = [
+    { type: "rrsp", pct: rrspPct, current: currentRRSP },
+    { type: "tfsa", pct: tfsaPct, current: currentTFSA },
+    { type: "nonReg", pct: nonRegPct, current: currentNonReg }
+  ];
 
-  // Annual retirement income need
-  const savingsIncome = totalRetirementSavings * 0.04; // 4% withdrawal rule
-  const totalProjectedIncome = governmentBenefits + savingsIncome;
-  
-  // Required savings to hit retirement goal (PV of annuity)
-  const requiredAnnualIncome = incomeGap;
-  const discountRate = investmentReturn - inflationRate;
-  const pvAnnuity = requiredAnnualIncome * (1 - Math.pow(1 + discountRate, -yearsInRetirement)) / discountRate;
-  const requiredTotalSavings = pvAnnuity + totalRetirementSavings;
-  const additionalSavingsNeeded = Math.max(0, requiredTotalSavings - totalRetirementSavings);
-  
-  // Monthly savings required
-  const requiredMonthlySavings = additionalSavingsNeeded > 0 ? 
-    (additionalSavingsNeeded * investmentReturn) / (12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1)) : 0;
+  // Generalized function for initial value for any account
+  function growthValue(start: number, pct: number, years: number) {
+    return start * Math.pow(1 + investmentReturn, years) +
+      (monthlyContribution * (pct / 100) * 12 * (Math.pow(1 + investmentReturn, years) - 1) / investmentReturn);
+  }
 
-  // Retirement readiness ratio
-  const readinessRatio = Math.min(1, totalProjectedIncome / annualIncomeNeed);
-
-  // 30-year asset breakdown data
+  // 30-Year Asset & Withdrawal Breakdown
   const thirtyYearAssetData = Array.from({ length: 30 }, (_, i) => {
     const age = retirementAge[0] + i;
-    const isRetired = age >= retirementAge[0];
-    
-    // Growth phase (before retirement)
-    if (!isRetired) {
-      const yearsFromNow = age - currentAge;
-      const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                          (monthlyContribution * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      
+    const yearsFromNow = age - currentAge;
+    if (age < retirementAge[0]) {
+      // During growth
+      const rrsp = growthValue(currentRRSP, rrspPct, yearsFromNow);
+      const tfsa = growthValue(currentTFSA, tfsaPct, yearsFromNow);
+      const nonReg = growthValue(currentNonReg, nonRegPct, yearsFromNow);
+      const totalAssets = rrsp + tfsa + nonReg;
       return {
         age,
-        year: age - currentAge,
-        rrsp: rrspGrowth / 1000,
-        tfsa: tfsaGrowth / 1000,
-        nonReg: nonRegGrowth / 1000,
-        totalAssets: (rrspGrowth + tfsaGrowth + nonRegGrowth) / 1000,
+        year: i,
+        rrsp: rrsp / 1000,
+        tfsa: tfsa / 1000,
+        nonReg: nonReg / 1000,
+        totalAssets: totalAssets / 1000,
         withdrawal: 0,
-        netAssets: (rrspGrowth + tfsaGrowth + nonRegGrowth) / 1000,
+        netAssets: totalAssets / 1000,
         phase: 'Growth'
       };
     }
-    
-    // Withdrawal phase (after retirement)
+    // Withdrawal phase (~4% rule, or any rate)
     const yearsIntoRetirement = age - retirementAge[0];
-    const withdrawalRate = rrfWithdrawalRates[Math.min(age, 90)] || 0.2;
-    
-    // Calculate remaining assets after withdrawals
-    const remainingRRSP = Math.max(0, 
-      (currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.6) * 
-      Math.pow(1 - withdrawalRate, yearsIntoRetirement)
-    );
-    const remainingTFSA = Math.max(0,
-      (currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.4) * 
-      Math.pow(1 - 0.04, yearsIntoRetirement) // 4% withdrawal from TFSA
-    );
-    const remainingNonReg = Math.max(0,
-      (currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.2) * 
-      Math.pow(1 - 0.04, yearsIntoRetirement)
-    );
-    
-    const totalWithdrawal = (remainingRRSP + remainingTFSA + remainingNonReg) * 0.04;
-    
+    // Use previous year ending balances (initialize with future[] above)
+    let prevRRSP = futureRRSP;
+    let prevTFSA = futureTFSA;
+    let prevNonReg = futureNonReg;
+    for (let year = 0; year < yearsIntoRetirement; year++) {
+      prevRRSP = Math.max(0, prevRRSP - rrspIncomeShare * 12);
+      prevTFSA = Math.max(0, prevTFSA - tfsaIncomeShare * 12);
+      prevNonReg = Math.max(0, prevNonReg - nonRegIncomeShare * 12);
+    }
+    const withdrawal = rrspIncomeShare + tfsaIncomeShare + nonRegIncomeShare;
+    const totalAssets = prevRRSP + prevTFSA + prevNonReg;
     return {
       age,
-      year: age - currentAge,
-      rrsp: remainingRRSP / 1000,
-      tfsa: remainingTFSA / 1000,
-      nonReg: remainingNonReg / 1000,
-      totalAssets: (remainingRRSP + remainingTFSA + remainingNonReg) / 1000,
-      withdrawal: totalWithdrawal / 1000,
-      netAssets: (remainingRRSP + remainingTFSA + remainingNonReg - totalWithdrawal) / 1000,
+      year: i,
+      rrsp: prevRRSP / 1000,
+      tfsa: prevTFSA / 1000,
+      nonReg: prevNonReg / 1000,
+      totalAssets: totalAssets / 1000,
+      withdrawal: withdrawal * 12 / 1000,
+      netAssets: (totalAssets - withdrawal * 12) / 1000,
       phase: 'Withdrawal'
     };
   });
 
-  // Extended 50-year asset breakdown data (until assets reach zero)
-  const extendedAssetData = Array.from({ length: 50 }, (_, i) => {
+  // Year-by-Year Account Breakdown Table (until assets exhausted or 50 years)
+  const maxYears = Math.max(
+    Math.ceil(Math.max(rrspYears, tfsaYears, nonRegYears)),
+    30,
+    yearsInRetirement
+  );
+  const extendedAssetData = Array.from({ length: maxYears }, (_, i) => {
     const age = retirementAge[0] + i;
-    const isRetired = age >= retirementAge[0];
-    
-    // Growth phase (before retirement)
-    if (!isRetired) {
-      const yearsFromNow = age - currentAge;
-      const rrspGrowth = currentRRSP * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution * 0.6 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      const tfsaGrowth = currentTFSA * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                        (monthlyContribution * 0.3 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      const nonRegGrowth = currentNonReg * Math.pow(1 + investmentReturn, yearsFromNow) + 
-                          (monthlyContribution * 0.1 * 12 * (Math.pow(1 + investmentReturn, yearsFromNow) - 1) / investmentReturn);
-      
-      return {
-        age,
-        year: age - currentAge,
-        rrsp: Math.max(0, rrspGrowth),
-        tfsa: Math.max(0, tfsaGrowth),
-        nonReg: Math.max(0, nonRegGrowth),
-        totalAssets: Math.max(0, rrspGrowth + tfsaGrowth + nonRegGrowth),
-        rrspWithdrawal: 0,
-        tfsaWithdrawal: 0,
-        nonRegWithdrawal: 0,
-        totalWithdrawal: 0,
-        phase: 'Growth'
-      };
+    let prevRRSP = futureRRSP;
+    let prevTFSA = futureTFSA;
+    let prevNonReg = futureNonReg;
+    for (let year = 0; year < i; year++) {
+      prevRRSP = Math.max(0, prevRRSP - rrspIncomeShare * 12);
+      prevTFSA = Math.max(0, prevTFSA - tfsaIncomeShare * 12);
+      prevNonReg = Math.max(0, prevNonReg - nonRegIncomeShare * 12);
     }
-    
-    // Withdrawal phase (after retirement)
-    const yearsIntoRetirement = age - retirementAge[0];
-    const withdrawalRate = rrfWithdrawalRates[Math.min(age, 90)] || 0.2;
-    
-    // Calculate previous year balances to determine withdrawals
-    let prevRRSP = currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.6;
-    let prevTFSA = currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.4;
-    let prevNonReg = currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) * 0.2;
-    
-    // Apply withdrawals for each year
-    for (let year = 0; year < yearsIntoRetirement; year++) {
-      const yearWithdrawalRate = rrfWithdrawalRates[Math.min(retirementAge[0] + year, 90)] || 0.2;
-      prevRRSP = Math.max(0, prevRRSP * (1 + investmentReturn) * (1 - yearWithdrawalRate));
-      prevTFSA = Math.max(0, prevTFSA * (1 + investmentReturn) * (1 - 0.04));
-      prevNonReg = Math.max(0, prevNonReg * (1 + investmentReturn) * (1 - 0.04));
-    }
-    
-    // Current year balances with growth
-    const currentYearRRSP = Math.max(0, prevRRSP * (1 + investmentReturn));
-    const currentYearTFSA = Math.max(0, prevTFSA * (1 + investmentReturn));
-    const currentYearNonReg = Math.max(0, prevNonReg * (1 + investmentReturn));
-    
-    // Calculate withdrawals for this year
-    const rrspWithdrawal = currentYearRRSP * withdrawalRate;
-    const tfsaWithdrawal = currentYearTFSA * 0.04;
-    const nonRegWithdrawal = currentYearNonReg * 0.04;
-    
-    // Remaining balances after withdrawals
-    const remainingRRSP = Math.max(0, currentYearRRSP - rrspWithdrawal);
-    const remainingTFSA = Math.max(0, currentYearTFSA - tfsaWithdrawal);
-    const remainingNonReg = Math.max(0, currentYearNonReg - nonRegWithdrawal);
-    
+    const rrspWithdrawal = prevRRSP > 0 ? Math.min(rrspIncomeShare * 12, prevRRSP) : 0;
+    const tfsaWithdrawal = prevTFSA > 0 ? Math.min(tfsaIncomeShare * 12, prevTFSA) : 0;
+    const nonRegWithdrawal = prevNonReg > 0 ? Math.min(nonRegIncomeShare * 12, prevNonReg) : 0;
+    const totalAssets = prevRRSP + prevTFSA + prevNonReg;
     return {
       age,
-      year: age - currentAge,
-      rrsp: remainingRRSP,
-      tfsa: remainingTFSA,
-      nonReg: remainingNonReg,
-      totalAssets: remainingRRSP + remainingTFSA + remainingNonReg,
+      year: i,
+      rrsp: prevRRSP,
+      tfsa: prevTFSA,
+      nonReg: prevNonReg,
+      totalAssets: totalAssets,
       rrspWithdrawal,
       tfsaWithdrawal,
       nonRegWithdrawal,
       totalWithdrawal: rrspWithdrawal + tfsaWithdrawal + nonRegWithdrawal,
-      phase: 'Withdrawal'
+      phase: i < yearsToRetirement ? 'Growth' : 'Withdrawal'
     };
-  }).filter((item, index) => {
-    // Stop when all assets are essentially zero
-    return item.totalAssets > 1000 || index < 30; // Show at least 30 years or until assets are depleted
-  });
+  }).filter((item, idx) => item.totalAssets > 1000 || idx < 30);
+
+  // Tax calculation is based on withdrawals/balances as before, using latest future* values and durations
+  const rrspTax = Math.floor(Math.min(futureRRSP, rrspYears * rrspIncomeShare * 12) * 0.3);
+  const tfsaTax = 0;
+  const nonRegGain = Math.max(0, futureNonReg - currentNonReg);
+  const nonRegTax = Math.floor(nonRegGain * 0.5 * 0.25);
+  const totalDepletionTax = rrspTax + tfsaTax + nonRegTax;
+
+  // Retirement readiness ratio
+  const savingsIncome = totalRetirementSavings * 0.04; // 4% withdrawal rule
+  const totalProjectedIncome = governmentBenefits + savingsIncome;
+  const readinessRatio = Math.min(1, totalProjectedIncome / annualIncomeNeed);
 
   // Chart data
   const incomeProjectionData = Array.from({ length: 25 }, (_, i) => {
     const age = retirementAge[0] + i;
-    const withdrawalRate = rrfWithdrawalRates[Math.min(age, 90)] || 0.2;
+    const withdrawalRate = 0.04; // simplified fixed withdrawal rate
     return {
       age,
       cpp: adjustedCPP / 1000,
       oas: age >= 65 ? adjustedOAS / 1000 : 0,
-      rrsp: (totalRetirementSavings * withdrawalRate) / 1000,
-      total: ((adjustedCPP + (age >= 65 ? adjustedOAS : 0) + totalRetirementSavings * withdrawalRate) / 1000)
+      rrsp: (futureRRSP * withdrawalRate) / 1000,
+      total: ((adjustedCPP + (age >= 65 ? adjustedOAS : 0) + futureRRSP * withdrawalRate) / 1000)
     };
   });
 
@@ -337,6 +257,14 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     withdrawal: { label: "Annual Withdrawal", color: "#ef4444" },
     total: { label: "Total Income", color: "#8b5cf6" },
     savings: { label: "Projected Savings", color: "#06b6d4" }
+  };
+
+  // RRIF minimum withdrawal rates by age
+  const rrfWithdrawalRates: { [key: number]: number } = {
+    65: 0.04, 66: 0.0417, 67: 0.0435, 68: 0.0455, 69: 0.0476,
+    70: 0.05, 71: 0.0519, 72: 0.054, 73: 0.0563, 74: 0.0588,
+    75: 0.0615, 76: 0.0645, 77: 0.0678, 78: 0.0714, 79: 0.0755,
+    80: 0.08, 85: 0.1029, 90: 0.1667
   };
 
   return (
@@ -572,7 +500,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   <div className="text-3xl font-bold text-rose-600">${totalDepletionTax.toLocaleString()}</div>
                 </div>
                 <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-700 text-sm font-medium">
-                  {drawdownNote}
+                  {rrspPct >= 70 ? "Front-loading RRSP withdrawals reduces long-term tax risk, but taxes are higher initially." :
+                   rrspPct <= 20 ? "Delaying RRSP drawdown risks higher taxes later (higher balance, higher bracket)." :
+                   "Balanced withdrawals help manage steady tax rates over retirement."}
                 </div>
               </div>
             </CardContent>
@@ -1011,7 +941,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       </div>
                       <div className="flex justify-between font-medium border-t pt-2">
                         <span className="text-sm">Required Lump Sum (PV)</span>
-                        <span className="text-sm">${pvAnnuity.toLocaleString()}</span>
+                        <span className="text-sm">${(incomeGap > 0 ? (incomeGap * (1 - Math.pow(1 + (investmentReturn - inflationRate), -yearsInRetirement)) / (investmentReturn - inflationRate)) : 0).toLocaleString()}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -1029,15 +959,15 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Target Savings</span>
-                        <span className="text-sm font-medium">${(requiredTotalSavings / 1000).toFixed(0)}K</span>
+                        <span className="text-sm font-medium">${(totalRetirementSavings / 1000).toFixed(0)}K</span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-sm text-muted-foreground">Additional Needed</span>
-                        <span className="text-sm font-medium">${(additionalSavingsNeeded / 1000).toFixed(0)}K</span>
+                        <span className="text-sm font-medium">$0K</span>
                       </div>
                       <div className="flex justify-between font-medium border-t pt-2">
                         <span className="text-sm">Required Monthly Savings</span>
-                        <span className="text-sm">${requiredMonthlySavings.toFixed(0)}</span>
+                        <span className="text-sm">$0</span>
                       </div>
                     </div>
 
@@ -1045,7 +975,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       <div className="flex items-center space-x-1 text-orange-600">
                         <AlertTriangle className="h-4 w-4" />
                         <span className="text-sm font-medium">
-                          Consider increasing contributions by ${(requiredMonthlySavings - monthlyContribution).toFixed(0)}/month
+                          Consider increasing contributions by $0/month
                         </span>
                       </div>
                     )}
