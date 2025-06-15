@@ -104,6 +104,32 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const tfsaYears = tfsaIncomeShare > 0 ? futureTFSA / (tfsaIncomeShare * 12) : 0;
   const nonRegYears = nonRegIncomeShare > 0 ? futureNonReg / (nonRegIncomeShare * 12) : 0;
 
+  // Calculate when assets run out while funding required annual income gap
+  // New calculation should update on: rrspPct, tfsaPct, nonRegPct sliders, AND retirementAge/netMonthlyIncome
+  // Recompute incomeGap after gov't benefits, then simulate year by year asset depletion
+  let simulatedYearsAssetsLast = 0;
+  let remainingRRSP = futureRRSP;
+  let remainingTFSA = futureTFSA;
+  let remainingNonReg = futureNonReg;
+
+  // For each year in retirement, subtract each account's share of income until one depletes (assets run out)
+  for (let i = 0; i < yearsInRetirement; i++) {
+    if (remainingRRSP > 0) remainingRRSP -= rrspIncomeShare * 12;
+    if (remainingTFSA > 0) remainingTFSA -= tfsaIncomeShare * 12;
+    if (remainingNonReg > 0) remainingNonReg -= nonRegIncomeShare * 12;
+    if (remainingRRSP <= 0 && remainingTFSA <= 0 && remainingNonReg <= 0) {
+      simulatedYearsAssetsLast = i + 1;
+      break;
+    }
+  }
+  if (simulatedYearsAssetsLast === 0) {
+    simulatedYearsAssetsLast = yearsInRetirement;
+  }
+
+  // Use the simulated value for yearsAssetsFunded and assetsFundedPercentage
+  const yearsAssetsFunded = simulatedYearsAssetsLast;
+  const assetsFundedPercentage = Math.min(100, (yearsAssetsFunded / yearsInRetirement) * 100);
+
   // Asset depletion over retirement: for each year, subtract account's monthly allocation * 12 from its bucket
   const allocationDepletionData = Array.from({ length: yearsInRetirement + 1 }).map((_, i) => ({
     year: i,
@@ -116,8 +142,8 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const governmentBenefits = adjustedCPP + adjustedOAS;
   const annualIncomeNeed = netMonthlyIncome[0] * 12;
   const incomeGap = Math.max(0, annualIncomeNeed - governmentBenefits);
-  const yearsAssetsFunded = incomeGap > 0 ? totalRetirementSavings / incomeGap : yearsInRetirement;
-  const assetsFundedPercentage = Math.min(100, (yearsAssetsFunded / yearsInRetirement) * 100);
+  // const yearsAssetsFunded = incomeGap > 0 ? totalRetirementSavings / incomeGap : yearsInRetirement;
+  // const assetsFundedPercentage = Math.min(100, (yearsAssetsFunded / yearsInRetirement) * 100);
 
   // Dynamic initial allocations for each account
   const initialAllocations = [
