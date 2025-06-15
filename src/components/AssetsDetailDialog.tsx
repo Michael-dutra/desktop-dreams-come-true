@@ -1,1777 +1,1166 @@
+import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell, AreaChart, Area } from "recharts";
-import { TrendingUp, FileText, X, Plus, Brain, Lightbulb, Edit2, Check } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { useState, useEffect, useMemo } from "react";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
+import { Calculator, DollarSign, FileText, Users, Plus, Calendar, Scale, X } from "lucide-react";
 
-interface Asset {
-  name: string;
-  amount: string;
-  value: number;
-  color: string;
-}
-
-interface AssetsDetailDialogProps {
+interface EstateDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface DynamicAsset {
+interface EstateDocument {
+  id: string;
+  name: string;
+  lastUpdated: string;
+  status: "Current" | "Outdated" | "Pending";
+  review: string;
+}
+
+interface TrustBeneficiary {
+  id: string;
+  name: string;
+  relationship: string;
+  allocation: number;
+}
+
+interface TrustStructure {
   id: string;
   name: string;
   type: string;
-  currentValue: number;
-  years: number[];
-  rate: number[];
-  annualContribution: number;
-  color: string;
-  // Real Estate specific fields
-  purchasePrice?: number;
-  purchaseYear?: number;
-  improvements?: number;
-  mortgageBalance?: number;
-  address?: string;
-  // Secondary Property specific fields
-  originalPurchasePrice?: number;
-  capitalImprovements?: number;
-  inclusionRate?: number;
-  taxRate?: number;
-  // RRSP/TFSA/FHSA specific fields
-  availableRoom?: number;
-  ytdGrowth?: number;
-  monthlyContribution?: number;
-  // Non-Registered specific fields
-  unrealizedGains?: number;
-  costBase?: number;
+  assets: string;
+  purpose: string;
+  settlor?: string;
+  trustees?: string[];
+  beneficiaries?: TrustBeneficiary[];
+  jurisdiction?: string;
+  startDate?: string;
+  notes?: string;
 }
 
-const generateStableChartData = (currentValue: number, futureValue: number, years: number, rate: number) => {
-  const points = [];
-  const steps = 10;
-  
-  for (let i = 0; i <= steps; i++) {
-    const yearProgress = (years * i) / steps;
-    const currentProjection = currentValue * Math.pow(1 + rate / 100, yearProgress);
-    
-    points.push({
-      year: yearProgress.toFixed(1),
-      current: currentValue,
-      future: currentProjection,
-      yearLabel: i === 0 ? 'Now' : i === steps ? `${years}Y` : `${yearProgress.toFixed(1)}Y`
-    });
-  }
-  
-  return points;
-};
+interface Beneficiary {
+  id: string;
+  name: string;
+  relationship: string;
+  percentage: number;
+  amount: number;
+}
 
-export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
-  // Individual projection years for each asset
-  const [realEstateYears, setRealEstateYears] = useState([10]);
-  const [rrspYears, setRrspYears] = useState([10]);
-  const [tfsaYears, setTfsaYears] = useState([10]);
-  const [nonRegYears, setNonRegYears] = useState([10]);
+interface DocumentAction {
+  id: string;
+  action: string;
+  priority: "High" | "Medium" | "Low";
+}
 
-  // Individual growth rates
-  const [realEstateRate, setRealEstateRate] = useState([4.2]);
-  const [rrspRate, setRrspRate] = useState([7.0]);
-  const [tfsaRate, setTfsaRate] = useState([6.5]);
-  const [nonRegRate, setNonRegRate] = useState([8.0]);
+export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
+  // Original estate data from EstateCard
+  const totalEstateValue = 785000;
+  const estateTaxes = 25000;
+  const netEstateValue = totalEstateValue - estateTaxes;
 
-  // Editable state tracking
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState<string>("");
+  const [estateAssets] = useState([
+    { 
+      name: "Real Estate", 
+      currentValue: 620000, 
+      taxableStatus: "Capital Gains",
+      acquisitionCost: 450000,
+      color: "#3b82f6"
+    },
+    { 
+      name: "RRSP", 
+      currentValue: 52000, 
+      taxableStatus: "Fully Taxable",
+      acquisitionCost: 35000,
+      color: "#10b981"
+    },
+    { 
+      name: "TFSA", 
+      currentValue: 38000, 
+      taxableStatus: "Tax-Free",
+      acquisitionCost: 30000,
+      color: "#8b5cf6"
+    },
+    { 
+      name: "Non-Registered", 
+      currentValue: 25000, 
+      taxableStatus: "Capital Gains",
+      acquisitionCost: 20000,
+      color: "#f59e0b"
+    },
+  ]);
 
-  // Asset details with enhanced data - now as state for editing
-  const [realEstateDetails, setRealEstateDetails] = useState({
-    purchasePrice: 480000,
-    purchaseYear: 2019,
-    currentFMV: 620000,
-    improvements: 35000,
-    mortgageBalance: 285000,
-    equity: 335000,
-    yearlyAppreciation: 4.2,
-    totalReturn: 29.2,
-    address: "123 Maple Street, Toronto, ON",
+  // Individual sliders for each asset
+  const [assetSettings, setAssetSettings] = useState({
+    "Real Estate": { rateOfReturn: [5], timeFrame: [15] },
+    "RRSP": { rateOfReturn: [7], timeFrame: [15] },
+    "TFSA": { rateOfReturn: [6], timeFrame: [15] },
+    "Non-Registered": { rateOfReturn: [6], timeFrame: [15] }
   });
 
-  const [rrspDetails, setRrspDetails] = useState({
-    currentValue: 52000,
-    availableRoom: 18500,
-    ytdGrowth: 8.2,
-    annualContribution: 6000,
-    monthlyContribution: 500,
-  });
+  // Legacy tab state
+  const [estateDocuments, setEstateDocuments] = useState<EstateDocument[]>([
+    { id: "1", name: "Last Will & Testament", lastUpdated: "Mar 2024", status: "Current", review: "Review in 5 years" },
+    { id: "2", name: "Power of Attorney", lastUpdated: "Mar 2024", status: "Current", review: "No expiry" },
+    { id: "3", name: "Living Will", lastUpdated: "Jan 2020", status: "Outdated", review: "Review needed" },
+    { id: "4", name: "Beneficiary Designations", lastUpdated: "Feb 2024", status: "Current", review: "Annual review" },
+  ]);
 
-  const [tfsaDetails, setTfsaDetails] = useState({
-    currentValue: 38000,
-    availableRoom: 8500,
-    ytdGrowth: 6.1,
-    annualContribution: 5000,
-    monthlyContribution: 417,
-  });
+  const [trustStructures, setTrustStructures] = useState<TrustStructure[]>([
+    { 
+      id: "1", 
+      name: "Family Trust", 
+      type: "Discretionary", 
+      assets: "$185,000", 
+      purpose: "Tax minimization",
+      settlor: "John Smith",
+      trustees: ["Jane Smith", "ABC Trust Co."],
+      jurisdiction: "Ontario",
+      startDate: "2020-01-15"
+    },
+    { 
+      id: "2", 
+      name: "Children's Education Trust", 
+      type: "Fixed", 
+      assets: "$50,000", 
+      purpose: "Education funding",
+      settlor: "John Smith",
+      trustees: ["Jane Smith"],
+      jurisdiction: "Ontario",
+      startDate: "2022-06-01"
+    },
+  ]);
 
-  const [nonRegisteredDetails, setNonRegisteredDetails] = useState({
-    totalValue: 25000,
-    unrealizedGains: 3200,
-    annualContribution: 2000,
-    monthlyContribution: 167,
-    costBase: 21800,
-    inclusionRate: 50,
-    taxRate: 25,
-  });
+  const [beneficiaries, setBeneficiaries] = useState<Beneficiary[]>([
+    { id: "1", name: "Sarah Johnson", relationship: "Spouse", percentage: 60, amount: 471000 },
+    { id: "2", name: "Michael Johnson", relationship: "Son", percentage: 25, amount: 196250 },
+    { id: "3", name: "Emma Johnson", relationship: "Daughter", percentage: 15, amount: 117750 },
+  ]);
 
-  // New state for dynamic assets
-  const [dynamicAssets, setDynamicAssets] = useState<DynamicAsset[]>([]);
+  const [documentActions, setDocumentActions] = useState<DocumentAction[]>([
+    { id: "1", action: "Update Living Will", priority: "High" },
+    { id: "2", action: "Schedule Annual Review", priority: "Medium" },
+    { id: "3", action: "Review Beneficiaries", priority: "Medium" },
+  ]);
 
-  const addDynamicAsset = (type: string, sourceAsset?: Asset) => {
-    const colors = ["#ef4444", "#f97316", "#eab308", "#84cc16", "#22c55e", "#06b6d4", "#3b82f6", "#8b5cf6", "#d946ef", "#f43f5e"];
-    const usedColors = [...dynamicAssets.map(a => a.color)];
-    const availableColor = colors.find(color => !usedColors.includes(color)) || colors[0];
-
-    const baseAsset = {
-      id: Date.now().toString(),
-      name: sourceAsset ? `${sourceAsset.name} (Copy)` : type,
-      type: type,
-      currentValue: sourceAsset ? sourceAsset.value : 10000,
-      years: [10],
-      rate: [6.0],
-      annualContribution: 1000,
-      color: availableColor
-    };
-
-    let newAsset: DynamicAsset;
-
-    switch (type) {
-      case "Primary Residence":
-        newAsset = {
-          ...baseAsset,
-          purchasePrice: sourceAsset ? sourceAsset.value - 100000 : 480000,
-          purchaseYear: 2019,
-          improvements: 35000,
-          mortgageBalance: sourceAsset ? Math.floor(sourceAsset.value * 0.45) : 285000,
-          address: "123 Main Street, City, Province",
-          rate: [4.2],
-          annualContribution: 0
-        };
-        break;
-      case "Secondary Property":
-        newAsset = {
-          ...baseAsset,
-          originalPurchasePrice: sourceAsset ? sourceAsset.value - 150000 : 350000,
-          capitalImprovements: 25000,
-          inclusionRate: 50,
-          taxRate: 25,
-          address: "456 Investment Lane, City, Province",
-          rate: [4.2],
-          annualContribution: 0
-        };
-        break;
-      case "RRSP":
-        newAsset = {
-          ...baseAsset,
-          availableRoom: 18500,
-          ytdGrowth: 8.2,
-          monthlyContribution: 500,
-          rate: [7.0],
-          annualContribution: 6000
-        };
-        break;
-      case "TFSA":
-        newAsset = {
-          ...baseAsset,
-          availableRoom: 8500,
-          ytdGrowth: 6.1,
-          monthlyContribution: 417,
-          rate: [6.5],
-          annualContribution: 5000
-        };
-        break;
-      case "FHSA":
-        newAsset = {
-          ...baseAsset,
-          availableRoom: 8000,
-          ytdGrowth: 6.1,
-          monthlyContribution: 417,
-          rate: [6.5],
-          annualContribution: 5000
-        };
-        break;
-      case "Non-Registered":
-        newAsset = {
-          ...baseAsset,
-          unrealizedGains: 3200,
-          monthlyContribution: 167,
-          rate: [8.0],
-          annualContribution: 2000,
-          costBase: sourceAsset ? sourceAsset.value - 3200 : 6800,
-          inclusionRate: 50,
-          taxRate: 25
-        };
-        break;
-      default:
-        newAsset = baseAsset;
-    }
-
-    setDynamicAssets(prev => [...prev, newAsset]);
-  };
-
-  const removeDynamicAsset = (id: string) => {
-    setDynamicAssets(prev => prev.filter(asset => asset.id !== id));
-  };
-
-  const updateDynamicAsset = (id: string, updates: Partial<DynamicAsset>) => {
-    setDynamicAssets(prev => prev.map(asset => 
-      asset.id === id ? { ...asset, ...updates } : asset
-    ));
-  };
-
-  const calculateFV = (currentValue: number, rate: number, years: number, annualContribution = 0) => {
-    const fvCurrentValue = currentValue * Math.pow(1 + rate / 100, years);
-    const fvContributions = annualContribution * (Math.pow(1 + rate / 100, years) - 1) / (rate / 100);
-    return fvCurrentValue + fvContributions;
-  };
-
-  const realEstateFV = calculateFV(realEstateDetails.currentFMV, realEstateRate[0], realEstateYears[0]);
-  const rrspFV = calculateFV(rrspDetails.currentValue, rrspRate[0], rrspYears[0], rrspDetails.annualContribution);
-  const tfsaFV = calculateFV(tfsaDetails.currentValue, tfsaRate[0], tfsaYears[0], tfsaDetails.annualContribution);
-  const nonRegFV = calculateFV(nonRegisteredDetails.totalValue, nonRegRate[0], nonRegYears[0], nonRegisteredDetails.annualContribution);
-
-  const realEstateChartData = useMemo(() => {
-    return generateStableChartData(realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]);
-  }, [realEstateDetails.currentFMV, realEstateFV, realEstateYears[0], realEstateRate[0]]);
-
-  const rrspChartData = useMemo(() => {
-    return generateStableChartData(rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]);
-  }, [rrspDetails.currentValue, rrspFV, rrspYears[0], rrspRate[0]]);
-
-  const tfsaChartData = useMemo(() => {
-    return generateStableChartData(tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]);
-  }, [tfsaDetails.currentValue, tfsaFV, tfsaYears[0], tfsaRate[0]]);
-
-  const nonRegChartData = useMemo(() => {
-    return generateStableChartData(nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]);
-  }, [nonRegisteredDetails.totalValue, nonRegFV, nonRegYears[0], nonRegRate[0]]);
-
-  const showAssetWriteup = (assetType: string, assetName: string) => {
-    // This would typically open a dialog or modal with detailed writeup about the asset
-    console.log(`Showing writeup for ${assetType}: ${assetName}`);
-    // TODO: Implement writeup dialog similar to life insurance writeup
-  };
-
-  const confirmDeleteAsset = (assetId: string, assetName: string) => {
-    // The AlertDialog component will handle the confirmation
-    console.log(`Delete confirmed for asset: ${assetName}`);
-    removeDynamicAsset(assetId);
-  };
-
-  const DynamicAssetCard = ({ asset }: { asset: DynamicAsset }) => {
-    const futureValue = calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution);
-    const chartData = useMemo(() => {
-      return generateStableChartData(asset.currentValue, futureValue, asset.years[0], asset.rate[0]);
-    }, [asset.currentValue, futureValue, asset.years[0], asset.rate[0]]);
-
-    const DynamicEditableField = ({ 
-      fieldKey, 
-      value, 
-      label, 
-      isEditable = true, 
-      prefix = "$",
-      suffix = "",
-      isAutoCalculated = false,
-      tip
-    }: { 
-      fieldKey: string; 
-      value: number; 
-      label: string; 
-      isEditable?: boolean;
-      prefix?: string;
-      suffix?: string;
-      isAutoCalculated?: boolean;
-      tip?: string;
-    }) => {
-      const [isEditing, setIsEditing] = useState(false);
-      const [tempValue, setTempValue] = useState("");
-
-      const startEdit = () => {
-        setIsEditing(true);
-        setTempValue(value.toString());
-      };
-
-      const cancelEdit = () => {
-        setIsEditing(false);
-        setTempValue("");
-      };
-
-      const saveEdit = () => {
-        const numericValue = parseFloat(tempValue);
-        if (!isNaN(numericValue)) {
-          updateDynamicAsset(asset.id, { [fieldKey]: numericValue });
-        }
-        setIsEditing(false);
-        setTempValue("");
-      };
-
-      return (
-        <div className="relative">
-          <p className="text-sm text-muted-foreground">{label}</p>
-          {isEditing ? (
-            <div className="flex items-center gap-2">
-              <Input
-                value={tempValue}
-                onChange={(e) => setTempValue(e.target.value)}
-                className="text-lg font-semibold"
-                type="number"
-                autoFocus
-              />
-              <Button size="sm" variant="ghost" onClick={saveEdit}>
-                <Check className="w-4 h-4 text-green-600" />
-              </Button>
-              <Button size="sm" variant="ghost" onClick={cancelEdit}>
-                <X className="w-4 h-4 text-red-600" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between">
-              <div className="flex-1">
-                <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-                  {prefix}{value.toLocaleString()}{suffix}
-                </p>
-              </div>
-              {isEditable && !isAutoCalculated && (
-                <Button 
-                  size="sm" 
-                  variant="ghost" 
-                  onClick={startEdit}
-                  className="opacity-50 hover:opacity-100"
-                >
-                  <Edit2 className="w-3 h-3" />
-                </Button>
-              )}
-            </div>
-          )}
-        </div>
-      );
-    };
-
-    const renderAssetSpecificFields = () => {
-      const assumedAnnualIncome = 80000;
-
-      switch (asset.type) {
-        case "Primary Residence":
-          const netEquity = asset.currentValue - (asset.mortgageBalance || 0);
-          return (
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicEditableField 
-                fieldKey="currentValue" 
-                value={asset.currentValue} 
-                label="Current FMV" 
-              />
-              <DynamicEditableField 
-                fieldKey="futureValue" 
-                value={Math.round(futureValue)} 
-                label={`Future Value (${asset.years[0]} years)`} 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="purchasePrice" 
-                value={asset.purchasePrice || 0} 
-                label="Purchase Price" 
-              />
-              <DynamicEditableField 
-                fieldKey="projectedGrowth" 
-                value={Math.round(futureValue - asset.currentValue)} 
-                label="Projected Growth" 
-                prefix="+$"
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="mortgageBalance" 
-                value={asset.mortgageBalance || 0} 
-                label="Mortgage Balance" 
-              />
-              <DynamicEditableField 
-                fieldKey="netEquity" 
-                value={netEquity} 
-                label="Net Equity" 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-            </div>
-          );
-
-        case "Secondary Property":
-          const capitalGain = asset.currentValue - ((asset.originalPurchasePrice || 0) + (asset.capitalImprovements || 0));
-          const estimatedCapitalGainsTax = capitalGain * ((asset.inclusionRate || 50) / 100) * ((asset.taxRate || 25) / 100);
-          
-          return (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <DynamicEditableField 
-                  fieldKey="currentValue" 
-                  value={asset.currentValue} 
-                  label="Current FMV" 
-                />
-                <DynamicEditableField 
-                  fieldKey="futureValue" 
-                  value={Math.round(futureValue)} 
-                  label={`Future Value (${asset.years[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <DynamicEditableField 
-                  fieldKey="originalPurchasePrice" 
-                  value={asset.originalPurchasePrice || 0} 
-                  label="Original Purchase Price" 
-                />
-                <DynamicEditableField 
-                  fieldKey="capitalImprovements" 
-                  value={asset.capitalImprovements || 0} 
-                  label="Capital Improvements" 
-                />
-              </div>
-              
-              <div className="bg-muted/20 p-4 rounded-lg space-y-3">
-                <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <DynamicEditableField 
-                    fieldKey="capitalGain" 
-                    value={Math.round(capitalGain)} 
-                    label="Capital Gain" 
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                  <DynamicEditableField 
-                    fieldKey="inclusionRate" 
-                    value={asset.inclusionRate || 50} 
-                    label="Inclusion Rate" 
-                    prefix=""
-                    suffix="%"
-                  />
-                  <DynamicEditableField 
-                    fieldKey="taxRate" 
-                    value={asset.taxRate || 25} 
-                    label="Tax Rate" 
-                    prefix=""
-                    suffix="%"
-                  />
-                  <DynamicEditableField 
-                    fieldKey="estimatedCapitalGainsTax" 
-                    value={Math.round(estimatedCapitalGainsTax)} 
-                    label="Estimated Capital Gains Tax" 
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-
-        case "RRSP":
-          return (
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicEditableField 
-                fieldKey="currentValue" 
-                value={asset.currentValue} 
-                label="Current Value" 
-              />
-              <DynamicEditableField 
-                fieldKey="futureValue" 
-                value={Math.round(futureValue)} 
-                label={`Future Value (${asset.years[0]} years)`} 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="projectedGrowth" 
-                value={Math.round(futureValue - asset.currentValue)} 
-                label="Projected Growth" 
-                prefix="+$"
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="availableRoom" 
-                value={asset.availableRoom || 0} 
-                label="Available Room" 
-              />
-              <DynamicEditableField 
-                fieldKey="annualContribution" 
-                value={asset.annualContribution} 
-                label="Annual Contribution" 
-              />
-              <DynamicEditableField 
-                fieldKey="monthlyContribution" 
-                value={asset.monthlyContribution || 0} 
-                label="Monthly Contribution" 
-              />
-            </div>
-          );
-
-        case "TFSA":
-        case "FHSA":
-          return (
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicEditableField 
-                fieldKey="currentValue" 
-                value={asset.currentValue} 
-                label="Current Value" 
-              />
-              <DynamicEditableField 
-                fieldKey="futureValue" 
-                value={Math.round(futureValue)} 
-                label={`Future Value (${asset.years[0]} years)`} 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="projectedGrowth" 
-                value={Math.round(futureValue - asset.currentValue)} 
-                label="Projected Growth" 
-                prefix="+$"
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="availableRoom" 
-                value={asset.availableRoom || 0} 
-                label="Available Room" 
-              />
-              <DynamicEditableField 
-                fieldKey="annualContribution" 
-                value={asset.annualContribution} 
-                label="Annual Contribution" 
-              />
-              <DynamicEditableField 
-                fieldKey="monthlyContribution" 
-                value={asset.monthlyContribution || 0} 
-                label="Monthly Contribution" 
-              />
-            </div>
-          );
-
-        case "Non-Registered":
-          const capitalGainNonReg = asset.currentValue - (asset.costBase || 0);
-          const estimatedCapitalGainsTaxNonReg = capitalGainNonReg * ((asset.inclusionRate || 50) / 100) * ((asset.taxRate || 25) / 100);
-
-          return (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <DynamicEditableField 
-                  fieldKey="currentValue" 
-                  value={asset.currentValue} 
-                  label="Current Value" 
-                />
-                <DynamicEditableField 
-                  fieldKey="futureValue" 
-                  value={Math.round(futureValue)} 
-                  label={`Future Value (${asset.years[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <DynamicEditableField 
-                  fieldKey="costBase" 
-                  value={asset.costBase || 0} 
-                  label="Cost Base" 
-                />
-                <DynamicEditableField 
-                  fieldKey="projectedGrowth" 
-                  value={Math.round(futureValue - asset.currentValue)} 
-                  label="Projected Growth" 
-                  prefix="+$"
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <DynamicEditableField 
-                  fieldKey="annualContribution" 
-                  value={asset.annualContribution} 
-                  label="Annual Contribution" 
-                />
-                <DynamicEditableField 
-                  fieldKey="monthlyContribution" 
-                  value={asset.monthlyContribution || 0} 
-                  label="Monthly Contribution" 
-                />
-              </div>
-
-              <div className="bg-muted/20 p-4 rounded-lg space-y-3">
-                <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
-                <div className="grid grid-cols-2 gap-4">
-                  <DynamicEditableField 
-                    fieldKey="capitalGain" 
-                    value={Math.round(capitalGainNonReg)} 
-                    label="Capital Gain" 
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                  <DynamicEditableField 
-                    fieldKey="inclusionRate" 
-                    value={asset.inclusionRate || 50} 
-                    label="Inclusion Rate" 
-                    prefix=""
-                    suffix="%"
-                  />
-                  <DynamicEditableField 
-                    fieldKey="taxRate" 
-                    value={asset.taxRate || 25} 
-                    label="Tax Rate" 
-                    prefix=""
-                    suffix="%"
-                  />
-                  <DynamicEditableField 
-                    fieldKey="estimatedCapitalGainsTax" 
-                    value={Math.round(estimatedCapitalGainsTaxNonReg)} 
-                    label="Estimated Capital Gains Tax" 
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                </div>
-              </div>
-            </div>
-          );
-
-        default:
-          return (
-            <div className="grid grid-cols-2 gap-4">
-              <DynamicEditableField 
-                fieldKey="currentValue" 
-                value={asset.currentValue} 
-                label="Current Value" 
-              />
-              <DynamicEditableField 
-                fieldKey="futureValue" 
-                value={Math.round(futureValue)} 
-                label={`Future Value (${asset.years[0]} years)`} 
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-              <DynamicEditableField 
-                fieldKey="annualContribution" 
-                value={asset.annualContribution} 
-                label="Annual Contribution" 
-              />
-              <DynamicEditableField 
-                fieldKey="projectedGrowth" 
-                value={Math.round(futureValue - asset.currentValue)} 
-                label="Projected Growth" 
-                prefix="+$"
-                isAutoCalculated={true}
-                isEditable={false}
-              />
-            </div>
-          );
+  const updateAssetSetting = (assetName: string, setting: 'rateOfReturn' | 'timeFrame', value: number[]) => {
+    setAssetSettings(prev => ({
+      ...prev,
+      [assetName]: {
+        ...prev[assetName],
+        [setting]: value
       }
-    };
-
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center justify-between text-xl">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-full" style={{ backgroundColor: asset.color }}></div>
-              <span>{asset.name}</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                onClick={() => showAssetWriteup(asset.type, asset.name)}
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <FileText className="w-4 h-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Asset</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      Are you sure you want to delete "{asset.name}"? This action cannot be undone.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => confirmDeleteAsset(asset.id, asset.name)}>
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {/* Growth Visualization */}
-          <GrowthChart 
-            data={chartData}
-            currentValue={asset.currentValue}
-            futureValue={futureValue}
-            years={asset.years[0]}
-            color={asset.color}
-          />
-
-          {/* Controls */}
-          <div className="bg-muted/30 p-4 rounded-lg space-y-3">
-            <div>
-              <label className="text-sm font-medium mb-2 block">Growth Rate: {asset.rate[0]}%</label>
-              <Slider
-                value={asset.rate}
-                onValueChange={(value) => updateDynamicAsset(asset.id, { rate: value })}
-                max={15}
-                min={0}
-                step={0.1}
-                className="w-full"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-2 block">Projection Years: {asset.years[0]}</label>
-              <Slider
-                value={asset.years}
-                onValueChange={(value) => updateDynamicAsset(asset.id, { years: value })}
-                max={30}
-                min={1}
-                step={1}
-                className="w-full"
-              />
-            </div>
-          </div>
-
-          {/* Asset-specific fields */}
-          {renderAssetSpecificFields()}
-          
-          {/* Additional asset-specific info */}
-          {(asset.type === "Primary Residence" || asset.type === "Secondary Property") && asset.address && (
-            <div className="pt-2">
-              <p className="text-xs text-muted-foreground mb-1">Address: {asset.address}</p>
-            </div>
-          )}
-          
-          {(asset.type === "RRSP" || asset.type === "TFSA" || asset.type === "FHSA" || asset.type === "Non-Registered") && (
-            <div className="pt-2">
-              <div className="flex items-center gap-2">
-                <TrendingUp className="w-4 h-4 text-green-600" />
-                <span className="text-sm">Rate: <span className="font-semibold">{asset.rate[0]}%</span> annually</span>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    );
+    }));
   };
+
+  // Calculate future values and taxes for each asset
+  const calculateAssetProjections = () => {
+    return estateAssets.map(asset => {
+      const settings = assetSettings[asset.name];
+      const rateOfReturn = settings.rateOfReturn[0] / 100;
+      const timeFrame = settings.timeFrame[0];
+      
+      // Future Value calculation
+      const futureValue = asset.currentValue * Math.pow(1 + rateOfReturn, timeFrame);
+      const totalGain = futureValue - asset.acquisitionCost;
+      
+      // Tax calculations based on asset type
+      let taxableAmount = 0;
+      let taxOwed = 0;
+      const marginalTaxRate = 0.43; // Assume 43% marginal tax rate
+      const capitalGainsRate = marginalTaxRate * 0.5; // 50% inclusion rate
+      
+      switch (asset.taxableStatus) {
+        case "Fully Taxable":
+          taxableAmount = futureValue;
+          taxOwed = futureValue * marginalTaxRate;
+          break;
+        case "Capital Gains":
+          taxableAmount = totalGain > 0 ? totalGain : 0;
+          taxOwed = taxableAmount * capitalGainsRate;
+          break;
+        case "Tax-Free":
+          taxableAmount = 0;
+          taxOwed = 0;
+          break;
+        default:
+          taxableAmount = 0;
+          taxOwed = 0;
+      }
+
+      return {
+        ...asset,
+        settings,
+        futureValue,
+        totalGain,
+        taxableAmount,
+        taxOwed,
+        netValue: futureValue - taxOwed
+      };
+    });
+  };
+
+  const projectedAssets = calculateAssetProjections();
+  const totalFutureValue = projectedAssets.reduce((sum, asset) => sum + asset.futureValue, 0);
+  const totalTaxOwed = projectedAssets.reduce((sum, asset) => sum + asset.taxOwed, 0);
+  const totalNetValue = projectedAssets.reduce((sum, asset) => sum + asset.netValue, 0);
+
+  // Updated estate breakdown data that responds to slider changes
+  const estateBreakdownData = [
+    {
+      category: "Total Estate",
+      amount: totalFutureValue,
+      color: "#8b5cf6"
+    },
+    {
+      category: "Final Taxes",
+      amount: totalTaxOwed,
+      color: "#f59e0b"
+    },
+    {
+      category: "Net to Beneficiaries",
+      amount: totalNetValue,
+      color: "#06b6d4"
+    }
+  ];
 
   const chartConfig = {
-    current: { label: "Current Value", color: "#3b82f6" },
-    future: { label: "Future Value", color: "#10b981" }
+    grossValue: { label: "Gross Value", color: "#3b82f6" },
+    taxOwed: { label: "Tax Owed", color: "#ef4444" },
+    netValue: { label: "Net Value", color: "#10b981" },
+    amount: { label: "Amount", color: "#8b5cf6" }
   };
 
-  const assumedAnnualIncome = 80000;
+  // Add dialog states for each section
+  const [showAddDocument, setShowAddDocument] = useState(false);
+  const [showAddTrust, setShowAddTrust] = useState(false);
+  const [showAddAction, setShowAddAction] = useState(false);
+  const [showAddBeneficiary, setShowAddBeneficiary] = useState(false);
 
-  const startEdit = (fieldId: string, currentValue: number | string) => {
-    setEditingField(fieldId);
-    setTempValue(currentValue.toString());
-  };
+  // Add form states
+  const [newDocument, setNewDocument] = useState({ name: "", status: "Current" as "Current" | "Outdated" | "Pending", review: "" });
+  const [newTrust, setNewTrust] = useState({ 
+    name: "", 
+    type: "", 
+    assets: "", 
+    purpose: "",
+    settlor: "",
+    trustees: [""],
+    beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
+    jurisdiction: "",
+    startDate: "",
+    notes: ""
+  });
+  const [newAction, setNewAction] = useState({ action: "", priority: "Medium" as "High" | "Medium" | "Low" });
+  const [newBeneficiary, setNewBeneficiary] = useState({ name: "", relationship: "", percentage: 0 });
 
-  const cancelEdit = () => {
-    setEditingField(null);
-    setTempValue("");
-  };
-
-  const saveEdit = (fieldId: string) => {
-    let numericValue = parseFloat(tempValue);
-    if (isNaN(numericValue)) {
-      cancelEdit();
-      return;
-    }
-
-    const [category, field] = fieldId.split(".");
-    
-    switch (category) {
-      case 'realEstate':
-        setRealEstateDetails(prev => ({ ...prev, [field]: numericValue }));
-        break;
-      case 'rrsp':
-        setRrspDetails(prev => ({ ...prev, [field]: numericValue }));
-        break;
-      case 'tfsa':
-        setTfsaDetails(prev => ({ ...prev, [field]: numericValue }));
-        break;
-      case 'nonReg':
-        setNonRegisteredDetails(prev => ({ ...prev, [field]: numericValue }));
-        break;
-    }
-    
-    setEditingField(null);
-    setTempValue("");
-  };
-
-  const EditableField = ({ 
-    fieldId, 
-    value, 
-    label, 
-    isEditable = true, 
-    prefix = "$",
-    isAutoCalculated = false,
-    tip
-  }: { 
-    fieldId: string; 
-    value: number; 
-    label: string; 
-    isEditable?: boolean;
-    prefix?: string;
-    isAutoCalculated?: boolean;
-    tip?: string;
-  }) => {
-    const isEditing = editingField === fieldId;
-    
-    return (
-      <div className="relative">
-        <p className="text-sm text-muted-foreground">{label}</p>
-        {isEditing ? (
-          <div className="flex items-center gap-2">
-            <Input
-              value={tempValue}
-              onChange={(e) => setTempValue(e.target.value)}
-              className="text-lg font-semibold"
-              type="number"
-              autoFocus
-            />
-            <Button size="sm" variant="ghost" onClick={() => saveEdit(fieldId)}>
-              <Check className="w-4 h-4 text-green-600" />
-            </Button>
-            <Button size="sm" variant="ghost" onClick={cancelEdit}>
-              <X className="w-4 h-4 text-red-600" />
-            </Button>
-          </div>
-        ) : (
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
-              <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-                {prefix}{value.toLocaleString()}
-              </p>
-              {tip && (
-                <p className="text-xs text-muted-foreground/80 mt-1 italic">
-                  💡 {tip}
-                </p>
-              )}
-            </div>
-            {isEditable && !isAutoCalculated && (
-              <Button 
-                size="sm" 
-                variant="ghost" 
-                onClick={() => startEdit(fieldId, value)}
-                className="opacity-50 hover:opacity-100"
-              >
-                <Edit2 className="w-3 h-3" />
-              </Button>
-            )}
-          </div>
-        )}
-      </div>
-    );
-  };
-
-  const GrowthChart = ({ 
-    data, 
-    currentValue, 
-    futureValue, 
-    years,
-    color = "#10b981"
-  }: { 
-    data: any[];
-    currentValue: number;
-    futureValue: number;
-    years: number;
-    color?: string;
-  }) => {
-    return (
-      <div className="h-48 w-full bg-muted/20 rounded-lg p-4 border border-border/30">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs text-muted-foreground font-medium">Growth Projection</span>
-          <span className="text-xs text-primary font-semibold">
-            +{((futureValue / currentValue - 1) * 100).toFixed(1)}% over {years} years
-          </span>
-        </div>
-        
-        <div className="h-40 w-full">
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart 
-              data={data} 
-              margin={{ top: 10, right: 20, left: 10, bottom: 20 }}
-            >
-              <XAxis 
-                dataKey="yearLabel"
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 'normal' }}
-                interval={0}
-              />
-              <YAxis 
-                axisLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tickLine={{ stroke: 'hsl(var(--muted-foreground))', strokeWidth: 1 }}
-                tick={{ fontSize: 10, fill: 'hsl(var(--muted-foreground))', fontWeight: 'normal' }}
-                tickFormatter={(value) => `$${(value / 1000).toFixed(0)}k`}
-              />
-              <ChartTooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    const current = payload.find(p => p.dataKey === 'current')?.value;
-                    const future = payload.find(p => p.dataKey === 'future')?.value;
-                    
-                    return (
-                      <div className="bg-background border border-border rounded-lg p-3 shadow-xl">
-                        <p className="font-medium text-foreground mb-1">{label}</p>
-                        <div className="space-y-1">
-                          <p className="text-sm">
-                            <span className="text-destructive">Current: </span>
-                            <span className="text-foreground font-semibold">${current?.toLocaleString()}</span>
-                          </p>
-                          <p className="text-sm">
-                            <span className="text-green-600">Future: </span>
-                            <span className="text-foreground font-semibold">${future?.toLocaleString()}</span>
-                          </p>
-                          {future && current && (
-                            <p className="text-xs text-muted-foreground">
-                              Difference: +${((future as number) - (current as number)).toLocaleString()}
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-              
-              <Line 
-                type="monotone" 
-                dataKey="current" 
-                stroke="hsl(var(--destructive))" 
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: 'hsl(var(--destructive))', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                isAnimationActive={false}
-              />
-              
-              <Line 
-                type="monotone" 
-                dataKey="future" 
-                stroke="#22c55e" 
-                strokeWidth={2}
-                dot={false}
-                activeDot={{ r: 4, fill: '#22c55e', stroke: 'hsl(var(--background))', strokeWidth: 2 }}
-                isAnimationActive={false}
-              />
-            </LineChart>
-          </ResponsiveContainer>
-        </div>
-        
-        <div className="flex justify-between items-center mt-2 text-xs">
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-0.5 bg-destructive rounded"></div>
-            <span className="text-muted-foreground">Current Value</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <div className="w-3 h-0.5 bg-green-600 rounded"></div>
-            <span className="text-muted-foreground">Future Value</span>
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  const [reportModalOpen, setReportModalOpen] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<{ name: string; type: string } | null>(null);
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
-  const [assetToDelete, setAssetToDelete] = useState<{ name: string; type: string } | null>(null);
-
-  const generateAssetReport = (assetName: string, assetType: string) => {
-    // Generate different reports based on asset type
-    switch (assetType) {
-      case "Primary Residence":
-        return `Your Primary Residence currently holds $${realEstateDetails.currentFMV.toLocaleString()} and is projected to grow to $${Math.round(realEstateFV).toLocaleString()} over ${realEstateYears[0]} years, assuming ${realEstateRate[0]}% annual appreciation.
-
-Current Fair Market Value: $${realEstateDetails.currentFMV.toLocaleString()}
-Purchase Price: $${realEstateDetails.purchasePrice.toLocaleString()}
-Mortgage Balance: $${realEstateDetails.mortgageBalance.toLocaleString()}
-Net Equity: $${(realEstateDetails.currentFMV - realEstateDetails.mortgageBalance).toLocaleString()}
-Growth Assumption: ${realEstateRate[0]}% annually
-Projected Value: $${Math.round(realEstateFV).toLocaleString()}
-Total Projected Growth: $${Math.round(realEstateFV - realEstateDetails.currentFMV).toLocaleString()}
-
-This projection assumes consistent real estate market performance. Actual results may vary based on local market conditions, property improvements, and economic factors.`;
-
-      case "RRSP":
-        return `Your RRSP currently holds $${rrspDetails.currentValue.toLocaleString()} and is projected to grow to $${Math.round(rrspFV).toLocaleString()} over ${rrspYears[0]} years, assuming ${rrspRate[0]}% annual returns and $${rrspDetails.annualContribution.toLocaleString()} in annual contributions.
-
-Current Value: $${rrspDetails.currentValue.toLocaleString()}
-Available Contribution Room: $${rrspDetails.availableRoom.toLocaleString()}
-Annual Contributions: $${rrspDetails.annualContribution.toLocaleString()}
-Monthly Contributions: $${rrspDetails.monthlyContribution.toLocaleString()}
-Growth Assumption: ${rrspRate[0]}% annually
-Projected Value: $${Math.round(rrspFV).toLocaleString()}
-Total Projected Growth: $${Math.round(rrspFV - rrspDetails.currentValue).toLocaleString()}
-
-This projection assumes consistent market performance and regular contributions. RRSP contributions provide immediate tax deductions, making this an excellent tax-deferred growth vehicle.`;
-
-      case "TFSA":
-        return `Your TFSA currently holds $${tfsaDetails.currentValue.toLocaleString()} and is projected to grow to $${Math.round(tfsaFV).toLocaleString()} over ${tfsaYears[0]} years, assuming ${tfsaRate[0]}% annual returns and $${tfsaDetails.annualContribution.toLocaleString()} in annual contributions.
-
-Current Value: $${tfsaDetails.currentValue.toLocaleString()}
-Available Contribution Room: $${tfsaDetails.availableRoom.toLocaleString()}
-Annual Contributions: $${tfsaDetails.annualContribution.toLocaleString()}
-Monthly Contributions: $${tfsaDetails.monthlyContribution.toLocaleString()}
-Growth Assumption: ${tfsaRate[0]}% annually
-Projected Value: $${Math.round(tfsaFV).toLocaleString()}
-Total Projected Growth: $${Math.round(tfsaFV - tfsaDetails.currentValue).toLocaleString()}
-
-This projection assumes consistent market performance and regular contributions. TFSA growth is completely tax-free, making this an excellent vehicle for long-term wealth building.`;
-
-      case "Non-Registered":
-        const capitalGain = nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase;
-        const estimatedCapitalGainsTax = capitalGain * (nonRegisteredDetails.inclusionRate / 100) * (nonRegisteredDetails.taxRate / 100);
-        
-        return `Your Non-Registered investment account currently holds $${nonRegisteredDetails.totalValue.toLocaleString()} and is projected to grow to $${Math.round(nonRegFV).toLocaleString()} over ${nonRegYears[0]} years, assuming ${nonRegRate[0]}% annual returns and $${nonRegisteredDetails.annualContribution.toLocaleString()} in annual contributions.
-
-Current Value: $${nonRegisteredDetails.totalValue.toLocaleString()}
-Cost Base: $${nonRegisteredDetails.costBase.toLocaleString()}
-Capital Gain: $${capitalGain.toLocaleString()}
-Estimated Capital Gains Tax: $${Math.round(estimatedCapitalGainsTax).toLocaleString()}
-Annual Contributions: $${nonRegisteredDetails.annualContribution.toLocaleString()}
-Monthly Contributions: $${nonRegisteredDetails.monthlyContribution.toLocaleString()}
-Growth Assumption: ${nonRegRate[0]}% annually
-Projected Value: $${Math.round(nonRegFV).toLocaleString()}
-Total Projected Growth: $${Math.round(nonRegFV - nonRegisteredDetails.totalValue).toLocaleString()}
-
-This projection assumes consistent market performance and regular contributions. Note that capital gains and dividends in non-registered accounts are subject to taxation.`;
-
-      default:
-        return `Your ${assetName} is being tracked with custom parameters. Please review the detailed projections in the card above for specific growth assumptions and projected values.`;
+  // Add handlers for adding new items
+  const handleAddDocument = () => {
+    if (newDocument.name.trim()) {
+      const document: EstateDocument = {
+        id: Date.now().toString(),
+        name: newDocument.name,
+        lastUpdated: new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' }),
+        status: newDocument.status,
+        review: newDocument.review || "Review annually"
+      };
+      setEstateDocuments([...estateDocuments, document]);
+      setNewDocument({ name: "", status: "Current", review: "" });
+      setShowAddDocument(false);
     }
   };
 
-  const handleAssetReport = (assetName: string, assetType: string) => {
-    setSelectedAsset({ name: assetName, type: assetType });
-    setReportModalOpen(true);
+  const handleAddTrust = () => {
+    if (newTrust.name.trim()) {
+      const trust: TrustStructure = {
+        id: Date.now().toString(),
+        name: newTrust.name,
+        type: newTrust.type || "Discretionary",
+        assets: newTrust.assets || "$0",
+        purpose: newTrust.purpose || "Tax planning",
+        settlor: newTrust.settlor || undefined,
+        trustees: newTrust.trustees.filter(t => t.trim()) || undefined,
+        beneficiaries: newTrust.beneficiaries.filter(b => b.name.trim()) || undefined,
+        jurisdiction: newTrust.jurisdiction || undefined,
+        startDate: newTrust.startDate || undefined,
+        notes: newTrust.notes || undefined
+      };
+      setTrustStructures([...trustStructures, trust]);
+      setNewTrust({ 
+        name: "", 
+        type: "", 
+        assets: "", 
+        purpose: "",
+        settlor: "",
+        trustees: [""],
+        beneficiaries: [{ id: "1", name: "", relationship: "", allocation: 0 }],
+        jurisdiction: "",
+        startDate: "",
+        notes: ""
+      });
+      setShowAddTrust(false);
+    }
   };
 
-  const handleAssetDelete = (assetName: string, assetType: string) => {
-    setAssetToDelete({ name: assetName, type: assetType });
-    setDeleteModalOpen(true);
+  const handleAddAction = () => {
+    if (newAction.action.trim()) {
+      const action: DocumentAction = {
+        id: Date.now().toString(),
+        action: newAction.action,
+        priority: newAction.priority
+      };
+      setDocumentActions([...documentActions, action]);
+      setNewAction({ action: "", priority: "Medium" });
+      setShowAddAction(false);
+    }
   };
 
-  const confirmAssetDelete = () => {
-    if (assetToDelete) {
-      console.log(`Delete confirmed for asset: ${assetToDelete.name}`);
-      // Note: For the main assets (Primary Residence, RRSP, TFSA, Non-Registered), 
-      // deletion would need to be handled differently as they're not in a removable array
-      // For now, we'll just close the modal
-      setDeleteModalOpen(false);
-      setAssetToDelete(null);
+  const handleAddBeneficiary = () => {
+    if (newBeneficiary.name.trim() && newBeneficiary.percentage > 0) {
+      // Calculate amount based on net estate value
+      const amount = (netEstateValue * newBeneficiary.percentage) / 100;
+      const beneficiary: Beneficiary = {
+        id: Date.now().toString(),
+        name: newBeneficiary.name,
+        relationship: newBeneficiary.relationship || "Other",
+        percentage: newBeneficiary.percentage,
+        amount: amount
+      };
+      setBeneficiaries([...beneficiaries, beneficiary]);
+      setNewBeneficiary({ name: "", relationship: "", percentage: 0 });
+      setShowAddBeneficiary(false);
+    }
+  };
+
+  const addTrustee = () => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: [...prev.trustees, ""]
+    }));
+  };
+
+  const removeTrustee = (index: number) => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: prev.trustees.filter((_, i) => i !== index)
+    }));
+  };
+
+  const updateTrustee = (index: number, value: string) => {
+    setNewTrust(prev => ({
+      ...prev,
+      trustees: prev.trustees.map((trustee, i) => i === index ? value : trustee)
+    }));
+  };
+
+  const addTrustBeneficiary = () => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: [...prev.beneficiaries, { 
+        id: Date.now().toString(), 
+        name: "", 
+        relationship: "", 
+        allocation: 0 
+      }]
+    }));
+  };
+
+  const removeTrustBeneficiary = (id: string) => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: prev.beneficiaries.filter(b => b.id !== id)
+    }));
+  };
+
+  const updateTrustBeneficiary = (id: string, field: keyof TrustBeneficiary, value: string | number) => {
+    setNewTrust(prev => ({
+      ...prev,
+      beneficiaries: prev.beneficiaries.map(b => 
+        b.id === id ? { ...b, [field]: value } : b
+      )
+    }));
+  };
+
+  const jurisdictions = [
+    "Alberta", "British Columbia", "Manitoba", "New Brunswick", 
+    "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia", 
+    "Nunavut", "Ontario", "Prince Edward Island", "Quebec", 
+    "Saskatchewan", "Yukon"
+  ];
+
+  // Add delete handlers
+  const handleDeleteDocument = (id: string) => {
+    setEstateDocuments(estateDocuments.filter(doc => doc.id !== id));
+  };
+
+  const handleDeleteTrust = (id: string) => {
+    setTrustStructures(trustStructures.filter(trust => trust.id !== id));
+  };
+
+  const handleDeleteAction = (id: string) => {
+    setDocumentActions(documentActions.filter(action => action.id !== id));
+  };
+
+  const handleDeleteBeneficiary = (id: string) => {
+    setBeneficiaries(beneficiaries.filter(beneficiary => beneficiary.id !== id));
+  };
+
+  // Updated formatting function to show M for millions
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${(value / 1000).toFixed(0)}K`;
     }
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-3xl font-bold">Assets</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <DollarSign className="h-5 w-5" />
+              Estate Planning
+            </DialogTitle>
+          </DialogHeader>
 
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Current Value</p>
-                <p className="font-bold text-2xl text-green-600">
-                  ${(realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)).toLocaleString()}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Future Value</p>
-                <p className="font-bold text-2xl text-blue-600">
-                  ${Math.round(realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)).toLocaleString()}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Total Projected Growth</p>
-                <p className="font-bold text-2xl text-purple-600">
-                  +${Math.round((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) - (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0))).toLocaleString()}
-                </p>
-              </div>
-              <div className="text-center">
-                <p className="text-sm text-muted-foreground">Growth Rate</p>
-                <p className="font-bold text-2xl text-orange-600">
-                  {(((realEstateFV + rrspFV + tfsaFV + nonRegFV + dynamicAssets.reduce((sum, asset) => sum + calculateFV(asset.currentValue, asset.rate[0], asset.years[0], asset.annualContribution), 0)) / (realEstateDetails.currentFMV + rrspDetails.currentValue + tfsaDetails.currentValue + nonRegisteredDetails.totalValue + dynamicAssets.reduce((sum, asset) => sum + asset.currentValue, 0)) - 1) * 100).toFixed(1)}%
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="overview">Estate Overview</TabsTrigger>
+              <TabsTrigger value="legacy">Legacy</TabsTrigger>
+            </TabsList>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Primary Residence", { name: "Primary Residence", value: realEstateDetails.currentFMV, amount: `$${realEstateDetails.currentFMV.toLocaleString()}`, color: "#f59e0b" })}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-amber-500"></div>
-                  <span>Primary Residence</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetReport("Primary Residence", "Primary Residence");
-                    }}
-                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetDelete("Primary Residence", "Primary Residence");
-                    }}
-                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <GrowthChart 
-                data={realEstateChartData}
-                currentValue={realEstateDetails.currentFMV}
-                futureValue={realEstateFV}
-                years={realEstateYears[0]}
-                color="#f59e0b"
-              />
+            <TabsContent value="overview" className="space-y-6">
+              {/* Final Tax Projections Title */}
+              <div className="text-2xl font-bold text-foreground">Final Tax Projections</div>
 
-              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Growth Rate: {realEstateRate[0]}%</label>
-                  <Slider
-                    value={realEstateRate}
-                    onValueChange={setRealEstateRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {realEstateYears[0]}</label>
-                  <Slider
-                    value={realEstateYears}
-                    onValueChange={setRealEstateYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
+              {/* Summary Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-foreground">{formatCurrency(totalFutureValue)}</p>
+                      <p className="text-sm text-muted-foreground">Total Future Value</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-red-600">{formatCurrency(totalTaxOwed)}</p>
+                      <p className="text-sm text-muted-foreground">Estimated Taxes</p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-green-600">{formatCurrency(totalNetValue)}</p>
+                      <p className="text-sm text-muted-foreground">Net Estate Value</p>
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <EditableField 
-                  fieldId="realEstate.currentFMV" 
-                  value={realEstateDetails.currentFMV} 
-                  label="Current FMV" 
-                />
-                <EditableField 
-                  fieldId="future-value-re" 
-                  value={Math.round(realEstateFV)} 
-                  label={`Future Value (${realEstateYears[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="realEstate.purchasePrice" 
-                  value={realEstateDetails.purchasePrice} 
-                  label="Purchase Price" 
-                />
-                <EditableField 
-                  fieldId="projected-growth-re" 
-                  value={Math.round(realEstateFV - realEstateDetails.currentFMV)} 
-                  label="Projected Growth" 
-                  prefix="+$"
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="realEstate.mortgageBalance" 
-                  value={realEstateDetails.mortgageBalance} 
-                  label="Mortgage Balance" 
-                />
-                <EditableField 
-                  fieldId="net-equity-re" 
-                  value={realEstateDetails.currentFMV - realEstateDetails.mortgageBalance} 
-                  label="Net Equity" 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-              </div>
-              
-              <div className="pt-2">
-                <p className="text-xs text-muted-foreground mb-1">Address: {realEstateDetails.address}</p>
-              </div>
-            </CardContent>
-          </Card>
+              {/* Current Estate Value Breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Current Estate Value Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-48 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={estateBreakdownData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                        <XAxis 
+                          dataKey="category" 
+                          tick={{ fontSize: 12 }}
+                          interval={0}
+                          angle={-45}
+                          textAnchor="end"
+                          height={80}
+                        />
+                        <YAxis 
+                          tick={{ fontSize: 12 }}
+                          tickFormatter={(value) => formatCurrency(value)}
+                        />
+                        <ChartTooltip 
+                          content={<ChartTooltipContent 
+                            formatter={(value) => [formatCurrency(Number(value)), "Amount"]}
+                          />}
+                        />
+                        <Bar 
+                          dataKey="amount" 
+                          radius={[4, 4, 0, 0]}
+                        >
+                          {estateBreakdownData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.color} />
+                          ))}
+                        </Bar>
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </ChartContainer>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("RRSP", { name: "RRSP", value: rrspDetails.currentValue, amount: `$${rrspDetails.currentValue.toLocaleString()}`, color: "#10b981" })}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-emerald-500"></div>
-                  <span>RRSP</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetReport("RRSP", "RRSP");
-                    }}
-                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetDelete("RRSP", "RRSP");
-                    }}
-                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <GrowthChart 
-                data={rrspChartData}
-                currentValue={rrspDetails.currentValue}
-                futureValue={rrspFV}
-                years={rrspYears[0]}
-                color="#8b5cf6"
-              />
-
-              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Growth Rate: {rrspRate[0]}%</label>
-                  <Slider
-                    value={rrspRate}
-                    onValueChange={setRrspRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {rrspYears[0]}</label>
-                  <Slider
-                    value={rrspYears}
-                    onValueChange={setRrspYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <EditableField 
-                  fieldId="rrsp.currentValue" 
-                  value={rrspDetails.currentValue} 
-                  label="Current Value" 
-                />
-                <EditableField 
-                  fieldId="future-value-rrsp" 
-                  value={Math.round(rrspFV)} 
-                  label={`Future Value (${rrspYears[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="projected-growth-rrsp" 
-                  value={Math.round(rrspFV - rrspDetails.currentValue)} 
-                  label="Projected Growth" 
-                  prefix="+$"
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="rrsp.availableRoom" 
-                  value={rrspDetails.availableRoom} 
-                  label="Available Room" 
-                  tip={`If maxed out, worth $${Math.round(rrspDetails.availableRoom * Math.pow(1.07, 10)).toLocaleString()} in 10 years at 7%`}
-                />
-                <EditableField 
-                  fieldId="rrsp.annualContribution" 
-                  value={rrspDetails.annualContribution} 
-                  label="Annual Contribution" 
-                  tip={`${(rrspDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-                <EditableField 
-                  fieldId="rrsp.monthlyContribution" 
-                  value={rrspDetails.monthlyContribution} 
-                  label="Monthly Contribution" 
-                  tip={`${((rrspDetails.monthlyContribution * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-              </div>
-              
-              <div className="pt-2">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">Rate: <span className="font-semibold">{rrspRate[0]}%</span> annually</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("TFSA", { name: "TFSA", value: tfsaDetails.currentValue, amount: `$${tfsaDetails.currentValue.toLocaleString()}`, color: "#8b5cf6" })}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-violet-500"></div>
-                  <span>TFSA</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetReport("TFSA", "TFSA");
-                    }}
-                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetDelete("TFSA", "TFSA");
-                    }}
-                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <GrowthChart 
-                data={tfsaChartData}
-                currentValue={tfsaDetails.currentValue}
-                futureValue={tfsaFV}
-                years={tfsaYears[0]}
-                color="#06b6d4"
-              />
-
-              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Growth Rate: {tfsaRate[0]}%</label>
-                  <Slider
-                    value={tfsaRate}
-                    onValueChange={setTfsaRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {tfsaYears[0]}</label>
-                  <Slider
-                    value={tfsaYears}
-                    onValueChange={setTfsaYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <EditableField 
-                  fieldId="tfsa.currentValue" 
-                  value={tfsaDetails.currentValue} 
-                  label="Current Value" 
-                />
-                <EditableField 
-                  fieldId="future-value-tfsa" 
-                  value={Math.round(tfsaFV)} 
-                  label={`Future Value (${tfsaYears[0]} years)`} 
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="projected-growth-tfsa" 
-                  value={Math.round(tfsaFV - tfsaDetails.currentValue)} 
-                  label="Projected Growth" 
-                  prefix="+$"
-                  isAutoCalculated={true}
-                  isEditable={false}
-                />
-                <EditableField 
-                  fieldId="tfsa.availableRoom" 
-                  value={tfsaDetails.availableRoom} 
-                  label="Available Room" 
-                  tip={`If maxed out, worth $${Math.round(tfsaDetails.availableRoom * Math.pow(1.065, 10)).toLocaleString()} in 10 years at 6.5%`}
-                />
-                <EditableField 
-                  fieldId="tfsa.annualContribution" 
-                  value={tfsaDetails.annualContribution} 
-                  label="Annual Contribution" 
-                  tip={`${(tfsaDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-                <EditableField 
-                  fieldId="tfsa.monthlyContribution" 
-                  value={tfsaDetails.monthlyContribution} 
-                  label="Monthly Contribution" 
-                  tip={`${((tfsaDetails.monthlyContribution * 12) / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                />
-              </div>
-              
-              <div className="pt-2">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">Rate: <span className="font-semibold">{tfsaRate[0]}%</span> annually</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow" onClick={() => addDynamicAsset("Non-Registered", { name: "Non-Registered", value: nonRegisteredDetails.totalValue, amount: `$${nonRegisteredDetails.totalValue.toLocaleString()}`, color: "#f59e0b" })}>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between text-xl">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-red-500"></div>
-                  <span>Non-Registered</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetReport("Non-Registered", "Non-Registered");
-                    }}
-                    className="text-muted-foreground hover:text-foreground h-8 w-8 p-0"
-                  >
-                    <FileText className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="sm" 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleAssetDelete("Non-Registered", "Non-Registered");
-                    }}
-                    className="text-red-600 hover:text-red-700 h-8 w-8 p-0"
-                  >
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <GrowthChart 
-                data={nonRegChartData}
-                currentValue={nonRegisteredDetails.totalValue}
-                futureValue={nonRegFV}
-                years={nonRegYears[0]}
-                color="#ef4444"
-              />
-
-              <div className="bg-muted/30 p-4 rounded-lg space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Growth Rate: {nonRegRate[0]}%</label>
-                  <Slider
-                    value={nonRegRate}
-                    onValueChange={setNonRegRate}
-                    max={15}
-                    min={0}
-                    step={0.1}
-                    className="w-full"
-                  />
-                </div>
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Projection Years: {nonRegYears[0]}</label>
-                  <Slider
-                    value={nonRegYears}
-                    onValueChange={setNonRegYears}
-                    max={30}
-                    min={1}
-                    step={1}
-                    className="w-full"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <EditableField 
-                    fieldId="nonReg.totalValue" 
-                    value={nonRegisteredDetails.totalValue} 
-                    label="Current Value" 
-                  />
-                  <EditableField 
-                    fieldId="future-value-nonreg" 
-                    value={Math.round(nonRegFV)} 
-                    label={`Future Value (${nonRegYears[0]} years)`} 
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                  <EditableField 
-                    fieldId="nonReg.costBase" 
-                    value={nonRegisteredDetails.costBase} 
-                    label="Cost Base" 
-                  />
-                  <EditableField 
-                    fieldId="projected-growth-nonreg" 
-                    value={Math.round(nonRegFV - nonRegisteredDetails.totalValue)} 
-                    label="Projected Growth" 
-                    prefix="+$"
-                    isAutoCalculated={true}
-                    isEditable={false}
-                  />
-                  <EditableField 
-                    fieldId="nonReg.annualContribution" 
-                    value={nonRegisteredDetails.annualContribution} 
-                    label="Annual Contribution" 
-                    tip={`${(nonRegisteredDetails.annualContribution / assumedAnnualIncome * 100).toFixed(1)}% of gross annual income`}
-                  />
-                  <EditableField 
-                    fieldId="nonReg.monthlyContribution" 
-                    value={nonRegisteredDetails.monthlyContribution} 
-                    label="Monthly Contribution" 
-                  />
-                </div>
-
-                <div className="bg-muted/20 p-4 rounded-lg space-y-3">
-                  <h4 className="font-medium text-sm">Capital Gains Calculation</h4>
-                  <div className="grid grid-cols-2 gap-4">
-                    <EditableField 
-                      fieldId="capital-gain-nonreg" 
-                      value={Math.round(nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase)} 
-                      label="Capital Gain" 
-                      isAutoCalculated={true}
-                      isEditable={false}
-                    />
-                    <EditableField 
-                      fieldId="nonReg.inclusionRate" 
-                      value={nonRegisteredDetails.inclusionRate} 
-                      label="Inclusion Rate" 
-                      prefix=""
-                      suffix="%"
-                    />
-                    <EditableField 
-                      fieldId="nonReg.taxRate" 
-                      value={nonRegisteredDetails.taxRate} 
-                      label="Tax Rate" 
-                      prefix=""
-                      suffix="%"
-                    />
-                    <EditableField 
-                      fieldId="estimated-capital-gains-tax-nonreg" 
-                      value={Math.round((nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase) * (nonRegisteredDetails.inclusionRate / 100) * (nonRegisteredDetails.taxRate / 100))} 
-                      label="Estimated Capital Gains Tax" 
-                      isAutoCalculated={true}
-                      isEditable={false}
-                    />
-                  </div>
-                </div>
-              </div>
-              
-              <div className="pt-2">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-600" />
-                  <span className="text-sm">Rate: <span className="font-semibold">{nonRegRate[0]}%</span> annually</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {dynamicAssets.map((asset) => (
-            <DynamicAssetCard key={asset.id} asset={asset} />
-          ))}
-
-          <Card className="border-dashed border-2 border-muted-foreground/30">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl text-muted-foreground">
-                <Plus className="w-6 h-6" />
-                Add Asset
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3">
-                <div>
-                  <label className="text-sm font-medium mb-2 block">Asset Type</label>
-                  <Select onValueChange={(value) => addDynamicAsset(value)}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Primary Residence">Primary Residence</SelectItem>
-                      <SelectItem value="Secondary Property">Secondary Property</SelectItem>
-                      <SelectItem value="RRSP">RRSP</SelectItem>
-                      <SelectItem value="RRIF">RRIF</SelectItem>
-                      <SelectItem value="TFSA">TFSA</SelectItem>
-                      <SelectItem value="FHSA">FHSA</SelectItem>
-                      <SelectItem value="Non-Registered">Non-Registered</SelectItem>
-                      <SelectItem value="DB">DB (Defined Benefit)</SelectItem>
-                      <SelectItem value="DC">DC (Defined Contribution)</SelectItem>
-                      <SelectItem value="IPP">IPP (Individual Pension Plan)</SelectItem>
-                      <SelectItem value="LIRA">LIRA (Locked-in Retirement Account)</SelectItem>
-                      <SelectItem value="LIF">LIF (Life Income Fund)</SelectItem>
-                      <SelectItem value="Pension">Pension</SelectItem>
-                      <SelectItem value="Chequing">Chequing Account</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card className="mt-6">
-          <CardHeader>
-            <CardTitle className="text-xl flex items-center gap-2">
-              <Brain className="w-5 h-5" />
-              AI Guidance Tips
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                {
-                  icon: TrendingUp,
-                  title: "Diversification Opportunity",
-                  tip: "Your portfolio is heavily weighted in real estate (84%). Consider increasing liquid investments to reduce concentration risk.",
-                  color: "text-orange-600",
-                  bgColor: "bg-orange-50",
-                  borderColor: "border-orange-200"
-                },
-                {
-                  icon: Brain,
-                  title: "Tax Optimization",
-                  tip: "Maximize your TFSA contributions first ($38K current vs $88K+ limit), then focus on RRSP to reduce taxable income.",
-                  color: "text-blue-600", 
-                  bgColor: "bg-blue-50",
-                  borderColor: "border-blue-200"
-                },
-                {
-                  icon: Lightbulb,
-                  title: "Emergency Fund Strategy",
-                  tip: "Consider keeping 3-6 months of expenses in high-interest savings. Your current liquid assets may not provide adequate emergency coverage.",
-                  color: "text-green-600",
-                  bgColor: "bg-green-50", 
-                  borderColor: "border-green-200"
-                }
-              ].map((tip, index) => (
-                <div key={index} className={`p-3 rounded-lg border ${tip.bgColor} ${tip.borderColor}`}>
-                  <div className="flex items-start gap-3">
-                    <tip.icon className={`w-4 h-4 mt-0.5 ${tip.color}`} />
-                    <div>
-                      <h5 className={`font-medium ${tip.color} mb-1`}>{tip.title}</h5>
-                      <p className="text-sm text-gray-700">{tip.tip}</p>
+                  {/* Summary Numbers */}
+                  <div className="grid grid-cols-3 gap-4 mt-4 text-center">
+                    <div className="p-2 bg-purple-100 rounded-lg">
+                      <p className="text-xs text-purple-700 font-medium">Total Estate</p>
+                      <p className="text-lg font-bold text-purple-800">{formatCurrency(totalFutureValue)}</p>
+                    </div>
+                    <div className="p-2 bg-amber-100 rounded-lg">
+                      <p className="text-xs text-amber-700 font-medium">Final Taxes</p>
+                      <p className="text-lg font-bold text-amber-800">{formatCurrency(totalTaxOwed)}</p>
+                    </div>
+                    <div className="p-2 bg-cyan-100 rounded-lg">
+                      <p className="text-xs text-cyan-700 font-medium">Net Amount</p>
+                      <p className="text-lg font-bold text-cyan-800">{formatCurrency(totalNetValue)}</p>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                </CardContent>
+              </Card>
 
-        {/* Asset Report Modal */}
-        <Dialog open={reportModalOpen} onOpenChange={setReportModalOpen}>
-          <DialogContent className="max-w-2xl">
-            <DialogHeader>
-              <DialogTitle className="flex items-center space-x-2">
-                <FileText className="h-5 w-5 text-blue-600" />
-                <span>{selectedAsset?.name} Report</span>
-              </DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4">
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <pre className="whitespace-pre-wrap text-sm font-mono text-gray-800">
-                  {selectedAsset ? generateAssetReport(selectedAsset.name, selectedAsset.type) : ''}
-                </pre>
-              </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setReportModalOpen(false)}>
-                  Close
-                </Button>
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  Export to PDF
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
+              {/* Individual Asset Controls - 2 Column Layout */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {projectedAssets.map((asset, index) => (
+                  <Card key={index}>
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center gap-2">
+                        <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }}></div>
+                        {asset.name}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Controls - Vertical Stack */}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Rate of Return: {asset.settings.rateOfReturn[0]}%
+                          </label>
+                          <Slider
+                            value={asset.settings.rateOfReturn}
+                            onValueChange={(value) => updateAssetSetting(asset.name, 'rateOfReturn', value)}
+                            min={1}
+                            max={15}
+                            step={0.5}
+                            className="w-full"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">
+                            Time Frame: {asset.settings.timeFrame[0]} years
+                          </label>
+                          <Slider
+                            value={asset.settings.timeFrame}
+                            onValueChange={(value) => updateAssetSetting(asset.name, 'timeFrame', value)}
+                            min={1}
+                            max={30}
+                            step={1}
+                            className="w-full"
+                          />
+                        </div>
+                      </div>
 
-        {/* Delete Confirmation Modal */}
-        <AlertDialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle className="flex items-center space-x-2 text-red-600">
-                <X className="h-5 w-5" />
-                <span>Delete Asset Card</span>
-              </AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete the <strong>{assetToDelete?.name}</strong> asset card? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={() => setDeleteModalOpen(false)}>
-                Cancel
-              </AlertDialogCancel>
-              <AlertDialogAction 
-                onClick={confirmAssetDelete}
-                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                      {/* Asset Projections - 2x2 Grid */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="text-center p-3 bg-gray-50 rounded-lg">
+                          <p className="text-xs text-muted-foreground">Current Value</p>
+                          <p className="text-sm font-bold">{formatCurrency(asset.currentValue)}</p>
+                        </div>
+                        <div className="text-center p-3 bg-blue-50 rounded-lg">
+                          <p className="text-xs text-muted-foreground">Future Value</p>
+                          <p className="text-sm font-bold text-blue-600">{formatCurrency(asset.futureValue)}</p>
+                        </div>
+                        <div className="text-center p-3 bg-red-50 rounded-lg">
+                          <p className="text-xs text-muted-foreground">Tax Owed</p>
+                          <p className="text-sm font-bold text-red-600">{formatCurrency(asset.taxOwed)}</p>
+                        </div>
+                        <div className="text-center p-3 bg-green-50 rounded-lg">
+                          <p className="text-xs text-muted-foreground">Net Value</p>
+                          <p className="text-sm font-bold text-green-600">{formatCurrency(asset.netValue)}</p>
+                        </div>
+                      </div>
+
+                      {/* Tax Status */}
+                      <div className="p-3 bg-orange-50 rounded-lg border border-orange-200">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Calculator className="h-4 w-4 text-orange-600" />
+                          <span className="text-sm font-medium text-orange-800">Tax Treatment: {asset.taxableStatus}</span>
+                        </div>
+                        <p className="text-xs text-orange-700">
+                          {asset.taxableStatus === "Fully Taxable" && "Full value subject to marginal tax rate at death"}
+                          {asset.taxableStatus === "Capital Gains" && "Only gains subject to capital gains tax (50% inclusion rate)"}
+                          {asset.taxableStatus === "Tax-Free" && "No tax implications on this asset"}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Detailed Tax Calculations - Moved to bottom */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Detailed Tax Calculations</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full border-collapse">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left p-2">Asset</th>
+                          <th className="text-right p-2">Current Value</th>
+                          <th className="text-right p-2">Future Value</th>
+                          <th className="text-right p-2">Taxable Amount</th>
+                          <th className="text-right p-2">Tax Rate</th>
+                          <th className="text-right p-2">Tax Owed</th>
+                          <th className="text-right p-2">Net Value</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {projectedAssets.map((asset, index) => {
+                          const taxRate = asset.taxableStatus === "Fully Taxable" ? 43 :
+                                         asset.taxableStatus === "Capital Gains" ? 21.5 : 0;
+                          return (
+                            <tr key={index} className="border-b">
+                              <td className="p-2 font-medium">{asset.name}</td>
+                              <td className="text-right p-2">{formatCurrency(asset.currentValue)}</td>
+                              <td className="text-right p-2 font-medium">{formatCurrency(asset.futureValue)}</td>
+                              <td className="text-right p-2">{formatCurrency(asset.taxableAmount)}</td>
+                              <td className="text-right p-2">{taxRate}%</td>
+                              <td className="text-right p-2 text-red-600 font-medium">{formatCurrency(asset.taxOwed)}</td>
+                              <td className="text-right p-2 text-green-600 font-bold">{formatCurrency(asset.netValue)}</td>
+                            </tr>
+                          );
+                        })}
+                        <tr className="border-t-2 font-bold">
+                          <td className="p-2">Total</td>
+                          <td className="text-right p-2">{formatCurrency(estateAssets.reduce((sum, asset) => sum + asset.currentValue, 0))}</td>
+                          <td className="text-right p-2">{formatCurrency(totalFutureValue)}</td>
+                          <td className="text-right p-2">{formatCurrency(projectedAssets.reduce((sum, asset) => sum + asset.taxableAmount, 0))}</td>
+                          <td className="text-right p-2">-</td>
+                          <td className="text-right p-2 text-red-600">{formatCurrency(totalTaxOwed)}</td>
+                          <td className="text-right p-2 text-green-600">{formatCurrency(totalNetValue)}</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="legacy" className="space-y-6">
+              {/* Estate Documents Status */}
+              <Card className="border-blue-200 bg-blue-50">
+                <CardHeader className="bg-blue-100 border-b border-blue-200">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <FileText className="h-5 w-5 text-blue-600" />
+                      <span className="text-blue-800">Estate Documents Status</span>
+                    </div>
+                    <Button size="sm" className="bg-blue-600 hover:bg-blue-700" onClick={() => setShowAddDocument(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Document
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-4">
+                    {estateDocuments.map((doc) => (
+                      <div key={doc.id} className="flex items-center justify-between p-4 border border-blue-200 rounded-lg bg-white">
+                        <div>
+                          <h4 className="font-medium text-blue-900">{doc.name}</h4>
+                          <p className="text-sm text-blue-700">Last Updated: {doc.lastUpdated}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <Badge variant={doc.status === "Current" ? "secondary" : doc.status === "Outdated" ? "destructive" : "outline"}>
+                              {doc.status}
+                            </Badge>
+                            <p className="text-xs text-blue-600 mt-1">{doc.review}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteDocument(doc.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Trust Structures */}
+              <Card className="border-green-200 bg-green-50">
+                <CardHeader className="bg-green-100 border-b border-green-200">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Scale className="h-5 w-5 text-green-600" />
+                      <span className="text-green-800">Trust Structures</span>
+                    </div>
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => setShowAddTrust(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Trust
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-4">
+                    {trustStructures.map((trust) => (
+                      <div key={trust.id} className="p-4 border border-green-200 rounded-lg bg-white">
+                        <div className="flex items-center justify-between mb-2">
+                          <h4 className="font-medium text-green-900">{trust.name}</h4>
+                          <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="border-green-300 text-green-700">{trust.type}</Badge>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteTrust(trust.id)}
+                              className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 text-sm mb-2">
+                          <div>
+                            <p className="text-green-600">Assets</p>
+                            <p className="font-medium text-green-800">{trust.assets}</p>
+                          </div>
+                          <div>
+                            <p className="text-green-600">Purpose</p>
+                            <p className="font-medium text-green-800">{trust.purpose}</p>
+                          </div>
+                        </div>
+                        {trust.settlor && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Settlor: </span>
+                            <span className="text-green-800">{trust.settlor}</span>
+                          </div>
+                        )}
+                        {trust.trustees && trust.trustees.length > 0 && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Trustees: </span>
+                            <span className="text-green-800">{trust.trustees.join(", ")}</span>
+                          </div>
+                        )}
+                        {trust.jurisdiction && (
+                          <div className="text-sm mb-1">
+                            <span className="text-green-600">Jurisdiction: </span>
+                            <span className="text-green-800">{trust.jurisdiction}</span>
+                          </div>
+                        )}
+                        {trust.startDate && (
+                          <div className="text-sm">
+                            <span className="text-green-600">Start Date: </span>
+                            <span className="text-green-800">{new Date(trust.startDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Document Actions */}
+              <Card className="border-orange-200 bg-orange-50">
+                <CardHeader className="bg-orange-100 border-b border-orange-200">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Calendar className="h-5 w-5 text-orange-600" />
+                      <span className="text-orange-800">Document Actions</span>
+                    </div>
+                    <Button size="sm" className="bg-orange-600 hover:bg-orange-700" onClick={() => setShowAddAction(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Action
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-3">
+                    {documentActions.map((action) => (
+                      <div key={action.id} className="flex items-center justify-between p-3 border border-orange-200 rounded-lg bg-white">
+                        <span className="font-medium text-orange-900">{action.action}</span>
+                        <div className="flex items-center gap-2">
+                          <Badge variant={action.priority === "High" ? "destructive" : action.priority === "Medium" ? "default" : "secondary"}>
+                            {action.priority}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteAction(action.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Beneficiary Allocation */}
+              <Card className="border-purple-200 bg-purple-50">
+                <CardHeader className="bg-purple-100 border-b border-purple-200">
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Users className="h-5 w-5 text-purple-600" />
+                      <span className="text-purple-800">Beneficiary Allocation</span>
+                    </div>
+                    <Button size="sm" className="bg-purple-600 hover:bg-purple-700" onClick={() => setShowAddBeneficiary(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Beneficiary
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4">
+                  <div className="space-y-4">
+                    {beneficiaries.map((beneficiary) => (
+                      <div key={beneficiary.id} className="flex items-center justify-between p-4 border border-purple-200 rounded-lg bg-white">
+                        <div>
+                          <h4 className="font-medium text-purple-900">{beneficiary.name}</h4>
+                          <p className="text-sm text-purple-700">{beneficiary.relationship}</p>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="font-bold text-purple-800">{beneficiary.percentage}%</p>
+                            <p className="text-sm text-purple-600">{formatCurrency(beneficiary.amount)}</p>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteBeneficiary(beneficiary.id)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Document Dialog */}
+      <Dialog open={showAddDocument} onOpenChange={setShowAddDocument}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Estate Document</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Document Name</label>
+              <Input
+                value={newDocument.name}
+                onChange={(e) => setNewDocument({ ...newDocument, name: e.target.value })}
+                placeholder="e.g., Power of Attorney"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Status</label>
+              <select
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={newDocument.status}
+                onChange={(e) => setNewDocument({ ...newDocument, status: e.target.value as "Current" | "Outdated" | "Pending" })}
               >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </DialogContent>
-    </Dialog>
+                <option value="Current">Current</option>
+                <option value="Outdated">Outdated</option>
+                <option value="Pending">Pending</option>
+              </select>
+            </div>
+            <div>
+              <label className="text-sm font-medium">Review Notes</label>
+              <Input
+                value={newDocument.review}
+                onChange={(e) => setNewDocument({ ...newDocument, review: e.target.value })}
+                placeholder="e.g., Review annually"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowAddDocument(false)}>Cancel</Button>
+              <Button onClick={handleAddDocument}>Add Document</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Trust Dialog */}
+      <Dialog open={showAddTrust} onOpenChange={setShowAddTrust}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Add Trust Structure</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Trust Name*</label>
+                <Input
+                  value={newTrust.name}
+                  onChange={(e) => setNewTrust({ ...newTrust, name: e.target.value })}
+                  placeholder="e.g., Family Trust"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Type</label>
+                <Input
+                  value={newTrust.type}
+                  onChange={(e) => setNewTrust({ ...newTrust, type: e.target.value })}
+                  placeholder="e.g., Discretionary"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Assets</label>
+                <Input
+                  value={newTrust.assets}
+                  onChange={(e) => setNewTrust({ ...newTrust, assets: e.target.value })}
+                  placeholder="e.g., $100,000"
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium">Purpose</label>
+                <Input
+                  value={newTrust.purpose}
+                  onChange={(e) => setNewTrust({ ...newTrust, purpose: e.target.value })}
+                  placeholder="e.g., Tax minimization"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Settlor</label>
+              <Input
+                value={newTrust.settlor}
+                onChange={(e) => setNewTrust({ ...newTrust, settlor: e.target.value })}
+                placeholder="Name of person who created the trust"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Trustee(s)</label>
+              <div className="space-y-2">
+                {newTrust.trustees.map((trustee, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      value={trustee}
+                      onChange={(e) => updateTrustee(index, e.target.value)}
+                      placeholder="Trustee name"
+                      className="flex-1"
+                    />
+                    {newTrust.trustees.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTrustee(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTrustee}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Trustee
+                </Button>
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Beneficiaries</label>
+              <div className="space-y-2">
+                {newTrust.beneficiaries.map((beneficiary) => (
+                  <div key={beneficiary.id} className="flex gap-2 items-end">
+                    <div className="flex-1">
+                      <Input
+                        value={beneficiary.name}
+                        onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'name', e.target.value)}
+                        placeholder="Name"
+                        className="mb-2"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <Input
+                          value={beneficiary.relationship}
+                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'relationship', e.target.value)}
+                          placeholder="Relationship"
+                        />
+                        <Input
+                          type="number"
+                          value={beneficiary.allocation}
+                          onChange={(e) => updateTrustBeneficiary(beneficiary.id, 'allocation', Number(e.target.value))}
+                          placeholder="% Allocation"
+                          min="0"
+                          max="100"
+                        />
+                      </div>
+                    </div>
+                    {newTrust.beneficiaries.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeTrustBeneficiary(beneficiary.id)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addTrustBeneficiary}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Beneficiary
+                </Button>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="text-sm font-medium">Jurisdiction</label>
+                <select
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                  value={newTrust.jurisdiction}
+                  onChange={(e) => setNewTrust({ ...newTrust, jurisdiction: e.target.value })}
+                >
+                  <option value="">Select jurisdiction</option>
+                  {jurisdictions.map((jurisdiction) => (
+                    <option key={jurisdiction} value={jurisdiction}>
+                      {jurisdiction}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium">Trust Start Date</label>
+                <Input
+                  type="date"
+                  value={newTrust.startDate}
+                  onChange={(e) => setNewTrust({ ...newTrust, startDate: e.target.value })}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium">Notes</label>
+              <Textarea
+                value={newTrust.notes}
+                onChange={(e) => setNewTrust({ ...newTrust, notes: e.target.value })}
+                placeholder="e.g., Includes private company shares, distributions tied to education milestones"
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowAddTrust(false)}>Cancel</Button>
+              <Button onClick={handleAddTrust}>Add Trust</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Action Dialog */}
+      <Dialog open={showAddAction} onOpenChange={setShowAddAction}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Document Action</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Action</label>
+              <Input
+                value={newAction.action}
+                onChange={(e) => setNewAction({ ...newAction, action: e.target.value })}
+                placeholder="e.g., Update beneficiary designations"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Priority</label>
+              <select
+                className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+                value={newAction.priority}
+                onChange={(e) => setNewAction({ ...newAction, priority: e.target.value as "High" | "Medium" | "Low" })}
+              >
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowAddAction(false)}>Cancel</Button>
+              <Button onClick={handleAddAction}>Add Action</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Beneficiary Dialog */}
+      <Dialog open={showAddBeneficiary} onOpenChange={setShowAddBeneficiary}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Beneficiary</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Name</label>
+              <Input
+                value={newBeneficiary.name}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, name: e.target.value })}
+                placeholder="e.g., John Smith"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Relationship</label>
+              <Input
+                value={newBeneficiary.relationship}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, relationship: e.target.value })}
+                placeholder="e.g., Son"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium">Percentage</label>
+              <Input
+                type="number"
+                value={newBeneficiary.percentage}
+                onChange={(e) => setNewBeneficiary({ ...newBeneficiary, percentage: Number(e.target.value) })}
+                placeholder="e.g., 25"
+                min="0"
+                max="100"
+              />
+            </div>
+            <div className="flex gap-2 justify-end">
+              <Button variant="outline" onClick={() => setShowAddBeneficiary(false)}>Cancel</Button>
+              <Button onClick={handleAddBeneficiary}>Add Beneficiary</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
