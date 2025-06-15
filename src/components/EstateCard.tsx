@@ -1,5 +1,5 @@
 
-import { Crown, Eye } from "lucide-react";
+import { Crown, Eye, Bot } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
@@ -7,11 +7,13 @@ import { useState } from "react";
 import { EstateDetailDialog } from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [rateOfReturn, setRateOfReturn] = useState([6]);
   const [timeHorizon, setTimeHorizon] = useState([15]);
+  const [isAIDialogOpen, setAIDialogOpen] = useState(false);
 
   // Current estate assets with tax implications
   const estateAssets = [
@@ -96,13 +98,40 @@ const EstateCard = () => {
     amount: { label: "Amount", color: "#8b5cf6" }
   };
 
-  // Updated formatting function to show M for millions
+  // Formatting function to show M for millions
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
       return `$${(value / 1000000).toFixed(2)}M`;
     } else {
       return `$${(value / 1000).toFixed(0)}K`;
     }
+  };
+
+  // --- Estate AI analysis generator ---
+  const generateEstateAIAnalysis = () => {
+    let text = `Estate Section – AI Analysis
+
+• Projected Time Horizon: ${timeHorizon[0]} year${timeHorizon[0] > 1 ? "s" : ""} at ${rateOfReturn[0]}% rate of return.
+• Total projected estate value: ${formatCurrency(estateValues.totalEstate)}
+• Estimated estate taxes: ${formatCurrency(estateValues.finalTaxes)}
+• Estimated net to beneficiaries: ${formatCurrency(estateValues.netToBeneficiaries)}
+
+Breakdown by asset type:
+`;
+    estateAssets.forEach(asset => {
+      const projectedValue = asset.currentValue * Math.pow(1 + (rateOfReturn[0]/100), timeHorizon[0]);
+      text += `  – ${asset.name}: ${formatCurrency(projectedValue)} (${asset.taxStatus})\n`;
+    });
+    text += `
+
+Tips & Considerations:
+- Higher returns and longer horizons increase the size of your estate—but also the taxes.
+- Tax-advantaged accounts (like TFSA) grow without additional tax, maximizing legacy.
+- Periodically review beneficiary designations and consider estate planning strategies to reduce taxes and complexity for heirs.
+
+Adjust the sliders to instantly see the implication of growth and time on your legacy.`;
+
+    return text;
   };
 
   return (
@@ -116,15 +145,27 @@ const EstateCard = () => {
             </div>
             <span>Estate</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="flex items-center gap-2 border-orange-700 text-orange-700 hover:bg-orange-50"
-            onClick={() => setShowDetailDialog(true)}
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              className="flex items-center gap-2 border-orange-700 text-orange-700 hover:bg-orange-50"
+              onClick={() => setShowDetailDialog(true)}
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" /> 
+              AI
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent className="space-y-6">
@@ -220,6 +261,12 @@ const EstateCard = () => {
       <EstateDetailDialog 
         isOpen={showDetailDialog} 
         onClose={() => setShowDetailDialog(false)} 
+      />
+      <SectionAIDialog
+        isOpen={isAIDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Estate"
+        content={generateEstateAIAnalysis()}
       />
     </>
   );
