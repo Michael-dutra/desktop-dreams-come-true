@@ -21,42 +21,45 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
-      
       <main className="p-6">
         <div className="space-y-6">
           {/* Client Information Header */}
           <ClientInfo />
           
-          {/* First Row - Net Worth, Assets, and Liabilities */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* First Row - Net Worth and Assets Breakdown */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <NetWorthCard />
             <AssetsBreakdown />
-            <LiabilitiesBreakdown />
           </div>
-          
-          {/* Second Row - Cash Flow, Insurance, and Retirement */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+          {/* Second Row - Liabilities Breakdown and Cash Flow */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <LiabilitiesBreakdown />
             <MonthlyCashFlow />
+          </div>
+
+          {/* Third Row - Insurance and Retirement */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <InsuranceCard />
             <RetirementCard />
           </div>
 
-          {/* Third Row - Business and Estate Planning */}
+          {/* Fourth Row - Business and Estate Planning */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <BusinessCard />
             <EstateCard />
           </div>
           
-          {/* Fourth Row - Recent AI Guidance (wide) */}
+          {/* Fifth Row - Recent AI Guidance (wide) */}
           <RecentGuidance />
           
-          {/* Fifth Row - Goals and Action Items */}
+          {/* Sixth Row - Goals and Action Items */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <GoalsSection />
             <ActionItems />
           </div>
           
-          {/* Sixth Row - Notes, Reports and Financial Vault */}
+          {/* Seventh Row - Notes, Reports and Financial Vault */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <NotesSection />
             <ReportsSection />
@@ -64,7 +67,6 @@ const Index = () => {
           </div>
         </div>
       </main>
-      
       <FloatingChatBar />
     </div>
   );
