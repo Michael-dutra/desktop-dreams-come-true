@@ -9,6 +9,15 @@ import { SectionAIDialog } from "./SectionAIDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 
+// Updated formatting function to show M for millions
+const formatCurrency = (value: number) => {
+  if (value >= 1000000) {
+    return `$${(value / 1000000).toFixed(2)}M`;
+  } else {
+    return `$${(value / 1000).toFixed(0)}K`;
+  }
+};
+
 const generateEstateAIAnalysis = ({
   totalEstate,
   finalTaxes,
@@ -120,15 +129,6 @@ const EstateCard = () => {
 
   const chartConfig = {
     amount: { label: "Amount", color: "#8b5cf6" }
-  };
-
-  // Updated formatting function to show M for millions
-  const formatCurrency = (value: number) => {
-    if (value >= 1000000) {
-      return `$${(value / 1000000).toFixed(2)}M`;
-    } else {
-      return `$${(value / 1000).toFixed(0)}K`;
-    }
   };
 
   return (

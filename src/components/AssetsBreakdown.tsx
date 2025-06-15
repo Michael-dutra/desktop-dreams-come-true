@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
@@ -8,11 +9,33 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
 
+// Dummy asset data for dialog
+const defaultAsset = {
+  id: "1",
+  name: "Real Estate",
+  assetType: "Property",
+  assetCategory: "Home",
+  assetSubCategory: "Detached",
+  currency: "USD",
+  acquisitionDate: new Date().toISOString(),
+  quantity: 1,
+  interestRate: 0,
+  apy: 0,
+  termLength: 0,
+  acquisitionCost: 450000,
+  currentValue: 620000,
+  annualDepreciation: 0,
+  annualIncome: 0,
+  estimatedGrowthRate: 0,
+  notes: ""
+};
+
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rateOfReturn, setRateOfReturn] = useState([7]);
   const [timeHorizon, setTimeHorizon] = useState([10]);
   const [aiDialogOpen, setAIDialogOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState(defaultAsset);
 
   const [assets] = useState([
     { name: "Real Estate", amount: "$620,000", value: 620000, color: "#3b82f6" },
@@ -63,6 +86,16 @@ const AssetsBreakdown = () => {
     return text;
   };
 
+  // Handler to open dialog for asset details
+  const handleOpenDetails = (asset) => {
+    setSelectedAsset({
+      ...defaultAsset,
+      ...asset,
+      id: asset.name + "-id"
+    });
+    setIsDialogOpen(true);
+  };
+
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -77,7 +110,7 @@ const AssetsBreakdown = () => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={() => setIsDialogOpen(true)}
+              onClick={() => handleOpenDetails(assets[0])}
               className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
             >
               <Eye className="w-4 h-4" />
@@ -189,6 +222,7 @@ const AssetsBreakdown = () => {
       <AssetsDetailDialog 
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
+        asset={selectedAsset}
       />
       <SectionAIDialog
         isOpen={aiDialogOpen}
