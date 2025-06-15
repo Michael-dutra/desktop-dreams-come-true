@@ -396,42 +396,42 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 )}
               </div>
 
-              {/* Asset Duration Display */}
-              <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
-                <div className="text-center space-y-4">
-                  <div className="flex items-center justify-center gap-2 mb-4">
-                    <Clock className="h-5 w-5 text-purple-600" />
-                    <h3 className="text-lg font-semibold text-purple-900">Asset Funding Duration</h3>
+              {/* Asset Duration Display (UPDATED and Responsive) */}
+              <div className="p-8 bg-[#f5f3ff] rounded-2xl border border-[#a78bfa]">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 text-center md:text-left">
+                  <div className="flex items-center gap-2 justify-center mb-5 md:mb-0">
+                    <Clock className="h-6 w-6 text-purple-500" />
+                    <h3 className="text-xl font-bold text-purple-800">Asset Funding Duration</h3>
                   </div>
-                  
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-purple-600 mb-1">
-                        {yearsAssetsFunded.toFixed(1)} years
+                  <div className="flex flex-col md:flex-row md:items-center md:gap-16 justify-between w-full">
+                    <div>
+                      <p className="text-5xl font-extrabold text-purple-600 mb-1 leading-none">
+                        {yearsAssetsFunded.toFixed(1)} <span className="text-2xl font-bold">years</span>
                       </p>
-                      <p className="text-sm text-purple-700 font-medium">Assets Will Last</p>
+                      <p className="text-base text-purple-700 font-medium mb-4 md:mb-0">Assets Will Last</p>
                     </div>
-                    
-                    <div className="text-center">
-                      <p className="text-4xl font-bold text-indigo-600 mb-1">
-                        {assetsFundedPercentage.toFixed(0)}%
+                    <div>
+                      <p className="text-5xl font-extrabold text-purple-600 mb-1 leading-none">
+                        {assetsFundedPercentage.toFixed(0)}<span className="text-3xl font-extrabold">%</span>
                       </p>
-                      <p className="text-sm text-indigo-700 font-medium">of Retirement Goal</p>
+                      <p className="text-base text-purple-700 font-medium mb-4 md:mb-0">of Retirement Goal</p>
                     </div>
                   </div>
-
-                  <div className="mt-4 p-3 bg-white/60 rounded-lg">
-                    <div className="flex justify-between items-center text-sm">
-                      <span className="text-gray-600">Years in Retirement:</span>
-                      <span className="font-medium">{yearsInRetirement} years</span>
-                    </div>
-                    <div className="flex justify-between items-center text-sm mt-1">
-                      <span className="text-gray-600">Funding Status:</span>
-                      <span className={`font-medium ${assetsFundedPercentage >= 100 ? 'text-green-600' : assetsFundedPercentage >= 75 ? 'text-yellow-600' : 'text-red-600'}`}>
-                        {assetsFundedPercentage >= 100 ? 'Fully Funded' : 
-                         assetsFundedPercentage >= 75 ? 'Mostly Funded' : 'Underfunded'}
-                      </span>
-                    </div>
+                </div>
+                <div className="rounded-xl bg-white/90 px-6 py-4 mt-1 flex flex-col md:flex-row md:gap-14 md:justify-start">
+                  <div className="flex flex-row items-center md:mb-0 mb-2">
+                    <span className="text-gray-600 font-medium mr-2">Years in Retirement:</span>
+                    <span className="text-black font-bold">{yearsInRetirement} years</span>
+                  </div>
+                  <div className="flex flex-row items-center">
+                    <span className="text-gray-600 font-medium mr-2">Funding Status:</span>
+                    <span className={assetsFundedPercentage >= 100 ? 'font-bold text-green-600'
+                      : assetsFundedPercentage >= 75 ? 'font-bold text-yellow-500'
+                      : 'font-bold text-red-600'}>
+                      {assetsFundedPercentage >= 100 ? 'Fully Funded'
+                        : assetsFundedPercentage >= 75 ? 'Mostly Funded'
+                        : 'Underfunded'}
+                    </span>
                   </div>
                 </div>
               </div>
