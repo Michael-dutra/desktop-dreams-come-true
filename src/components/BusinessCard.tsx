@@ -1,3 +1,4 @@
+
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -214,7 +215,7 @@ const BusinessCard = () => {
                       tick={{ fontSize: 12, fill: 'white' }}
                       axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
                       tickLine={{ stroke: '#e2e8f0' }}
-                      tickFormatter={(value) => `$${formatLargeNumber(value)}``}
+                      tickFormatter={(value) => `$${formatLargeNumber(value)}`}
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
@@ -265,3 +266,4 @@ const BusinessCard = () => {
 };
 
 export default BusinessCard;
+
