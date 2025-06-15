@@ -21,6 +21,37 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const [cppAdjustment, setCppAdjustment] = useState(0); // Years adjustment from normal retirement
   const [oasAdjustment, setOasAdjustment] = useState(0); // Years adjustment from normal retirement
 
+  // Income allocation state
+  const [incomeAllocation, setIncomeAllocation] = useState<[number, number, number]>([60, 30, 10]); // RRSP, TFSA, Non-Reg
+
+  // Helper: keep sliders summed to 100%
+  const setSyncedAllocation = (idx: number, newValue: number) => {
+    let [rrsp, tfsa, nonReg] = incomeAllocation;
+    if (idx === 0) rrsp = newValue;
+    if (idx === 1) tfsa = newValue;
+    if (idx === 2) nonReg = newValue;
+    // Clamp and adjust to sum 100
+    let values = [rrsp, tfsa, nonReg];
+    let sum = values.reduce((a,b)=>a+b,0);
+    // If sum != 100, adjust the others proportionally
+    if (sum !== 100) {
+      const rest = [0,1,2].filter(i => i !== idx);
+      const delta = 100 - newValue;
+      const restSum = values[rest[0]] + values[rest[1]];
+      if (restSum === 0) {
+        values[rest[0]] = (100-newValue)/2;
+        values[rest[1]] = (100-newValue)/2;
+      } else {
+        values[rest[0]] = Math.round(values[rest[0]] / restSum * (100 - newValue));
+        values[rest[1]] = 100 - newValue - values[rest[0]];
+      }
+    }
+    setIncomeAllocation([Math.round(values[0]), Math.round(values[1]), Math.round(values[2])]);
+  };
+
+  // Derived allocation percentages
+  const [rrspPct, tfsaPct, nonRegPct] = incomeAllocation;
+
   // Current data
   const currentAge = 35;
   const currentSavings = 90000;
@@ -57,6 +88,48 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const futureCurrentSavings = currentSavings * Math.pow(1 + investmentReturn, yearsToRetirement);
   const futureContributions = monthlyContribution * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn;
   const totalRetirementSavings = futureCurrentSavings + futureContributions;
+
+  // Allocation share for each account
+  const rrspIncomeShare = netMonthlyIncome[0] * (rrspPct/100);
+  const tfsaIncomeShare = netMonthlyIncome[0] * (tfsaPct/100);
+  const nonRegIncomeShare = netMonthlyIncome[0] * (nonRegPct/100);
+
+  // Future value for each at retirement (already calculated)
+  const futureRRSP = currentRRSP * Math.pow(1 + investmentReturn, yearsToRetirement) +
+    (monthlyContribution * (rrspPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
+  const futureTFSA = currentTFSA * Math.pow(1 + investmentReturn, yearsToRetirement) +
+    (monthlyContribution * (tfsaPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
+  const futureNonReg = currentNonReg * Math.pow(1 + investmentReturn, yearsToRetirement) +
+    (monthlyContribution * (nonRegPct/100) * 12 * (Math.pow(1 + investmentReturn, yearsToRetirement) - 1) / investmentReturn);
+
+  // For each, how many years can that account fund its share of income (ignore growth after retirement for simplicity)
+  const rrspYears = rrspIncomeShare > 0 ? futureRRSP / (rrspIncomeShare*12) : 0;
+  const tfsaYears = tfsaIncomeShare > 0 ? futureTFSA / (tfsaIncomeShare*12) : 0;
+  const nonRegYears = nonRegIncomeShare > 0 ? futureNonReg / (nonRegIncomeShare*12) : 0;
+
+  // Bar chart data: track depletion
+  const allocationDepletionData = Array.from({length: yearsInRetirement+1}).map((_, i) => {
+    // Each year, assets deplete by their income share * 12 (ignore growth for simplicity here)
+    return {
+      year: i,
+      RRSP: Math.max(0, futureRRSP - rrspIncomeShare * 12 * i),
+      TFSA: Math.max(0, futureTFSA - tfsaIncomeShare * 12 * i),
+      NonReg: Math.max(0, futureNonReg - nonRegIncomeShare * 12 * i)
+    }
+  });
+
+  // Tax calculation (simple): RRSP fully taxable, TFSA non-taxable, NonReg: 50% capital gains on growth
+  const rrspTax = Math.floor(Math.min(futureRRSP, rrspYears*rrspIncomeShare*12)*0.3);
+  const tfsaTax = 0;
+  const nonRegGain = Math.max(0, futureNonReg - currentNonReg); // capital gain only
+  const nonRegTax = Math.floor(nonRegGain*0.5*0.25); // 50% cg at 25%
+  const totalDepletionTax = rrspTax + tfsaTax + nonRegTax;
+
+  // Drawdown implication text
+  let drawdownNote = "";
+  if (rrspPct >= 70) drawdownNote = "Front-loading RRSP withdrawals reduces long-term tax risk, but taxes are higher initially.";
+  else if (rrspPct <= 20) drawdownNote = "Delaying RRSP drawdown risks higher taxes later (higher balance, higher bracket).";
+  else drawdownNote = "Balanced withdrawals help manage steady tax rates over retirement.";
 
   // How long assets will last calculation
   const governmentBenefits = adjustedCPP + adjustedOAS;
@@ -312,6 +385,63 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
               </div>
 
+              {/* NEW: Income Allocation Sliders */}
+              <div className="mt-6 p-4 border border-gray-200 rounded-xl bg-gradient-to-r from-blue-50 via-violet-50 to-emerald-50">
+                <div className="mb-3 text-xs text-gray-700 font-semibold">
+                  Allocate how your retirement income is sourced from each account (total must be 100%):
+                </div>
+                <div className="space-y-3 w-full max-w-lg">
+                  {/* RRSP Slider */}
+                  <div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>RRSP</span>
+                      <span>{rrspPct}%</span>
+                    </div>
+                    <Slider
+                      value={[rrspPct]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={([value]) => setSyncedAllocation(0, value)}
+                    />
+                  </div>
+                  {/* TFSA Slider */}
+                  <div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>TFSA</span>
+                      <span>{tfsaPct}%</span>
+                    </div>
+                    <Slider
+                      value={[tfsaPct]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={([value]) => setSyncedAllocation(1, value)}
+                    />
+                  </div>
+                  {/* Non-Reg Slider */}
+                  <div>
+                    <div className="flex justify-between text-sm font-medium">
+                      <span>Non-Registered</span>
+                      <span>{nonRegPct}%</span>
+                    </div>
+                    <Slider
+                      value={[nonRegPct]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={([value]) => setSyncedAllocation(2, value)}
+                    />
+                  </div>
+                </div>
+                {/* Validation message */}
+                {(rrspPct + tfsaPct + nonRegPct !== 100) && (
+                  <div className="mt-2 text-red-600 text-xs font-medium">
+                    Allocation must total 100%.
+                  </div>
+                )}
+              </div>
+
               {/* Asset Duration Display */}
               <div className="p-6 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
                 <div className="text-center space-y-4">
@@ -351,6 +481,46 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   </div>
                 </div>
               </div>
+
+              {/* NEW: ACCOUNT FUNDING SUMMARY & DEPLETION CHART */}
+              <div className="p-6 mt-2 bg-gradient-to-r from-violet-50 to-cyan-50 rounded-xl border border-violet-200">
+                <div className="font-semibold mb-2">Account Funding Analysis</div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                  <div className="p-2 bg-purple-100 rounded-lg">
+                    <div className="text-xs text-purple-700 font-medium">RRSP</div>
+                    <div className="text-2xl font-bold">{rrspPct}%</div>
+                    <div className="text-sm text-purple-800">Funds {rrspYears.toFixed(1)} yrs</div>
+                  </div>
+                  <div className="p-2 bg-green-100 rounded-lg">
+                    <div className="text-xs text-emerald-700 font-medium">TFSA</div>
+                    <div className="text-2xl font-bold">{tfsaPct}%</div>
+                    <div className="text-sm text-emerald-800">Funds {tfsaYears.toFixed(1)} yrs</div>
+                  </div>
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <div className="text-xs text-blue-700 font-medium">Non-Reg</div>
+                    <div className="text-2xl font-bold">{nonRegPct}%</div>
+                    <div className="text-sm text-blue-800">Funds {nonRegYears.toFixed(1)} yrs</div>
+                  </div>
+                </div>
+                {/* Timeline of Depletion */}
+                <div className="mt-6 mb-2 font-medium text-sm">Projected Asset Depletion by Account</div>
+                <ChartContainer config={{
+                  RRSP: { label: "RRSP", color: "#a78bfa" },
+                  TFSA: { label: "TFSA", color: "#6ee7b7" },
+                  NonReg: { label: "Non-Registered", color: "#7dd3fc" },
+                }} className="h-56">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={allocationDepletionData}>
+                      <XAxis dataKey="year" tickFormatter={v=>`+${v}yr`} />
+                      <YAxis />
+                      <Bar dataKey="RRSP" stackId="a" fill="#a78bfa" name="RRSP" />
+                      <Bar dataKey="TFSA" stackId="a" fill="#6ee7b7" name="TFSA" />
+                      <Bar dataKey="NonReg" stackId="a" fill="#7dd3fc" name="Non-Reg" />
+                      <ChartTooltip content={<ChartTooltipContent formatter={(v, n) => [`$${Math.round(v).toLocaleString()}`, n]}/>} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </div>
             </CardContent>
           </Card>
 
@@ -389,6 +559,24 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </CardContent>
             </Card>
           </div>
+
+          {/* Below "Income Gap": TAX OPTIMIZATION LAYER */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle className="text-lg">Tax Optimization Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-col md:flex-row md:justify-between items-start gap-4">
+                <div className="space-y-1">
+                  <div className="font-medium text-sm text-slate-500">Estimated Total Taxes Owed <span className="text-xs">(lifetime from drawdowns)</span></div>
+                  <div className="text-3xl font-bold text-rose-600">${totalDepletionTax.toLocaleString()}</div>
+                </div>
+                <div className="p-2 bg-yellow-50 border border-yellow-200 rounded text-yellow-700 text-sm font-medium">
+                  {drawdownNote}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
 
           <Tabs defaultValue="projections" className="space-y-4">
             <TabsList className="grid w-full grid-cols-4">
