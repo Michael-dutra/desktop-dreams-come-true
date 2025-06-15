@@ -11,7 +11,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Cell } from "recharts";
 import { Calculator, DollarSign, FileText, Users, Plus, Calendar, Scale, X } from "lucide-react";
 
-interface EstateDetailDialogProps {
+interface AssetsDetailDialogProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -59,7 +59,7 @@ interface DocumentAction {
   priority: "High" | "Medium" | "Low";
 }
 
-export const EstateDetailDialog = ({ isOpen, onClose }: EstateDetailDialogProps) => {
+export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
   // Original estate data from EstateCard
   const totalEstateValue = 785000;
   const estateTaxes = 25000;
