@@ -1,3 +1,4 @@
+
 import { User, MapPin, Heart, Edit } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -109,42 +110,41 @@ const ClientInfo = () => {
     <>
       <Card className="bg-gradient-to-r from-purple-50 to-blue-50 border-none">
         <CardContent className="p-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+          <div className="flex justify-between items-start">
+            <div>
               <h1 className="text-3xl font-bold text-foreground">Client: {clientData.fullName}</h1>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsEditModalOpen(true)}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
-              >
-                <Edit className="h-4 w-4" />
-              </Button>
             </div>
-            
-            <div className="flex items-center space-x-8">
-              <div className="flex items-center space-x-2">
-                <User className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Age</p>
-                  <p className="font-semibold text-foreground">{calculateAge(clientData.dateOfBirth)} years</p>
-                </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsEditModalOpen(true)}
+              className="h-8 w-8 text-muted-foreground hover:text-foreground"
+              aria-label="Edit Client"
+            >
+              <Edit className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          <div className="flex items-center space-x-8 mt-6">
+            <div className="flex items-center space-x-2">
+              <User className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Age</p>
+                <p className="font-semibold text-foreground">{calculateAge(clientData.dateOfBirth)} years</p>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Province</p>
-                  <p className="font-semibold text-foreground">{clientData.province}</p>
-                </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <MapPin className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Province</p>
+                <p className="font-semibold text-foreground">{clientData.province}</p>
               </div>
-              
-              <div className="flex items-center space-x-2">
-                <Heart className="h-5 w-5 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Family</p>
-                  <p className="font-semibold text-foreground">{clientData.maritalStatus}, {clientData.familyMembers.filter(m => m.relation.toLowerCase().includes('child') || m.relation.toLowerCase().includes('son') || m.relation.toLowerCase().includes('daughter')).length} kids</p>
-                </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Heart className="h-5 w-5 text-muted-foreground" />
+              <div>
+                <p className="text-sm text-muted-foreground">Family</p>
+                <p className="font-semibold text-foreground">{clientData.maritalStatus}, {clientData.familyMembers.filter(m => m.relation.toLowerCase().includes('child') || m.relation.toLowerCase().includes('son') || m.relation.toLowerCase().includes('daughter')).length} kids</p>
               </div>
             </div>
           </div>
