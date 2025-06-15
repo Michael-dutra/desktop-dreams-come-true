@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
@@ -6,11 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rateOfReturn, setRateOfReturn] = useState([7]);
   const [timeHorizon, setTimeHorizon] = useState([10]);
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
   const [assets] = useState([
     { name: "Real Estate", amount: "$620,000", value: 620000, color: "#3b82f6" },
@@ -43,6 +45,20 @@ const AssetsBreakdown = () => {
     }
   };
 
+  // Generate AI write-up based on live section data
+  const generateAIAnalysis = () => {
+    let text = `Assets Analysis:\n\n`;
+    text += `- Total current assets: ${formatCurrency(totalCurrentValue)}\n`;
+    text += `- Projected value in ${timeHorizon[0]} years at ${rateOfReturn[0]}%: ${formatCurrency(totalProjectedValue)}\n`;
+    text += `- Total projected growth: +${formatCurrency(totalGrowth)}\n\n`;
+    text += `Breakdown by asset type:\n`;
+    projectedAssets.forEach(asset => {
+      text += `• ${asset.name}: now ${formatCurrency(asset.currentValue)}, projected ${formatCurrency(asset.projectedValue)} (${asset.growth >= 0 ? "+" : ""}${formatCurrency(asset.growth)} growth)\n`;
+    });
+    text += `\nConsider adjusting your rate of return or time horizon to see various future scenarios.`;
+    return text;
+  };
+
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -53,15 +69,27 @@ const AssetsBreakdown = () => {
             </div>
             <span>Assets</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setIsDialogOpen(true)}
-            className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setIsDialogOpen(true)}
+              className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" /> 
+              AI
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-6 pt-0">
           <div className="flex-1 flex flex-col">
@@ -154,10 +182,15 @@ const AssetsBreakdown = () => {
           </div>
         </CardContent>
       </Card>
-
       <AssetsDetailDialog 
         isOpen={isDialogOpen} 
         onClose={() => setIsDialogOpen(false)} 
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Assets"
+        content={generateAIAnalysis()}
       />
     </>
   );

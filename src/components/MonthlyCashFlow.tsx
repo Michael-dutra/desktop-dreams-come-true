@@ -5,9 +5,12 @@ import { Slider } from "@/components/ui/slider";
 import { Progress } from "@/components/ui/progress";
 import { CashFlowDetailDialog } from "./CashFlowDetailDialog";
 import { useState } from "react";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const MonthlyCashFlow = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
   
   // Emergency Fund Calculator state
   const [currentEmergencyFund, setCurrentEmergencyFund] = useState([18000]);
@@ -32,6 +35,18 @@ const MonthlyCashFlow = () => {
     return `rgb(${red}, ${green}, 0)`;
   };
 
+  const generateAIAnalysis = () => {
+    let text = `Cash Flow Analysis:\n\n`;
+    text += `- Total Income: $22,500\n- Expenses: $15,000\n- Net Flow: +$7,500\n\n`;
+    text += `Emergency Fund Analysis:\n`;
+    text += `- Current fund: $${(currentFund/1000).toFixed(1)}K, covers ${monthsCovered.toFixed(1)} months.\n`;
+    text += `- Target: ${targetMonths} months ($${(targetAmount/1000).toFixed(1)}K). Shortfall: $${(shortfall/1000).toFixed(1)}K.\n`;
+    text += monthsCovered >= targetMonths
+      ? "✅ You have achieved your emergency fund target!\n"
+      : "⚠️ Build up your fund to cover emergencies.";
+    return text;
+  };
+
   return (
     <>
       <Card className="relative overflow-hidden h-full flex flex-col">
@@ -42,15 +57,27 @@ const MonthlyCashFlow = () => {
             </div>
             <span>Cash Flow</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowDetailDialog(true)}
+              className="flex items-center gap-2 border-green-600 text-green-600 hover:bg-green-50"
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" />
+              AI
+            </Button>
+          </div>
         </CardHeader>
         
         <CardContent className="flex-1 flex flex-col">
@@ -216,6 +243,12 @@ const MonthlyCashFlow = () => {
       <CashFlowDetailDialog 
         isOpen={showDetailDialog}
         onClose={() => setShowDetailDialog(false)}
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Cash Flow"
+        content={generateAIAnalysis()}
       />
     </>
   );

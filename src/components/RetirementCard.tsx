@@ -1,4 +1,3 @@
-
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,9 +5,12 @@ import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
   
   // Interactive retirement values
   const [retirementAge, setRetirementAge] = useState([65]);
@@ -23,6 +25,22 @@ const RetirementCard = () => {
   const totalRetirementNeeded = netMonthlyIncomeNeeded[0] * 12 * yearsInRetirement;
   const savingsPercentage = Math.min(100, (totalRetirementSavings / totalRetirementNeeded) * 100);
 
+  const generateAIAnalysis = () => {
+    let text = `Retirement Analysis:\n\n`;
+    text += `- Targeted retirement age: ${retirementAge[0]}\n`;
+    text += `- Net monthly income needed: $${netMonthlyIncomeNeeded[0].toLocaleString()}\n`;
+    text += `- Total savings: $${totalRetirementSavings.toLocaleString()}\n`;
+    text += `- Projected monthly income: $${projectedMonthlyIncome.toLocaleString()}\n`;
+    text += `- Life expectancy: ${lifeExpectancy}\n`;
+    text += `- Years in retirement: ${yearsInRetirement}\n`;
+    text += `- Total needed: $${(totalRetirementNeeded/1000).toFixed(1)}K\n`;
+    text += `- % funded with current savings: ${savingsPercentage.toFixed(1)}%\n\n`;
+    text += savingsPercentage >= 100 
+      ? "✅ Based on your inputs, you are on track to fully fund your retirement."
+      : "⚠️ You may need to save more or reduce your retirement income expectations.";
+    return text;
+  };
+
   return (
     <>
       <Card className="relative overflow-hidden h-full flex flex-col">
@@ -34,15 +52,27 @@ const RetirementCard = () => {
             </div>
             <span>Retirement</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowDetailDialog(true)}
+              className="flex items-center gap-2 border-purple-600 text-purple-600 hover:bg-purple-50"
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" />
+              AI
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col space-y-6">
           {/* Total Savings */}
@@ -107,10 +137,15 @@ const RetirementCard = () => {
           </div>
         </CardContent>
       </Card>
-
       <RetirementDetailDialog 
         isOpen={showDetailDialog}
         onClose={() => setShowDetailDialog(false)}
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Retirement"
+        content={generateAIAnalysis()}
       />
     </>
   );

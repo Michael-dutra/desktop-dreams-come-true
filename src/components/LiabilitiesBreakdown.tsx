@@ -1,13 +1,15 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
 import { LiabilitiesDetailDialog } from "./LiabilitiesDetailDialog";
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const LiabilitiesBreakdown = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
   // Individual debt states with sliders
   const [mortgageRate, setMortgageRate] = useState([4.5]);
@@ -135,6 +137,23 @@ const LiabilitiesBreakdown = () => {
     );
   };
 
+  const generateAIAnalysis = () => {
+    let text = `Liabilities Analysis:\n\nTotal monthly payments: $${totalMonthlyPayments.toLocaleString()}\n\n`;
+    liabilities.forEach(liab => {
+      const original = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate);
+      text += `• ${liab.name}: ${liab.amount} at ${liab.rate.toFixed(1)}%. Original payoff: ${formatMonthsToDate(original.months)}.`;
+      if (liab.extraPayment > 0) {
+        const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment);
+        const saved = original.months - accelerated.months;
+        text += ` With $${liab.extraPayment}/mo extra, payoff reduced to ${formatMonthsToDate(accelerated.months)} (saves ${Math.round(saved)} months).\n`;
+      } else {
+        text += "\n";
+      }
+    });
+    text += `\nAccelerating payments reduces overall interest and debt period.`;
+    return text;
+  };
+
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -145,15 +164,27 @@ const LiabilitiesBreakdown = () => {
             </div>
             <span>Liabilities</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowDetailDialog(true)}
+              className="flex items-center gap-2 border-red-600 text-red-600 hover:bg-red-50"
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" />
+              AI
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="pb-4 flex-1 flex flex-col">
           {/* Total Monthly Payments Summary */}
@@ -235,11 +266,16 @@ const LiabilitiesBreakdown = () => {
           </div>
         </CardContent>
       </Card>
-
       <LiabilitiesDetailDialog 
         isOpen={showDetailDialog}
         onClose={() => setShowDetailDialog(false)}
         liabilities={liabilities}
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Liabilities"
+        content={generateAIAnalysis()}
       />
     </>
   );

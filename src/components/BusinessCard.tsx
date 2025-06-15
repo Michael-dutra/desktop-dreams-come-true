@@ -1,4 +1,3 @@
-
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,10 +6,13 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useState } from "react";
 import BusinessDetailDialog from "./BusinessDetailDialog";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const BusinessCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
-  
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
+
   // Interactive business parameters
   const [annualGrowthRate, setAnnualGrowthRate] = useState([18]);
   const [yearsProjection, setYearsProjection] = useState([5]);
@@ -61,6 +63,16 @@ const BusinessCard = () => {
     },
   };
 
+  const generateAIAnalysis = () => {
+    let text = `Business Analysis:\n\n`;
+    text += `- Current revenue: $${formatLargeNumber(grossRevenue)}\n`;
+    text += `- Valuation: $${formatLargeNumber(currentValuation)} (x${valuationMultiplier[0]})\n`;
+    text += `- Projected ${yearsProjection[0]}-year value: $${formatLargeNumber(finalValuation)}\n`;
+    text += `- Growth potential: +${projectedGrowth.toFixed(1)}%\n\n`;
+    text += `Changing the growth rate, years, or valuation multiple affects these estimates.`;
+    return text;
+  };
+
   return (
     <>
       <Card>
@@ -72,15 +84,27 @@ const BusinessCard = () => {
               </div>
               <span>Business</span>
             </CardTitle>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              className="flex items-center space-x-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50"
-              onClick={() => setShowDetailDialog(true)}
-            >
-              <Eye className="h-4 w-4" />
-              <span>Details</span>
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="flex items-center space-x-2 border-indigo-600 text-indigo-600 hover:bg-indigo-50"
+                onClick={() => setShowDetailDialog(true)}
+              >
+                <Eye className="h-4 w-4" />
+                <span>Details</span>
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+                onClick={() => setAIDialogOpen(true)}
+                style={{ border: '2px solid #6366f1' }}
+              >
+                <Bot className="w-4 h-4 mr-1 text-indigo-600" />
+                AI
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -190,7 +214,7 @@ const BusinessCard = () => {
                       tick={{ fontSize: 12, fill: 'white' }}
                       axisLine={{ stroke: '#e2e8f0', strokeWidth: 1 }}
                       tickLine={{ stroke: '#e2e8f0' }}
-                      tickFormatter={(value) => `$${formatLargeNumber(value)}`}
+                      tickFormatter={(value) => `$${formatLargeNumber(value)}``}
                     />
                     <ChartTooltip 
                       content={({ active, payload, label }) => {
@@ -226,10 +250,15 @@ const BusinessCard = () => {
           </div>
         </CardContent>
       </Card>
-
       <BusinessDetailDialog 
         isOpen={showDetailDialog} 
         onClose={() => setShowDetailDialog(false)} 
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Business"
+        content={generateAIAnalysis()}
       />
     </>
   );

@@ -1,4 +1,3 @@
-
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +6,12 @@ import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { useState } from "react";
+import { Bot } from "lucide-react";
+import { SectionAIDialog } from "./SectionAIDialog";
 
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
   // Life Insurance needs with slider values (0 to max amount)
   const [needsValues, setNeedsValues] = useState({
@@ -74,10 +76,24 @@ const InsuranceCard = () => {
     finalExpenses: { label: "Final Expenses", max: 5000000 }
   };
 
+  const generateAIAnalysis = () => {
+    let text = `Insurance Analysis:\n\n`;
+    text += `- Current life insurance coverage: ${formatCurrency(currentLifeCoverage)}\n`;
+    text += `- Calculated needs: ${formatCurrency(calculatedLifeNeed)}\n`;
+    text += `- Coverage gap: ${formatCurrency(lifeGap)}\n\n`;
+    text += `Needs Breakdown:\n`;
+    Object.entries(needsConfig).forEach(([key, config]) => {
+      text += `• ${config.label}: ${formatCurrency(needsValues[key as keyof typeof needsValues][0])}\n`;
+    });
+    text += lifeGap > 0
+      ? "\n⚠️ Consider increasing your coverage to close the gap."
+      : "\n✅ Your coverage meets or exceeds your calculated needs.";
+    return text;
+  };
+
   return (
     <>
       <Card className="relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-bl from-blue-50 to-transparent rounded-full -translate-y-16 translate-x-16" />
         <CardHeader className="flex flex-row items-center justify-between pb-4">
           <CardTitle className="text-xl flex items-center space-x-3">
             <div className="p-2 bg-blue-100 rounded-lg">
@@ -85,15 +101,27 @@ const InsuranceCard = () => {
             </div>
             <span>Insurance</span>
           </CardTitle>
-          <Button 
-            variant="outline" 
-            size="sm"
-            onClick={() => setShowDetailDialog(true)}
-            className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
-          >
-            <Eye className="w-4 h-4" />
-            Details
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => setShowDetailDialog(true)}
+              className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
+            >
+              <Eye className="w-4 h-4" />
+              Details
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+              onClick={() => setAIDialogOpen(true)}
+              style={{ border: '2px solid #6366f1' }}
+            >
+              <Bot className="w-4 h-4 mr-1 text-indigo-600" />
+              AI
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-5">
           {/* Life Insurance Analysis Chart */}
@@ -184,10 +212,15 @@ const InsuranceCard = () => {
           </div>
         </CardContent>
       </Card>
-
       <InsuranceDetailDialog 
         isOpen={showDetailDialog}
         onClose={() => setShowDetailDialog(false)}
+      />
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title="Insurance"
+        content={generateAIAnalysis()}
       />
     </>
   );
