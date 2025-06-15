@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
-import { AssetsDetailDialog } from "./AssetsDetailDialog";
+import AssetsDetailDialog from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";

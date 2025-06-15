@@ -319,7 +319,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   <label className="text-sm font-medium mb-3 block">Retirement Age: {retirementAge[0]}</label>
                   <Slider
                     value={retirementAge}
-                    onValueChange={setRetirementAge}
+                    onValueChange={v => setRetirementAge([Number(v[0])])}
                     min={55}
                     max={70}
                     step={1}
@@ -457,12 +457,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   </div>
                 </div>
                 {/* Timeline of Depletion */}
-                <div className="mt-6 mb-2 font-medium text-sm">Projected Asset Depletion by Account</div>
                 <ChartContainer config={{
                   RRSP: { label: "RRSP", color: "#a78bfa" },
                   TFSA: { label: "TFSA", color: "#6ee7b7" },
                   NonReg: { label: "Non-Registered", color: "#7dd3fc" },
-                }} className="h-56">
+                }} className="h-56 mt-6">
                   <ResponsiveContainer width="100%" height="100%">
                     <BarChart data={allocationDepletionData}>
                       <XAxis dataKey="year" tickFormatter={v=>`+${v}yr`} />
