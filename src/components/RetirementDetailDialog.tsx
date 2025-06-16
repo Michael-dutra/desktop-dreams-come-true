@@ -79,7 +79,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         return { rrsp: 15, tfsa: 35, nonReg: 50 };
       case "balanced":
       default:
-        return { rrsp: 60, tfsa: 30, nonReg: 10 };
+        return { rrsp: 34, tfsa: 33, nonReg: 33 };
     }
   };
 
