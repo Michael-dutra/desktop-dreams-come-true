@@ -175,6 +175,9 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
 
   const [isEditingProjections, setIsEditingProjections] = useState(false);
 
+  // Secondary Will calculation state
+  const [businessValuationForWill, setBusinessValuationForWill] = useState([325000]);
+
   const [businessInsurances, setBusinessInsurances] = useState<BusinessInsurance[]>([
     { id: "1", type: "General Liability", coverage: "$2M", status: "Active", premium: "$3,200", policyNumber: "GL-2024-001", insuredAmount: 2000000 },
     { id: "2", type: "Professional Liability", coverage: "$1M", status: "Active", premium: "$2,800", policyNumber: "PL-2024-002", insuredAmount: 1000000 },
@@ -281,6 +284,13 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     years: 10,
     monthlyContribution: 0
   });
+
+  // Secondary Will calculation
+  const calculateProbateFees = () => {
+    return businessValuationForWill[0] * 0.015;
+  };
+
+  const probateFees = calculateProbateFees();
 
   const addRevenueStream = () => {
     if (newRevenueName && newRevenueValue > 0) {
@@ -423,7 +433,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     revenue: { label: "Revenue", color: "#06b6d4" },
     profit: { label: "Profit", color: "#10b981" },
     expenses: { label: "Expenses", color: "#ef4444" },
-  };
+  } satisfies Record<string, { label: string; color: string }>;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -572,6 +582,74 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </CardContent>
               </Card>
             </div>
+
+            {/* NEW: Financial Projections with Edit Capability */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Revenue & Expense Projections</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingFinancials(!isEditingFinancials)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isEditingFinancials ? (
+                  <div className="space-y-4">
+                    <div className="grid grid-cols-5 gap-4 font-medium text-sm text-muted-foreground">
+                      <div>Year</div>
+                      <div>Revenue</div>
+                      <div>Expenses</div>
+                      <div>Profit</div>
+                      <div>Valuation</div>
+                    </div>
+                    {financialData.map((data) => (
+                      <div key={data.year} className="grid grid-cols-5 gap-4">
+                        <div className="font-medium">{data.year}</div>
+                        <Input
+                          type="number"
+                          value={data.revenue}
+                          onChange={(e) => updateFinancialData(data.year, 'revenue', Number(e.target.value))}
+                        />
+                        <Input
+                          type="number"
+                          value={data.expenses}
+                          onChange={(e) => updateFinancialData(data.year, 'expenses', Number(e.target.value))}
+                        />
+                        <Input
+                          type="number"
+                          value={data.profit}
+                          onChange={(e) => updateFinancialData(data.year, 'profit', Number(e.target.value))}
+                        />
+                        <Input
+                          type="number"
+                          value={data.valuation}
+                          onChange={(e) => updateFinancialData(data.year, 'valuation', Number(e.target.value))}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <ChartContainer config={chartConfig} className="h-64">
+                    <BarChart data={businessGrowthData}>
+                      <XAxis dataKey="year" />
+                      <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
+                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, ""]} />} />
+                      <Bar dataKey="revenue" fill="#06b6d4" name="Revenue" />
+                      <Bar dataKey="expenses" fill="#ef4444" name="Expenses" />
+                      <Bar dataKey="profit" fill="#10b981" name="Profit" />
+                    </BarChart>
+                  </ChartContainer>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="assets" className="space-y-6">
@@ -1044,6 +1122,58 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+
+            {/* NEW: Secondary Will Benefits Card */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <Shield className="h-5 w-5" />
+                  <span>Secondary Will Benefits</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <h4 className="font-medium text-blue-800 mb-2">Benefit of Getting a Secondary Will</h4>
+                  <p className="text-blue-700 mb-4">
+                    You can potentially minimize your probate fees: <span className="font-bold text-xl">${probateFees.toLocaleString()}</span>
+                  </p>
+                  <p className="text-sm text-blue-600">
+                    This represents 1.5% of your business value (${businessValuationForWill[0].toLocaleString()})
+                  </p>
+                </div>
+
+                <div>
+                  <Label className="text-sm font-medium mb-2 block">
+                    Business Valuation: ${businessValuationForWill[0].toLocaleString()}
+                  </Label>
+                  <Slider
+                    value={businessValuationForWill}
+                    onValueChange={setBusinessValuationForWill}
+                    min={100000}
+                    max={2000000}
+                    step={10000}
+                    className="mt-2"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                    <span>$100K</span>
+                    <span>$2M</span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t">
+                  <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm text-red-600">Without Secondary Will</p>
+                    <p className="text-2xl font-bold text-red-700">${probateFees.toLocaleString()}</p>
+                    <p className="text-xs text-red-500">Probate fees</p>
+                  </div>
+                  <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-600">With Secondary Will</p>
+                    <p className="text-2xl font-bold text-green-700">$0</p>
+                    <p className="text-xs text-green-500">Potential savings</p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
 

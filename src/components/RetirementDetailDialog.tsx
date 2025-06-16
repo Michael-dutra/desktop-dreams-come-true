@@ -22,11 +22,6 @@ interface ChartData {
   needs: number;
 }
 
-interface ChartConfig {
-  income: { label: string; color: string };
-  needs: { label: string; color: string };
-}
-
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [netMonthlyIncomeNeeded, setNetMonthlyIncomeNeeded] = useState([4500]);
@@ -68,10 +63,10 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     });
   }
 
-  const chartConfig: ChartConfig = {
+  const chartConfig = {
     income: { label: "Total Income", color: "#8884d8" },
     needs: { label: "Income Needed", color: "#82ca9d" },
-  };
+  } satisfies Record<string, { label: string; color: string }>;
 
   const formatCurrency = (value: number) => {
     return `$${value.toLocaleString()}`;
