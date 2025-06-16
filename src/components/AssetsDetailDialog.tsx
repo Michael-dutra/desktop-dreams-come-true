@@ -75,7 +75,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     color: asset.color
   }));
 
-  // Chart data for growth over time
+  // Chart data for growth over time - using settings from each asset
   const growthOverTimeData = Array.from({ length: 11 }, (_, year) => {
     const dataPoint: any = { year };
     projectedAssets.forEach(asset => {
