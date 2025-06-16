@@ -1,15 +1,21 @@
+
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, Line, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
+import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const NetWorthCard = () => {
   const [rateOfReturn, setRateOfReturn] = useState([7]);
   const [timeHorizon, setTimeHorizon] = useState([5]);
   
-  const currentNetWorth = 287500;
+  const { getTotalAssets, getTotalLiabilities, getNetWorth } = useFinancialData();
+  
+  const currentAssets = getTotalAssets();
+  const currentLiabilities = getTotalLiabilities();
+  const currentNetWorth = getNetWorth();
   const monthlyGrowth = 32500;
 
   // Generate dynamic projection data based on sliders
@@ -62,7 +68,7 @@ const NetWorthCard = () => {
         {/* Main Net Worth Display */}
         <div className="text-center py-2">
           <p className="text-sm text-white/80 mb-1">Current Net Worth</p>
-          <p className="text-4xl font-bold text-white mb-3">$287,500</p>
+          <p className="text-4xl font-bold text-white mb-3">{formatCurrency(currentNetWorth)}</p>
           <div className="flex items-center justify-center space-x-2 text-green-300">
             <TrendingUp className="h-5 w-5" />
             <span className="text-lg font-medium">+${monthlyGrowth.toLocaleString()} this month</span>
@@ -73,11 +79,11 @@ const NetWorthCard = () => {
         <div className="grid grid-cols-2 gap-6">
           <div className="bg-white/10 rounded-lg p-4 text-center">
             <p className="text-sm text-white/80 mb-2">Current Assets</p>
-            <p className="text-xl font-bold text-white">$735,000</p>
+            <p className="text-xl font-bold text-white">{formatCurrency(currentAssets)}</p>
           </div>
           <div className="bg-white/10 rounded-lg p-4 text-center">
             <p className="text-sm text-white/80 mb-2">Current Liabilities</p>
-            <p className="text-xl font-bold text-white">$447,500</p>
+            <p className="text-xl font-bold text-white">{formatCurrency(currentLiabilities)}</p>
           </div>
         </div>
 

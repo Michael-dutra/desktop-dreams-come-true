@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
@@ -7,6 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
+import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -14,13 +16,7 @@ const AssetsBreakdown = () => {
   const [timeHorizon, setTimeHorizon] = useState([10]);
   const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
-  const [assets] = useState([
-    { name: "Real Estate", amount: "$620,000", value: 620000, color: "#3b82f6" },
-    { name: "RRSP", amount: "$52,000", value: 52000, color: "#10b981" },
-    { name: "TFSA", amount: "$38,000", value: 38000, color: "#8b5cf6" },
-    { name: "Non-Registered", amount: "$25,000", value: 25000, color: "#f59e0b" },
-    { name: "Digital Asset", amount: "$15,000", value: 15000, color: "#ef4444" },
-  ]);
+  const { assets, getTotalAssets } = useFinancialData();
 
   // Calculate projected values
   const projectedAssets = assets.map(asset => {
@@ -33,7 +29,7 @@ const AssetsBreakdown = () => {
     };
   });
 
-  const totalCurrentValue = assets.reduce((sum, asset) => sum + asset.value, 0);
+  const totalCurrentValue = getTotalAssets();
   const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
@@ -48,7 +44,7 @@ const AssetsBreakdown = () => {
   // Generate AI write-up based on live section data
   const generateAIAnalysis = () => {
     let text = `Your Personalized Asset Overview:\n\n`;
-    text += `Hello! Here’s a breakdown of your current and projected net worth:\n\n`;
+    text += `Hello! Here's a breakdown of your current and projected net worth:\n\n`;
     text += `- Current total assets: ${formatCurrency(totalCurrentValue)}\n`;
     text += `- Projected asset value in ${timeHorizon[0]} years (at ${rateOfReturn[0]}%): ${formatCurrency(totalProjectedValue)}\n`;
     text += `- Anticipated growth: +${formatCurrency(totalGrowth)}\n\n`;
