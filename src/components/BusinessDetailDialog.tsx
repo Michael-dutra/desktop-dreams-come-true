@@ -1,1667 +1,1117 @@
-import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import * as React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2, FileText, Calendar, Share2, PiggyBank } from "lucide-react";
-import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
-import { EditableField } from "./EditableField";
+import { Progress } from "@/components/ui/progress";
 import { GrowthChart } from "./GrowthChart";
+import { SectionAIDialog } from "./SectionAIDialog";
+import {
+  Building2,
+  TrendingUp,
+  DollarSign,
+  Calendar,
+  Users,
+  Target,
+  PieChart,
+  BarChart3,
+  Plus,
+  Pencil,
+  Trash2,
+  Calculator,
+  Bot,
+  CreditCard,
+  Building,
+  Truck,
+  Banknote,
+  HandCoins,
+  Briefcase
+} from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
-interface BusinessDetailDialogProps {
+type BusinessDetailDialogProps = {
   isOpen: boolean;
   onClose: () => void;
-}
+};
 
-interface RevenueStream {
-  id: string;
-  name: string;
-  value: number;
-  color: string;
-}
-
-interface FinancialData {
-  year: string;
-  valuation: number;
-  revenue: number;
-  profit: number;
-  expenses: number;
-}
-
-interface BusinessInsurance {
-  id: string;
-  type: "General Liability" | "Professional Liability" | "Term Life" | "Universal Life" | "Whole Life" | "Key Person Insurance" | "Business Interruption" | "Cyber Liability" | "Commercial Auto" | "Workers Compensation" | "Directors & Officers";
-  coverage: string;
-  status: "Active" | "Pending" | "Expired";
-  premium: string;
-  policyNumber?: string;
-  insuredAmount?: number;
-}
-
-interface BusinessRegistration {
-  corporationNumber: string;
-  businessNumber: string;
-  taxYearEnd: string;
-  nextTaxReturnDue: string;
-}
-
-interface TaxAccount {
-  id: string;
-  name: string;
-  amount: string;
-  description: string;
-}
-
-interface Shareholder {
-  id: string;
-  name: string;
-  shareClass: string;
-  shares: number;
-  percentage: number;
-}
-
-interface ShareClass {
-  id: string;
-  name: string;
-  description: string;
-  outstanding: number;
-  votingRights: boolean;
-  dividendRights: string;
-}
-
-interface CorporateEntity {
+type CorporateAsset = {
   id: string;
   name: string;
   type: string;
-  status: string;
-  ownership: string;
-}
-
-interface ImportantDate {
-  id: string;
-  name: string;
-  date: string;
-  type: string;
-}
-
-interface TaxOpportunity {
-  id: string;
-  title: string;
-  description: string;
-  type: string;
-}
-
-interface CurrentYearData {
-  revenue: number;
-  profit: number;
-  valuation: number;
-}
-
-interface GrowthRatesData {
-  revenueGrowth: number;
-  profitGrowth: number;
-  valuationGrowth: number;
-}
-
-interface ProjectionsData {
-  revenue2025: number;
-  profit2025: number;
-  valuation2025: number;
-}
-
-interface CorporateAsset {
-  id: string;
-  name: string;
-  type: "Corporate Real Estate" | "Business Investments" | "Equipment & Machinery" | "Intellectual Property" | "Corporate Bonds" | "Business Cash/Savings";
   currentValue: number;
-  costBase: number;
-  growthRate: number;
-  years: number;
-  monthlyContribution: number;
-  address?: string;
-  mortgage?: number;
-}
+  purchaseDate: string;
+  appreciationRate: number;
+  description?: string;
+};
 
-const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) => {
-  const [activeTab, setActiveTab] = useState("overview");
+type CorporateLiability = {
+  id: string;
+  name: string;
+  type: string;
+  principal: number;
+  interestRate: number;
+  monthlyPayment: number;
+  remainingMonths: number;
+  description?: string;
+};
 
-  const [revenueStreams, setRevenueStreams] = useState<RevenueStream[]>([
-    { id: "1", name: "Core Services", value: 285000, color: "#8b5cf6" },
-    { id: "2", name: "Consulting", value: 125000, color: "#06b6d4" },
-    { id: "3", name: "Products", value: 75000, color: "#10b981" },
-  ]);
+const corporateAssetTypes = [
+  "Real Estate",
+  "Equipment", 
+  "Vehicles",
+  "Intellectual Property",
+  "Inventory",
+  "Technology",
+  "Other"
+];
 
-  const [isEditingRevenue, setIsEditingRevenue] = useState(false);
-  const [newRevenueName, setNewRevenueName] = useState("");
-  const [newRevenueValue, setNewRevenueValue] = useState(0);
+const corporateLiabilityTypes = [
+  "Business Mortgage",
+  "Equipment Loan",
+  "Line of Credit", 
+  "Corporate Credit Card",
+  "Term Loan",
+  "Equipment Financing"
+];
 
-  const [financialData, setFinancialData] = useState<FinancialData[]>([
-    { year: "2025", valuation: 384000, revenue: 572000, profit: 131000, expenses: 441000 },
-    { year: "2026", valuation: 453000, revenue: 675000, profit: 155000, expenses: 520000 },
-    { year: "2027", valuation: 535000, revenue: 797000, profit: 183000, expenses: 614000 },
-    { year: "2028", valuation: 632000, revenue: 940000, profit: 216000, expenses: 724000 },
-    { year: "2029", valuation: 746000, revenue: 1109000, profit: 255000, expenses: 854000 },
-  ]);
-
-  const [isEditingFinancials, setIsEditingFinancials] = useState(false);
-
-  const [currentYearData, setCurrentYearData] = useState<CurrentYearData>({
-    revenue: 485000,
-    profit: 105000,
-    valuation: 325000
-  });
-
-  const [isEditingCurrentYear, setIsEditingCurrentYear] = useState(false);
-
-  const [growthRatesData, setGrowthRatesData] = useState<GrowthRatesData>({
-    revenueGrowth: 18,
-    profitGrowth: 25,
-    valuationGrowth: 18
-  });
-
-  const [isEditingGrowthRates, setIsEditingGrowthRates] = useState(false);
-
-  const [projectionsData, setProjectionsData] = useState<ProjectionsData>({
-    revenue2025: 572000,
-    profit2025: 131000,
-    valuation2025: 384000
-  });
-
-  const [isEditingProjections, setIsEditingProjections] = useState(false);
-
-  const [businessInsurances, setBusinessInsurances] = useState<BusinessInsurance[]>([
-    { id: "1", type: "General Liability", coverage: "$2M", status: "Active", premium: "$3,200", policyNumber: "GL-2024-001", insuredAmount: 2000000 },
-    { id: "2", type: "Professional Liability", coverage: "$1M", status: "Active", premium: "$2,800", policyNumber: "PL-2024-002", insuredAmount: 1000000 },
-    { id: "3", type: "Key Person Insurance", coverage: "$500K", status: "Active", premium: "$4,500", policyNumber: "KP-2024-003", insuredAmount: 500000 },
-    { id: "4", type: "Business Interruption", coverage: "$750K", status: "Active", premium: "$1,900", policyNumber: "BI-2024-004", insuredAmount: 750000 },
-  ]);
-
-  const [isAddingInsurance, setIsAddingInsurance] = useState(false);
-  const [newInsurance, setNewInsurance] = useState({
-    type: "" as BusinessInsurance["type"],
-    coverage: "",
-    premium: "",
-    policyNumber: "",
-    insuredAmount: 0
-  });
-
-  const [businessRegistration, setBusinessRegistration] = useState<BusinessRegistration>({
-    corporationNumber: "123456789",
-    businessNumber: "987654321 RC0001",
-    taxYearEnd: "December 31",
-    nextTaxReturnDue: "June 30, 2025"
-  });
-
-  const [isEditingRegistration, setIsEditingRegistration] = useState(false);
-
-  const [taxAccounts, setTaxAccounts] = useState<TaxAccount[]>([
-    { id: "1", name: "Capital Dividend Account", amount: "$45,000", description: "Available for tax-free distribution" },
-    { id: "2", name: "Eligible LCGE Remaining", amount: "$971,190", description: "Lifetime Capital Gains Exemption" },
-    { id: "3", name: "LCGE Used to Date", amount: "$0", description: "" },
-  ]);
-
-  const [isEditingTaxAccounts, setIsEditingTaxAccounts] = useState(false);
-
-  const [shareholders, setShareholders] = useState<Shareholder[]>([
-    { id: "1", name: "John Smith", shareClass: "Class A Common", shares: 100, percentage: 60 },
-    { id: "2", name: "Jane Smith", shareClass: "Class A Common", shares: 67, percentage: 40 },
-  ]);
-
-  const [isEditingShareholders, setIsEditingShareholders] = useState(false);
-
-  const [shareClasses, setShareClasses] = useState<ShareClass[]>([
-    { id: "1", name: "Class A Common", description: "Voting common shares", outstanding: 167, votingRights: true, dividendRights: "Yes" },
-    { id: "2", name: "Class B Preferred", description: "Non-voting preferred shares", outstanding: 0, votingRights: false, dividendRights: "Fixed 5%" },
-  ]);
-
-  const [isEditingShareClasses, setIsEditingShareClasses] = useState(false);
-
-  const [corporateEntities, setCorporateEntities] = useState<CorporateEntity[]>([
-    { id: "1", name: "Smith Holdings Inc.", type: "Investment holding", status: "Active", ownership: "100%" },
-    { id: "2", name: "Family Trust Co.", type: "Estate planning", status: "Trust", ownership: "75%" },
-  ]);
-
-  const [isEditingCorporate, setIsEditingCorporate] = useState(false);
-
-  const [importantDates, setImportantDates] = useState<ImportantDate[]>([
-    { id: "1", name: "Corporate Tax Return", date: "June 30, 2025", type: "tax" },
-    { id: "2", name: "Annual Return", date: "March 31, 2025", type: "filing" },
-    { id: "3", name: "Payroll Remittance", date: "15th of each month", type: "payroll" },
-    { id: "4", name: "GST/HST Filing", date: "Quarterly", type: "tax" },
-  ]);
-
-  const [isEditingDates, setIsEditingDates] = useState(false);
-
-  const [taxOpportunities, setTaxOpportunities] = useState<TaxOpportunity[]>([
-    { id: "1", title: "Capital Dividend Distribution", description: "$45,000 available for tax-free distribution", type: "green" },
-    { id: "2", title: "LCGE Planning", description: "$971,190 lifetime exemption available", type: "blue" },
-    { id: "3", title: "Income Splitting", description: "Consider family trust distributions", type: "purple" },
-  ]);
-
-  const [isEditingOpportunities, setIsEditingOpportunities] = useState(false);
-
-  const [corporateAssets, setCorporateAssets] = useState<CorporateAsset[]>([
+export const BusinessDetailDialog: React.FC<BusinessDetailDialogProps> = ({
+  isOpen,
+  onClose,
+}) => {
+  const { toast } = useToast();
+  const [corporateAssets, setCorporateAssets] = React.useState<CorporateAsset[]>([
     {
       id: "1",
       name: "Office Building",
-      type: "Corporate Real Estate",
-      currentValue: 850000,
-      costBase: 720000,
-      growthRate: 4,
-      years: 10,
-      monthlyContribution: 0,
-      address: "123 Business Ave",
-      mortgage: 350000
+      type: "Real Estate",
+      currentValue: 750000,
+      purchaseDate: "2022-01-15",
+      appreciationRate: 3.5,
+      description: "Main office building downtown"
     },
     {
       id: "2", 
-      name: "Investment Portfolio",
-      type: "Business Investments",
+      name: "Manufacturing Equipment",
+      type: "Equipment",
       currentValue: 250000,
-      costBase: 200000,
-      growthRate: 7,
-      years: 15,
-      monthlyContribution: 2000
+      purchaseDate: "2023-06-01",
+      appreciationRate: -8.0,
+      description: "Production line machinery"
     }
   ]);
 
-  const [isAddingCorporateAsset, setIsAddingCorporateAsset] = useState(false);
-  const [newCorporateAsset, setNewCorporateAsset] = useState({
-    name: "",
-    type: "" as CorporateAsset["type"],
-    currentValue: 0,
-    costBase: 0,
-    growthRate: 5,
-    years: 10,
-    monthlyContribution: 0
-  });
-
-  const addRevenueStream = () => {
-    if (newRevenueName && newRevenueValue > 0) {
-      const colors = ["#f59e0b", "#ef4444", "#8b5cf6", "#06b6d4", "#10b981"];
-      const newStream: RevenueStream = {
-        id: Date.now().toString(),
-        name: newRevenueName,
-        value: newRevenueValue,
-        color: colors[revenueStreams.length % colors.length]
-      };
-      setRevenueStreams([...revenueStreams, newStream]);
-      setNewRevenueName("");
-      setNewRevenueValue(0);
+  const [corporateLiabilities, setCorporateLiabilities] = React.useState<CorporateLiability[]>([
+    {
+      id: "1",
+      name: "Office Building Mortgage",
+      type: "Business Mortgage", 
+      principal: 500000,
+      interestRate: 4.5,
+      monthlyPayment: 2500,
+      remainingMonths: 180,
+      description: "Commercial mortgage for main office"
+    },
+    {
+      id: "2",
+      name: "Equipment Loan",
+      type: "Equipment Loan",
+      principal: 150000,
+      interestRate: 6.2,
+      monthlyPayment: 1800,
+      remainingMonths: 84,
+      description: "Financing for manufacturing equipment"
     }
-  };
+  ]);
 
-  const deleteRevenueStream = (id: string) => {
-    setRevenueStreams(revenueStreams.filter(stream => stream.id !== id));
-  };
+  const [revenue2025, setRevenue2025] = React.useState([572]);
+  const [profit2025, setProfit2025] = React.useState([131]);
+  const [valuation2025, setValuation2025] = React.useState([384]);
+  const [showAddAssetForm, setShowAddAssetForm] = React.useState(false);
+  const [showAddLiabilityForm, setShowAddLiabilityForm] = React.useState(false);
+  const [editingAsset, setEditingAsset] = React.useState<CorporateAsset | null>(null);
+  const [editingLiability, setEditingLiability] = React.useState<CorporateLiability | null>(null);
+  const [aiDialogOpen, setAIDialogOpen] = React.useState(false);
+  const [aiDialogTitle, setAIDialogTitle] = React.useState("");
+  const [aiDialogContent, setAIDialogContent] = React.useState("");
 
-  const updateRevenueStream = (id: string, field: string, value: any) => {
-    setRevenueStreams(revenueStreams.map(stream => 
-      stream.id === id ? { ...stream, [field]: value } : stream
-    ));
-  };
+  // Liability calculation states
+  const [extraPayments, setExtraPayments] = React.useState<{ [key: string]: number }>({});
+  const [newRates, setNewRates] = React.useState<{ [key: string]: number }>({});
 
-  const updateFinancialData = (year: string, field: string, value: number) => {
-    setFinancialData(financialData.map(data => 
-      data.year === year ? { ...data, [field]: value } : data
-    ));
-  };
-
-  const addInsurance = () => {
-    if (newInsurance.type && newInsurance.coverage && newInsurance.premium) {
-      const insurance: BusinessInsurance = {
-        id: Date.now().toString(),
-        ...newInsurance,
-        status: "Active"
-      };
-      setBusinessInsurances([...businessInsurances, insurance]);
-      setNewInsurance({
-        type: "" as BusinessInsurance["type"],
-        coverage: "",
-        premium: "",
-        policyNumber: "",
-        insuredAmount: 0
-      });
-      setIsAddingInsurance(false);
+  const generateAssetAIAnalysis = (asset: CorporateAsset) => {
+    const yearsOwned = new Date().getFullYear() - new Date(asset.purchaseDate).getFullYear();
+    const projectedValue = asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 5);
+    const totalAppreciation = projectedValue - asset.currentValue;
+    
+    let analysis = `🏢 Corporate Asset Analysis: ${asset.name}\n\n`;
+    analysis += `📊 Current Details:\n`;
+    analysis += `• Asset Type: ${asset.type}\n`;
+    analysis += `• Current Value: $${asset.currentValue.toLocaleString()}\n`;
+    analysis += `• Purchase Date: ${new Date(asset.purchaseDate).toLocaleDateString()}\n`;
+    analysis += `• Years Owned: ${yearsOwned}\n`;
+    analysis += `• Annual ${asset.appreciationRate >= 0 ? 'Appreciation' : 'Depreciation'} Rate: ${Math.abs(asset.appreciationRate)}%\n\n`;
+    
+    analysis += `📈 5-Year Projection:\n`;
+    analysis += `• Projected Value (2029): $${projectedValue.toLocaleString()}\n`;
+    analysis += `• Total ${totalAppreciation >= 0 ? 'Appreciation' : 'Depreciation'}: $${Math.abs(totalAppreciation).toLocaleString()}\n\n`;
+    
+    if (asset.appreciationRate > 0) {
+      analysis += `✅ This asset is appreciating and contributes positively to business equity.\n`;
+    } else {
+      analysis += `⚠️ This asset is depreciating. Consider replacement timeline or maintenance strategies.\n`;
     }
+    
+    analysis += `\n💡 Consider: Regular valuations, maintenance schedules, and strategic timing for asset replacement or upgrades.`;
+    
+    return analysis;
   };
 
-  const deleteInsurance = (id: string) => {
-    setBusinessInsurances(businessInsurances.filter(insurance => insurance.id !== id));
-  };
-
-  const addCorporateAsset = () => {
-    if (newCorporateAsset.name && newCorporateAsset.type && newCorporateAsset.currentValue > 0) {
-      const asset: CorporateAsset = {
-        id: Date.now().toString(),
-        ...newCorporateAsset
-      };
-      setCorporateAssets([...corporateAssets, asset]);
-      setNewCorporateAsset({
-        name: "",
-        type: "" as CorporateAsset["type"],
-        currentValue: 0,
-        costBase: 0,
-        growthRate: 5,
-        years: 10,
-        monthlyContribution: 0
-      });
-      setIsAddingCorporateAsset(false);
+  const generateLiabilityAIAnalysis = (liability: CorporateLiability) => {
+    const extraPayment = extraPayments[liability.id] || 0;
+    const newRate = newRates[liability.id] || liability.interestRate;
+    
+    // Calculate current scenario
+    const totalInterest = (liability.monthlyPayment * liability.remainingMonths) - liability.principal;
+    
+    // Calculate with extra payments and/or new rate
+    const newMonthlyRate = newRate / 100 / 12;
+    const adjustedPayment = liability.monthlyPayment + extraPayment;
+    
+    let newMonths = liability.remainingMonths;
+    let newTotalInterest = totalInterest;
+    
+    if (newMonthlyRate > 0) {
+      newMonths = Math.log(1 + (liability.principal * newMonthlyRate) / adjustedPayment) / Math.log(1 + newMonthlyRate);
+      newTotalInterest = (adjustedPayment * newMonths) - liability.principal;
     }
-  };
-
-  const deleteCorporateAsset = (id: string) => {
-    setCorporateAssets(corporateAssets.filter(asset => asset.id !== id));
-  };
-
-  const updateCorporateAsset = (id: string, field: string, value: any) => {
-    setCorporateAssets(corporateAssets.map(asset => 
-      asset.id === id ? { ...asset, [field]: value } : asset
-    ));
-  };
-
-  const calculateFutureValue = (currentValue: number, growthRate: number, years: number, monthlyContribution: number) => {
-    const monthlyRate = (growthRate / 100) / 12;
-    const totalMonths = years * 12;
     
-    const currentValueFuture = currentValue * Math.pow(1 + (growthRate / 100), years);
+    const interestSavings = totalInterest - newTotalInterest;
+    const monthsSaved = liability.remainingMonths - newMonths;
     
-    const contributionsFuture = monthlyContribution * (Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate;
+    let analysis = `💼 Corporate Liability Analysis: ${liability.name}\n\n`;
+    analysis += `📊 Current Loan Details:\n`;
+    analysis += `• Liability Type: ${liability.type}\n`;
+    analysis += `• Principal Balance: $${liability.principal.toLocaleString()}\n`;
+    analysis += `• Interest Rate: ${liability.interestRate}%\n`;
+    analysis += `• Monthly Payment: $${liability.monthlyPayment.toLocaleString()}\n`;
+    analysis += `• Remaining Months: ${liability.remainingMonths}\n`;
+    analysis += `• Total Interest (Current): $${totalInterest.toLocaleString()}\n\n`;
     
-    return currentValueFuture + contributionsFuture;
-  };
-
-  const generateAssetChartData = (asset: CorporateAsset) => {
-    const data = [];
-    for (let i = 0; i <= asset.years; i++) {
-      const currentProjection = asset.currentValue * Math.pow(1 + (asset.growthRate / 100), i);
-      const monthlyRate = (asset.growthRate / 100) / 12;
-      const totalMonths = i * 12;
-      const contributionsFuture = asset.monthlyContribution * totalMonths > 0 ? 
-        asset.monthlyContribution * (Math.pow(1 + monthlyRate, totalMonths) - 1) / monthlyRate : 0;
+    if (extraPayment > 0 || newRate !== liability.interestRate) {
+      analysis += `🔧 Optimized Scenario:\n`;
+      if (extraPayment > 0) analysis += `• Extra Monthly Payment: $${extraPayment.toLocaleString()}\n`;
+      if (newRate !== liability.interestRate) analysis += `• New Interest Rate: ${newRate}%\n`;
+      analysis += `• New Payoff Time: ${Math.round(newMonths)} months\n`;
+      analysis += `• Total Interest (Optimized): $${newTotalInterest.toLocaleString()}\n`;
+      analysis += `• Interest Savings: $${interestSavings.toLocaleString()}\n`;
+      analysis += `• Months Saved: ${Math.round(monthsSaved)}\n\n`;
       
-      data.push({
-        year: new Date().getFullYear() + i,
-        baseline: asset.currentValue,
-        optimized: currentProjection + contributionsFuture
-      });
+      if (interestSavings > 10000) {
+        analysis += `🎉 Significant savings opportunity! Consider implementing this strategy.\n`;
+      } else if (interestSavings > 0) {
+        analysis += `✅ Moderate savings available. Evaluate cash flow impact.\n`;
+      }
     }
-    return data;
+    
+    analysis += `\n💡 Consider: Refinancing options, extra payment strategies, and business cash flow optimization.`;
+    
+    return analysis;
   };
 
-  const getAssetTypeColor = (type: string) => {
-    const colors = {
-      "Corporate Real Estate": "#8b5cf6",
-      "Business Investments": "#06b6d4", 
-      "Equipment & Machinery": "#10b981",
-      "Intellectual Property": "#f59e0b",
-      "Corporate Bonds": "#ef4444",
-      "Business Cash/Savings": "#84cc16"
+  const handleShowAssetAI = (asset: CorporateAsset) => {
+    setAIDialogTitle(`Corporate Asset: ${asset.name}`);
+    setAIDialogContent(generateAssetAIAnalysis(asset));
+    setAIDialogOpen(true);
+  };
+
+  const handleShowLiabilityAI = (liability: CorporateLiability) => {
+    setAIDialogTitle(`Corporate Liability: ${liability.name}`);
+    setAIDialogContent(generateLiabilityAIAnalysis(liability));
+    setAIDialogOpen(true);
+  };
+
+  const handleAddAsset = (newAsset: Omit<CorporateAsset, 'id'>) => {
+    const asset: CorporateAsset = {
+      ...newAsset,
+      id: Date.now().toString(),
     };
-    return colors[type as keyof typeof colors] || "#6b7280";
+    setCorporateAssets(prev => [...prev, asset]);
+    setShowAddAssetForm(false);
+    toast({
+      title: "Corporate Asset Added",
+      description: `${newAsset.name} has been added to your corporate assets.`,
+    });
   };
 
-  const formatLargeNumber = (value: number): string => {
-    if (value >= 1000000) {
-      return `${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1)}M`;
-    } else if (value >= 1000) {
-      return `${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 0)}K`;
-    }
-    return value.toString();
+  const handleAddLiability = (newLiability: Omit<CorporateLiability, 'id'>) => {
+    const liability: CorporateLiability = {
+      ...newLiability,
+      id: Date.now().toString(),
+    };
+    setCorporateLiabilities(prev => [...prev, liability]);
+    setShowAddLiabilityForm(false);
+    toast({
+      title: "Corporate Liability Added", 
+      description: `${newLiability.name} has been added to your corporate liabilities.`,
+    });
   };
 
-  const businessGrowthData = financialData;
-
-  const chartConfig = {
-    valuation: { label: "Valuation", color: "#8b5cf6" },
-    revenue: { label: "Revenue", color: "#06b6d4" },
-    profit: { label: "Profit", color: "#10b981" },
-    expenses: { label: "Expenses", color: "#ef4444" },
+  const handleDeleteAsset = (id: string) => {
+    setCorporateAssets(prev => prev.filter(asset => asset.id !== id));
+    toast({
+      title: "Corporate Asset Deleted",
+      description: "The corporate asset has been removed.",
+    });
   };
+
+  const handleDeleteLiability = (id: string) => {
+    setCorporateLiabilities(prev => prev.filter(liability => liability.id !== id));
+    setExtraPayments(prev => {
+      const newPayments = { ...prev };
+      delete newPayments[id];
+      return newPayments;
+    });
+    setNewRates(prev => {
+      const newRates = { ...prev };
+      delete newRates[id];
+      return newRates;
+    });
+    toast({
+      title: "Corporate Liability Deleted",
+      description: "The corporate liability has been removed.",
+    });
+  };
+
+  // Calculate total corporate assets value
+  const totalCorporateAssetsValue = corporateAssets.reduce((sum, asset) => sum + asset.currentValue, 0);
+  
+  // Calculate total corporate liabilities
+  const totalCorporateLiabilities = corporateLiabilities.reduce((sum, liability) => sum + liability.principal, 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center space-x-3 text-2xl">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <Building2 className="h-6 w-6 text-purple-600" />
-            </div>
-            <span>Business Planning Details</span>
-          </DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Building2 className="w-6 h-6 text-blue-600" />
+              Business Planning Details
+            </DialogTitle>
+          </DialogHeader>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="assets">Corporate Assets</TabsTrigger>
-            <TabsTrigger value="insurance">Insurance</TabsTrigger>
-            <TabsTrigger value="important">Important</TabsTrigger>
-          </TabsList>
+          <Tabs defaultValue="overview" className="space-y-4">
+            <TabsList className="grid w-full grid-cols-5">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="projections">Projections</TabsTrigger>
+              <TabsTrigger value="corporate-assets">Corporate Assets</TabsTrigger>
+              <TabsTrigger value="corporate-liabilities">Corporate Liabilities</TabsTrigger>
+              <TabsTrigger value="strategic">Strategic</TabsTrigger>
+            </TabsList>
 
-          <TabsContent value="overview" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-5 w-5" />
-                      <span>Business Valuation Projections (2025-2029)</span>
-                    </div>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-64">
-                    <AreaChart data={businessGrowthData}>
-                      <defs>
-                        <linearGradient id="valuationGradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                          <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0.1}/>
-                        </linearGradient>
-                      </defs>
-                      <XAxis dataKey="year" />
-                      <YAxis tickFormatter={(value) => `$${(value / 1000000).toFixed(1)}M`} />
-                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, "Valuation"]} />} />
-                      <Area type="monotone" dataKey="valuation" stroke="#8b5cf6" fill="url(#valuationGradient)" />
-                    </AreaChart>
-                  </ChartContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-5 w-5" />
-                      <span>Revenue Streams</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingRevenue(!isEditingRevenue)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ChartContainer config={chartConfig} className="h-64">
-                    <PieChart>
-                      <Pie
-                        data={revenueStreams}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={5}
-                        dataKey="value"
-                      >
-                        {revenueStreams.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${value.toLocaleString()}`, ""]} />} />
-                    </PieChart>
-                  </ChartContainer>
-                  
-                  {isEditingRevenue && (
-                    <div className="space-y-4 mt-4">
-                      {revenueStreams.map((stream) => (
-                        <div key={stream.id} className="flex items-center gap-2 p-2 border rounded">
-                          <Input
-                            value={stream.name}
-                            onChange={(e) => updateRevenueStream(stream.id, 'name', e.target.value)}
-                            className="flex-1"
-                          />
-                          <Input
-                            type="number"
-                            value={stream.value}
-                            onChange={(e) => updateRevenueStream(stream.id, 'value', Number(e.target.value))}
-                            className="w-32"
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => deleteRevenueStream(stream.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      ))}
-                      
-                      <div className="flex items-center gap-2 p-2 border rounded bg-gray-50">
-                        <Input
-                          placeholder="Revenue stream name"
-                          value={newRevenueName}
-                          onChange={(e) => setNewRevenueName(e.target.value)}
-                          className="flex-1"
-                        />
-                        <Input
-                          type="number"
-                          placeholder="Amount"
-                          value={newRevenueValue || ""}
-                          onChange={(e) => setNewRevenueValue(Number(e.target.value))}
-                          className="w-32"
-                        />
-                        <Button onClick={addRevenueStream} size="sm">
-                          <Plus className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {!isEditingRevenue && (
-                    <div className="space-y-2 mt-4">
-                      {revenueStreams.map((stream) => (
-                        <div key={stream.name} className="flex items-center justify-between">
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stream.color }} />
-                            <span className="text-sm">{stream.name}</span>
-                          </div>
-                          <span className="text-sm font-medium">${formatLargeNumber(stream.value)}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <TrendingUp className="h-5 w-5" />
-                    <span>Revenue, Profit & Expenses Trends</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingFinancials(!isEditingFinancials)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={chartConfig} className="h-64">
-                  <AreaChart data={financialData}>
-                    <defs>
-                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
-                      </linearGradient>
-                      <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
-                      </linearGradient>
-                      <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="year" />
-                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area type="monotone" dataKey="revenue" stroke="#06b6d4" fill="url(#revenueGradient)" />
-                    <Area type="monotone" dataKey="profit" stroke="#10b981" fill="url(#profitGradient)" />
-                    <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expensesGradient)" />
-                  </AreaChart>
-                </ChartContainer>
-
-                {isEditingFinancials && (
-                  <div className="space-y-4 mt-4">
-                    {financialData.map((data) => (
-                      <div key={data.year} className="grid grid-cols-5 gap-4 p-4 border rounded-lg">
-                        <div>
-                          <Label className="text-sm font-medium">{data.year}</Label>
-                        </div>
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Revenue</Label>
-                          <Input
-                            type="number"
-                            value={data.revenue}
-                            onChange={(e) => updateFinancialData(data.year, 'revenue', Number(e.target.value))}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Profit</Label>
-                          <Input
-                            type="number"
-                            value={data.profit}
-                            onChange={(e) => updateFinancialData(data.year, 'profit', Number(e.target.value))}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Expenses</Label>
-                          <Input
-                            type="number"
-                            value={data.expenses}
-                            onChange={(e) => updateFinancialData(data.year, 'expenses', Number(e.target.value))}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm text-muted-foreground">Valuation</Label>
-                          <Input
-                            type="number"
-                            value={data.valuation}
-                            onChange={(e) => updateFinancialData(data.year, 'valuation', Number(e.target.value))}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <DollarSign className="h-5 w-5" />
-                      <span>Current Year</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingCurrentYear(!isEditingCurrentYear)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEditingCurrentYear ? (
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium">Revenue</Label>
-                        <Input
-                          type="number"
-                          value={currentYearData.revenue}
-                          onChange={(e) => setCurrentYearData({...currentYearData, revenue: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Profit</Label>
-                        <Input
-                          type="number"
-                          value={currentYearData.profit}
-                          onChange={(e) => setCurrentYearData({...currentYearData, profit: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Valuation</Label>
-                        <Input
-                          type="number"
-                          value={currentYearData.valuation}
-                          onChange={(e) => setCurrentYearData({...currentYearData, valuation: Number(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Revenue</p>
-                        <p className="text-2xl font-bold text-blue-600">${formatLargeNumber(currentYearData.revenue)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Profit</p>
-                        <p className="text-2xl font-bold text-green-600">${formatLargeNumber(currentYearData.profit)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valuation</p>
-                        <p className="text-2xl font-bold text-purple-600">${formatLargeNumber(currentYearData.valuation)}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-5 w-5" />
-                      <span>Growth Rates</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingGrowthRates(!isEditingGrowthRates)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEditingGrowthRates ? (
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium">Revenue Growth (%)</Label>
-                        <Input
-                          type="number"
-                          value={growthRatesData.revenueGrowth}
-                          onChange={(e) => setGrowthRatesData({...growthRatesData, revenueGrowth: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Profit Growth (%)</Label>
-                        <Input
-                          type="number"
-                          value={growthRatesData.profitGrowth}
-                          onChange={(e) => setGrowthRatesData({...growthRatesData, profitGrowth: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Valuation Growth (%)</Label>
-                        <Input
-                          type="number"
-                          value={growthRatesData.valuationGrowth}
-                          onChange={(e) => setGrowthRatesData({...growthRatesData, valuationGrowth: Number(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">Revenue Growth</p>
-                        <p className="text-2xl font-bold text-blue-600">+{growthRatesData.revenueGrowth}% YoY</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Profit Growth</p>
-                        <p className="text-2xl font-bold text-green-600">+{growthRatesData.profitGrowth}% YoY</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">Valuation Growth</p>
-                        <p className="text-2xl font-bold text-purple-600">+{growthRatesData.valuationGrowth}% YoY</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <Target className="h-5 w-5" />
-                      <span>Projections</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setIsEditingProjections(!isEditingProjections)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isEditingProjections ? (
-                    <div className="space-y-4">
-                      <div>
-                        <Label className="text-sm font-medium">2025 Revenue</Label>
-                        <Input
-                          type="number"
-                          value={projectionsData.revenue2025}
-                          onChange={(e) => setProjectionsData({...projectionsData, revenue2025: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">2025 Profit</Label>
-                        <Input
-                          type="number"
-                          value={projectionsData.profit2025}
-                          onChange={(e) => setProjectionsData({...projectionsData, profit2025: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">2025 Valuation</Label>
-                        <Input
-                          type="number"
-                          value={projectionsData.valuation2025}
-                          onChange={(e) => setProjectionsData({...projectionsData, valuation2025: Number(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="space-y-4">
-                      <div>
-                        <p className="text-sm text-muted-foreground">2025 Revenue</p>
-                        <p className="text-2xl font-bold text-blue-600">${formatLargeNumber(projectionsData.revenue2025)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">2025 Profit</p>
-                        <p className="text-2xl font-bold text-green-600">${formatLargeNumber(projectionsData.profit2025)}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-muted-foreground">2025 Valuation</p>
-                        <p className="text-2xl font-bold text-purple-600">${formatLargeNumber(projectionsData.valuation2025)}</p>
-                      </div>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="assets" className="space-y-6">
-            <div className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <PiggyBank className="h-6 w-6 text-green-600" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold">Corporate Assets</h2>
-                    <p className="text-sm text-muted-foreground">Manage your business investment portfolio</p>
-                  </div>
-                </div>
-                <Button onClick={() => setIsAddingCorporateAsset(true)}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add Corporate Asset
-                </Button>
-              </div>
-
-              {corporateAssets.map((asset) => {
-                const futureValue = calculateFutureValue(asset.currentValue, asset.growthRate, asset.years, asset.monthlyContribution);
-                const chartData = generateAssetChartData(asset);
-                
-                return (
-                  <Card key={asset.id} className="overflow-hidden">
-                    <CardHeader className="pb-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <div 
-                            className="w-4 h-4 rounded-full" 
-                            style={{ backgroundColor: getAssetTypeColor(asset.type) }}
-                          />
-                          <div>
-                            <CardTitle className="text-lg">{asset.name}</CardTitle>
-                            <p className="text-sm text-muted-foreground">{asset.type}</p>
-                          </div>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteCorporateAsset(asset.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="space-y-6">
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label className="text-sm text-muted-foreground">Current FMV</Label>
-                              <Input
-                                type="number"
-                                value={asset.currentValue}
-                                onChange={(e) => updateCorporateAsset(asset.id, 'currentValue', Number(e.target.value))}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm text-muted-foreground">Cost Base (ACB)</Label>
-                              <Input
-                                type="number"
-                                value={asset.costBase}
-                                onChange={(e) => updateCorporateAsset(asset.id, 'costBase', Number(e.target.value))}
-                              />
-                            </div>
-                          </div>
-
-                          {asset.type === "Corporate Real Estate" && (
-                            <div className="grid grid-cols-2 gap-4">
-                              <div>
-                                <Label className="text-sm text-muted-foreground">Address</Label>
-                                <Input
-                                  value={asset.address || ""}
-                                  onChange={(e) => updateCorporateAsset(asset.id, 'address', e.target.value)}
-                                />
-                              </div>
-                              <div>
-                                <Label className="text-sm text-muted-foreground">Mortgage Balance</Label>
-                                <Input
-                                  type="number"
-                                  value={asset.mortgage || 0}
-                                  onChange={(e) => updateCorporateAsset(asset.id, 'mortgage', Number(e.target.value))}
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                          {asset.type === "Business Investments" && (
-                            <div>
-                              <Label className="text-sm text-muted-foreground">Monthly Contributions</Label>
-                              <Input
-                                type="number"
-                                value={asset.monthlyContribution}
-                                onChange={(e) => updateCorporateAsset(asset.id, 'monthlyContribution', Number(e.target.value))}
-                              />
-                            </div>
-                          )}
-
-                          <div className="space-y-4">
-                            <div>
-                              <Label className="text-sm text-muted-foreground">
-                                Growth Rate: {asset.growthRate}%
-                              </Label>
-                              <Slider
-                                value={[asset.growthRate]}
-                                onValueChange={(value) => updateCorporateAsset(asset.id, 'growthRate', value[0])}
-                                max={15}
-                                min={0}
-                                step={0.5}
-                                className="mt-2"
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm text-muted-foreground">
-                                Projection Years: {asset.years}
-                              </Label>
-                              <Slider
-                                value={[asset.years]}
-                                onValueChange={(value) => updateCorporateAsset(asset.id, 'years', value[0])}
-                                max={30}
-                                min={1}
-                                step={1}
-                                className="mt-2"
-                              />
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                            <EditableField
-                              fieldId={`current-${asset.id}`}
-                              value={asset.currentValue}
-                              label="Current Value"
-                              prefix="$"
-                            />
-                            <EditableField
-                              fieldId={`future-${asset.id}`}
-                              value={futureValue}
-                              label={`Future Value (${asset.years}y)`}
-                              prefix="$"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <GrowthChart
-                            data={chartData}
-                            title={`${asset.name} Growth Projection`}
-                          />
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-
-              {isAddingCorporateAsset && (
+            <TabsContent value="overview" className="space-y-6">
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <Card>
                   <CardHeader>
-                    <CardTitle>Add New Corporate Asset</CardTitle>
+                    <CardTitle className="flex items-center gap-2">
+                      <TrendingUp className="w-5 h-5 text-green-600" />
+                      Business Valuation Projections (2025-2029)
+                    </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Asset Name</Label>
-                        <Input
-                          placeholder="e.g., Office Building"
-                          value={newCorporateAsset.name}
-                          onChange={(e) => setNewCorporateAsset({...newCorporateAsset, name: e.target.value})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Asset Type</Label>
-                        <Select 
-                          value={newCorporateAsset.type} 
-                          onValueChange={(value: CorporateAsset["type"]) => 
-                            setNewCorporateAsset({...newCorporateAsset, type: value})
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select asset type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="Corporate Real Estate">Corporate Real Estate</SelectItem>
-                            <SelectItem value="Business Investments">Business Investments</SelectItem>
-                            <SelectItem value="Equipment & Machinery">Equipment & Machinery</SelectItem>
-                            <SelectItem value="Intellectual Property">Intellectual Property</SelectItem>
-                            <SelectItem value="Corporate Bonds">Corporate Bonds</SelectItem>
-                            <SelectItem value="Business Cash/Savings">Business Cash/Savings</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Current Value</Label>
-                        <Input
-                          type="number"
-                          placeholder="Current market value"
-                          value={newCorporateAsset.currentValue || ""}
-                          onChange={(e) => setNewCorporateAsset({...newCorporateAsset, currentValue: Number(e.target.value)})}
-                        />
-                      </div>
-                      <div>
-                        <Label className="text-sm font-medium">Cost Base</Label>
-                        <Input
-                          type="number"
-                          placeholder="Original purchase price"
-                          value={newCorporateAsset.costBase || ""}
-                          onChange={(e) => setNewCorporateAsset({...newCorporateAsset, costBase: Number(e.target.value)})}
-                        />
-                      </div>
-                    </div>
-                    <div className="flex gap-2 mt-4">
-                      <Button onClick={addCorporateAsset}>Add Asset</Button>
-                      <Button variant="outline" onClick={() => setIsAddingCorporateAsset(false)}>Cancel</Button>
+                  <CardContent>
+                    <div className="grid grid-cols-5 gap-2 text-center mb-4">
+                      {['2025', '2026', '2027', '2028', '2029'].map((year) => (
+                        <div key={year} className="font-semibold text-sm">{year}</div>
+                      ))}
+                      {['$0.0M', '$0.2M', '$0.4M', '$0.6M', '$0.8M'].map((value, index) => (
+                        <div key={index} className="text-blue-600 font-bold">{value}</div>
+                      ))}
                     </div>
                   </CardContent>
                 </Card>
-              )}
-            </div>
-          </TabsContent>
 
-          <TabsContent value="insurance" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Shield className="h-5 w-5" />
-                    <span>Business Insurance Coverage</span>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <DollarSign className="w-5 h-5 text-blue-600" />
+                      Revenue Streams
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div className="flex justify-between">
+                      <span>Core Services</span>
+                      <span className="font-bold text-blue-600">$285K</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Consulting</span>
+                      <span className="font-bold text-green-600">$125K</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Products</span>
+                      <span className="font-bold text-purple-600">$75K</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Revenue, Profit & Expenses Trends */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <BarChart3 className="w-5 h-5 text-purple-600" />
+                    Revenue, Profit & Expenses Trends
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-5 gap-2 text-center mb-4">
+                    {['2025', '2026', '2027', '2028', '2029'].map((year) => (
+                      <div key={year} className="font-semibold text-sm">{year}</div>
+                    ))}
+                    {['$0', '$300K', '$600K', '$900K', '$1.2M'].map((value, index) => (
+                      <div key={index} className="text-purple-600 font-bold">{value}</div>
+                    ))}
                   </div>
-                  <Button onClick={() => setIsAddingInsurance(true)}>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Insurance
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {businessInsurances.map((insurance) => (
-                    <div key={insurance.id} className="flex items-center justify-between p-4 border rounded-lg">
+                </CardContent>
+              </Card>
+
+              {/* Current Year, Growth Rates, Projections */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Current Year</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="font-semibold text-gray-600">Revenue</div>
+                      <div className="text-2xl font-bold text-blue-600">$485K</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">Profit</div>
+                      <div className="text-2xl font-bold text-green-600">$105K</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">Valuation</div>
+                      <div className="text-2xl font-bold text-purple-600">$325K</div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Growth Rates</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="font-semibold text-gray-600">Revenue Growth</div>
+                      <div className="text-2xl font-bold text-green-600">+18% YoY</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">Profit Growth</div>
+                      <div className="text-2xl font-bold text-green-600">+25% YoY</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">Valuation Growth</div>
+                      <div className="text-2xl font-bold text-green-600">+18% YoY</div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Projections</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <div className="font-semibold text-gray-600">2025 Revenue</div>
+                      <div className="text-2xl font-bold text-blue-600">$572K</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">2025 Profit</div>
+                      <div className="text-2xl font-bold text-green-600">$131K</div>
+                    </div>
+                    <div>
+                      <div className="font-semibold text-gray-600">2025 Valuation</div>
+                      <div className="text-2xl font-bold text-purple-600">$384K</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="projections" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle>2025 Revenue Projection</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
                       <div>
-                        <h4 className="font-medium">{insurance.type}</h4>
-                        <p className="text-sm text-muted-foreground">Coverage: {insurance.coverage}</p>
-                        {insurance.policyNumber && (
-                          <p className="text-xs text-muted-foreground">Policy: {insurance.policyNumber}</p>
-                        )}
+                        <Label>Revenue Target: ${revenue2025[0]}K</Label>
+                        <Slider
+                          value={revenue2025}
+                          onValueChange={setRevenue2025}
+                          min={400}
+                          max={800}
+                          step={10}
+                          className="mt-2"
+                        />
                       </div>
-                      <div className="flex items-center gap-4">
-                        <div className="text-right">
-                          <Badge variant="secondary" className="mb-2">
-                            {insurance.status}
-                          </Badge>
-                          <p className="text-sm text-muted-foreground">
-                            Annual Premium: {insurance.premium}
-                          </p>
-                        </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => deleteInsurance(insurance.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                      <div className="text-sm text-gray-600">
+                        Current: $485K → Target: ${revenue2025[0]}K
+                        <br />
+                        Growth: {(((revenue2025[0] - 485) / 485) * 100).toFixed(1)}%
                       </div>
                     </div>
-                  ))}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>2025 Profit Projection</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Profit Target: ${profit2025[0]}K</Label>
+                        <Slider
+                          value={profit2025}
+                          onValueChange={setProfit2025}
+                          min={80}
+                          max={200}
+                          step={5}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Current: $105K → Target: ${profit2025[0]}K
+                        <br />
+                        Margin: {((profit2025[0] / revenue2025[0]) * 100).toFixed(1)}%
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>2025 Valuation Projection</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <Label>Valuation Target: ${valuation2025[0]}K</Label>
+                        <Slider
+                          value={valuation2025}
+                          onValueChange={setValuation2025}
+                          min={250}
+                          max={500}
+                          step={10}
+                          className="mt-2"
+                        />
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        Current: $325K → Target: ${valuation2025[0]}K
+                        <br />
+                        Multiple: {(valuation2025[0] / profit2025[0]).toFixed(1)}x
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+
+            <TabsContent value="corporate-assets" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold">Corporate Assets</h3>
+                  <p className="text-gray-600">
+                    Total Value: ${totalCorporateAssetsValue.toLocaleString()}
+                  </p>
                 </div>
+                <Button onClick={() => setShowAddAssetForm(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Asset
+                </Button>
+              </div>
 
-                {isAddingInsurance && (
-                  <div className="mt-6 p-4 border rounded-lg bg-gray-50">
-                    <h4 className="font-medium mb-4">Add New Insurance</h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Insurance Type</Label>
-                        <Select 
-                          value={newInsurance.type} 
-                          onValueChange={(value: BusinessInsurance["type"]) => 
-                            setNewInsurance({...newInsurance, type: value})
-                          }
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select insurance type" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="General Liability">General Liability</SelectItem>
-                            <SelectItem value="Professional Liability">Professional Liability</SelectItem>
-                            <SelectItem value="Term Life">Term Life Insurance</SelectItem>
-                            <SelectItem value="Universal Life">Universal Life Insurance</SelectItem>
-                            <SelectItem value="Whole Life">Whole Life Insurance</SelectItem>
-                            <SelectItem value="Key Person Insurance">Key Person Insurance</SelectItem>
-                            <SelectItem value="Business Interruption">Business Interruption</SelectItem>
-                            <SelectItem value="Cyber Liability">Cyber Liability</SelectItem>
-                            <SelectItem value="Commercial Auto">Commercial Auto</SelectItem>
-                            <SelectItem value="Workers Compensation">Workers Compensation</SelectItem>
-                            <SelectItem value="Directors & Officers">Directors & Officers</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium">Coverage Amount</Label>
-                        <Input
-                          placeholder="$1M"
-                          value={newInsurance.coverage}
-                          onChange={(e) => setNewInsurance({...newInsurance, coverage: e.target.value})}
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium">Annual Premium</Label>
-                        <Input
-                          placeholder="$3,200"
-                          value={newInsurance.premium}
-                          onChange={(e) => setNewInsurance({...newInsurance, premium: e.target.value})}
-                        />
-                      </div>
-
-                      <div>
-                        <Label className="text-sm font-medium">Policy Number (Optional)</Label>
-                        <Input
-                          placeholder="POL-2024-001"
-                          value={newInsurance.policyNumber}
-                          onChange={(e) => setNewInsurance({...newInsurance, policyNumber: e.target.value})}
-                        />
-                      </div>
-                    </div>
-
-                    <div className="flex gap-2 mt-4">
-                      <Button onClick={addInsurance}>Add Insurance</Button>
-                      <Button variant="outline" onClick={() => setIsAddingInsurance(false)}>Cancel</Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-          </TabsContent>
-
-          <TabsContent value="important" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <FileText className="h-5 w-5" />
-                    <span>Business Registration</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingRegistration(!isEditingRegistration)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isEditingRegistration ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <Label className="text-sm font-medium">Corporation Number</Label>
-                      <Input
-                        value={businessRegistration.corporationNumber}
-                        onChange={(e) => setBusinessRegistration({...businessRegistration, corporationNumber: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Business Number</Label>
-                      <Input
-                        value={businessRegistration.businessNumber}
-                        onChange={(e) => setBusinessRegistration({...businessRegistration, businessNumber: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Tax Year End</Label>
-                      <Input
-                        value={businessRegistration.taxYearEnd}
-                        onChange={(e) => setBusinessRegistration({...businessRegistration, taxYearEnd: e.target.value})}
-                      />
-                    </div>
-                    <div>
-                      <Label className="text-sm font-medium">Next Tax Return Due</Label>
-                      <Input
-                        value={businessRegistration.nextTaxReturnDue}
-                        onChange={(e) => setBusinessRegistration({...businessRegistration, nextTaxReturnDue: e.target.value})}
-                      />
-                    </div>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Corporation Number</p>
-                      <p className="text-lg font-bold">{businessRegistration.corporationNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Business Number</p>
-                      <p className="text-lg font-bold">{businessRegistration.businessNumber}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Tax Year End</p>
-                      <p className="text-lg font-bold">{businessRegistration.taxYearEnd}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-muted-foreground">Next Tax Return Due</p>
-                      <p className="text-lg font-bold text-orange-600">{businessRegistration.nextTaxReturnDue}</p>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <DollarSign className="h-5 w-5" />
-                    <span>Tax Planning Accounts</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingTaxAccounts(!isEditingTaxAccounts)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {isEditingTaxAccounts ? (
-                  <div className="space-y-4">
-                    {taxAccounts.map((account) => (
-                      <div key={account.id} className="grid grid-cols-3 gap-4 p-4 border rounded-lg">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {corporateAssets.map((asset) => (
+                  <Card key={asset.id}>
+                    <CardHeader>
+                      <div className="flex justify-between items-start">
                         <div>
-                          <Label className="text-sm font-medium">Account Name</Label>
-                          <Input
-                            value={account.name}
-                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
-                              a.id === account.id ? {...a, name: e.target.value} : a
-                            ))}
-                          />
+                          <CardTitle className="text-lg">{asset.name}</CardTitle>
+                          <Badge variant="secondary">{asset.type}</Badge>
                         </div>
-                        <div>
-                          <Label className="text-sm font-medium">Amount</Label>
-                          <Input
-                            value={account.amount}
-                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
-                              a.id === account.id ? {...a, amount: e.target.value} : a
-                            ))}
-                          />
-                        </div>
-                        <div>
-                          <Label className="text-sm font-medium">Description</Label>
-                          <Input
-                            value={account.description}
-                            onChange={(e) => setTaxAccounts(taxAccounts.map(a => 
-                              a.id === account.id ? {...a, description: e.target.value} : a
-                            ))}
-                          />
+                        <div className="flex gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleShowAssetAI(asset)}
+                            className="border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+                          >
+                            <Bot className="w-4 h-4 mr-1" />
+                            AI
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setEditingAsset(asset)}
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteAsset(asset.id)}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </div>
                       </div>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {taxAccounts.map((account) => (
-                      <div key={account.id} className="p-4 bg-green-50 border border-green-200 rounded-lg">
-                        <p className="text-sm text-muted-foreground">{account.name}</p>
-                        <p className="text-2xl font-bold text-green-600">{account.amount}</p>
-                        <p className="text-xs text-green-600">{account.description}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Users className="h-5 w-5" />
-                    <span>Shareholder Structure</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingShareholders(!isEditingShareholders)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {shareholders.map((shareholder) => (
-                    <div key={shareholder.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      {isEditingShareholders ? (
-                        <div className="grid grid-cols-4 gap-4 w-full">
-                          <Input
-                            value={shareholder.name}
-                            onChange={(e) => setShareholders(shareholders.map(s => 
-                              s.id === shareholder.id ? {...s, name: e.target.value} : s
-                            ))}
-                          />
-                          <Input
-                            value={shareholder.shareClass}
-                            onChange={(e) => setShareholders(shareholders.map(s => 
-                              s.id === shareholder.id ? {...s, shareClass: e.target.value} : s
-                            ))}
-                          />
-                          <Input
-                            type="number"
-                            value={shareholder.shares}
-                            onChange={(e) => setShareholders(shareholders.map(s => 
-                              s.id === shareholder.id ? {...s, shares: Number(e.target.value)} : s
-                            ))}
-                          />
-                          <Input
-                            type="number"
-                            value={shareholder.percentage}
-                            onChange={(e) => setShareholders(shareholders.map(s => 
-                              s.id === shareholder.id ? {...s, percentage: Number(e.target.value)} : s
-                            ))}
-                          />
-                        </div>
-                      ) : (
-                        <>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
                           <div>
-                            <h4 className="font-medium">{shareholder.name}</h4>
-                            <p className="text-sm text-muted-foreground">{shareholder.shareClass}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-bold">{shareholder.shares} shares</p>
-                            <p className="text-sm text-muted-foreground">{shareholder.percentage}%</p>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Share2 className="h-5 w-5" />
-                    <span>Share Classes</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingShareClasses(!isEditingShareClasses)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {shareClasses.map((shareClass) => (
-                    <div key={shareClass.id} className="p-4 border rounded-lg">
-                      {isEditingShareClasses ? (
-                        <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
-                            <div>
-                              <Label className="text-sm font-medium">Class Name</Label>
-                              <Input
-                                value={shareClass.name}
-                                onChange={(e) => setShareClasses(shareClasses.map(sc => 
-                                  sc.id === shareClass.id ? {...sc, name: e.target.value} : sc
-                                ))}
-                              />
-                            </div>
-                            <div>
-                              <Label className="text-sm font-medium">Outstanding Shares</Label>
-                              <Input
-                                type="number"
-                                value={shareClass.outstanding}
-                                onChange={(e) => setShareClasses(shareClasses.map(sc => 
-                                  sc.id === shareClass.id ? {...sc, outstanding: Number(e.target.value)} : sc
-                                ))}
-                              />
+                            <span className="text-gray-600">Current Value:</span>
+                            <div className="font-bold text-lg">
+                              ${asset.currentValue.toLocaleString()}
                             </div>
                           </div>
                           <div>
-                            <Label className="text-sm font-medium">Description</Label>
-                            <Input
-                              value={shareClass.description}
-                              onChange={(e) => setShareClasses(shareClasses.map(sc => 
-                                sc.id === shareClass.id ? {...sc, description: e.target.value} : sc
-                              ))}
+                            <span className="text-gray-600">Annual Change:</span>
+                            <div className={`font-bold text-lg ${asset.appreciationRate >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                              {asset.appreciationRate >= 0 ? '+' : ''}{asset.appreciationRate}%
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <span className="text-gray-600 text-sm">5-Year Growth Projection</span>
+                          <div className="w-full max-w-full overflow-hidden">
+                            <GrowthChart
+                              data={[
+                                { year: 2024, value: asset.currentValue },
+                                { year: 2025, value: asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 1) },
+                                { year: 2026, value: asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 2) },
+                                { year: 2027, value: asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 3) },
+                                { year: 2028, value: asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 4) },
+                                { year: 2029, value: asset.currentValue * Math.pow(1 + asset.appreciationRate / 100, 5) },
+                              ]}
+                              height={200}
+                              className="w-full"
                             />
                           </div>
                         </div>
-                      ) : (
-                        <>
-                          <h4 className="font-medium mb-2">{shareClass.name}</h4>
-                          <p className="text-sm text-muted-foreground mb-2">{shareClass.description}</p>
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <div>
-                              <p className="text-xs text-muted-foreground">Outstanding</p>
-                              <p className="font-bold">{shareClass.outstanding}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Voting Rights</p>
-                              <Badge variant={shareClass.votingRights ? "secondary" : "outline"}>
-                                {shareClass.votingRights ? "Yes" : "No"}
-                              </Badge>
-                            </div>
-                            <div>
-                              <p className="text-xs text-muted-foreground">Dividend Rights</p>
-                              <Badge variant="secondary">{shareClass.dividendRights}</Badge>
-                            </div>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                        
+                        {asset.description && (
+                          <p className="text-sm text-gray-600">{asset.description}</p>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Building2 className="h-5 w-5" />
-                    <span>Corporate Structure</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingCorporate(!isEditingCorporate)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {corporateEntities.map((entity) => (
-                    <div key={entity.id} className="flex items-center justify-between p-4 border rounded-lg">
-                      {isEditingCorporate ? (
-                        <div className="grid grid-cols-4 gap-4 w-full">
-                          <Input
-                            value={entity.name}
-                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
-                              ce.id === entity.id ? {...ce, name: e.target.value} : ce
-                            ))}
-                          />
-                          <Input
-                            value={entity.type}
-                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
-                              ce.id === entity.id ? {...ce, type: e.target.value} : ce
-                            ))}
-                          />
-                          <Input
-                            value={entity.status}
-                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
-                              ce.id === entity.id ? {...ce, status: e.target.value} : ce
-                            ))}
-                          />
-                          <Input
-                            value={entity.ownership}
-                            onChange={(e) => setCorporateEntities(corporateEntities.map(ce => 
-                              ce.id === entity.id ? {...ce, ownership: e.target.value} : ce
-                            ))}
-                          />
-                        </div>
-                      ) : (
-                        <>
+              {showAddAssetForm && (
+                <AddCorporateAssetForm 
+                  onAdd={handleAddAsset}
+                  onCancel={() => setShowAddAssetForm(false)}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="corporate-liabilities" className="space-y-6">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-2xl font-bold">Corporate Liabilities</h3>
+                  <p className="text-gray-600">
+                    Total Principal: ${totalCorporateLiabilities.toLocaleString()}
+                  </p>
+                </div>
+                <Button onClick={() => setShowAddLiabilityForm(true)}>
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Liability
+                </Button>
+              </div>
+
+              <div className="space-y-6">
+                {corporateLiabilities.map((liability) => {
+                  const extraPayment = extraPayments[liability.id] || 0;
+                  const newRate = newRates[liability.id] || liability.interestRate;
+                  
+                  // Calculate current scenario
+                  const currentTotalPayment = liability.monthlyPayment * liability.remainingMonths;
+                  const currentTotalInterest = currentTotalPayment - liability.principal;
+                  
+                  // Calculate optimized scenario
+                  const newMonthlyRate = newRate / 100 / 12;
+                  const adjustedPayment = liability.monthlyPayment + extraPayment;
+                  
+                  let optimizedMonths = liability.remainingMonths;
+                  let optimizedTotalInterest = currentTotalInterest;
+                  
+                  if (newMonthlyRate > 0 && adjustedPayment > liability.principal * newMonthlyRate) {
+                    optimizedMonths = Math.log(1 + (liability.principal * newMonthlyRate) / adjustedPayment) / Math.log(1 + newMonthlyRate);
+                    optimizedTotalInterest = (adjustedPayment * optimizedMonths) - liability.principal;
+                  }
+                  
+                  const interestSavings = currentTotalInterest - optimizedTotalInterest;
+                  const monthsSaved = liability.remainingMonths - optimizedMonths;
+
+                  return (
+                    <Card key={liability.id}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start">
                           <div>
-                            <h4 className="font-medium">{entity.name}</h4>
-                            <p className="text-sm text-muted-foreground">{entity.type}</p>
+                            <CardTitle className="text-lg">{liability.name}</CardTitle>
+                            <Badge variant="secondary">{liability.type}</Badge>
                           </div>
-                          <div className="text-right">
-                            <Badge variant={entity.status === "Active" ? "secondary" : "outline"}>{entity.status}</Badge>
-                            <p className="text-sm text-muted-foreground mt-1">Ownership: {entity.ownership}</p>
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleShowLiabilityAI(liability)}
+                              className="border-indigo-600 text-indigo-700 hover:bg-indigo-50"
+                            >
+                              <Bot className="w-4 h-4 mr-1" />
+                              AI
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setEditingLiability(liability)}
+                            >
+                              <Pencil className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => handleDeleteLiability(liability.id)}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
                           </div>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Calendar className="h-5 w-5" />
-                    <span>Important Dates</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingDates(!isEditingDates)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {importantDates.map((date) => (
-                    <div key={date.id} className="p-3 border rounded-lg">
-                      {isEditingDates ? (
-                        <div className="space-y-2">
-                          <Input
-                            value={date.name}
-                            onChange={(e) => setImportantDates(importantDates.map(d => 
-                              d.id === date.id ? {...d, name: e.target.value} : d
-                            ))}
-                          />
-                          <Input
-                            value={date.date}
-                            onChange={(e) => setImportantDates(importantDates.map(d => 
-                              d.id === date.id ? {...d, date: e.target.value} : d
-                            ))}
-                          />
                         </div>
-                      ) : (
-                        <>
-                          <p className="font-medium">{date.name}</p>
-                          <p className={`text-sm ${
-                            date.type === 'tax' ? 'text-orange-600' : 
-                            date.type === 'filing' ? 'text-blue-600' : 
-                            date.type === 'payroll' ? 'text-green-600' : 'text-purple-600'
-                          }`}>{date.date}</p>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                          <div className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                <span className="text-gray-600">Principal:</span>
+                                <div className="font-bold">${liability.principal.toLocaleString()}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Rate:</span>
+                                <div className="font-bold">{liability.interestRate}%</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Monthly Payment:</span>
+                                <div className="font-bold">${liability.monthlyPayment.toLocaleString()}</div>
+                              </div>
+                              <div>
+                                <span className="text-gray-600">Remaining:</span>
+                                <div className="font-bold">{liability.remainingMonths} months</div>
+                              </div>
+                            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Target className="h-5 w-5" />
-                    <span>Tax Planning Opportunities</span>
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsEditingOpportunities(!isEditingOpportunities)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {taxOpportunities.map((opportunity) => (
-                    <div key={opportunity.id} className={`p-4 ${
-                      opportunity.type === 'green' ? 'bg-green-50 border border-green-200' :
-                      opportunity.type === 'blue' ? 'bg-blue-50 border border-blue-200' :
-                      'bg-purple-50 border border-purple-200'
-                    } rounded-lg`}>
-                      {isEditingOpportunities ? (
-                        <div className="space-y-2">
-                          <Input
-                            value={opportunity.title}
-                            onChange={(e) => setTaxOpportunities(taxOpportunities.map(to => 
-                              to.id === opportunity.id ? {...to, title: e.target.value} : to
-                            ))}
-                          />
-                          <Input
-                            value={opportunity.description}
-                            onChange={(e) => setTaxOpportunities(taxOpportunities.map(to => 
-                              to.id === opportunity.id ? {...to, description: e.target.value} : to
-                            ))}
-                          />
+                            <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+                              <div>
+                                <Label>Extra Monthly Payment: ${extraPayment}</Label>
+                                <Slider
+                                  value={[extraPayment]}
+                                  onValueChange={(value) => setExtraPayments(prev => ({ ...prev, [liability.id]: value[0] }))}
+                                  min={0}
+                                  max={2000}
+                                  step={50}
+                                  className="mt-2"
+                                />
+                              </div>
+                              
+                              <div>
+                                <Label>New Interest Rate: {newRate}%</Label>
+                                <Slider
+                                  value={[newRate]}
+                                  onValueChange={(value) => setNewRates(prev => ({ ...prev, [liability.id]: value[0] }))}
+                                  min={1}
+                                  max={12}
+                                  step={0.1}
+                                  className="mt-2"
+                                />
+                              </div>
+                            </div>
+
+                            {(extraPayment > 0 || newRate !== liability.interestRate) && (
+                              <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                                <h4 className="font-semibold text-green-800 mb-2">Optimization Results</h4>
+                                <div className="text-sm space-y-1">
+                                  <div>Interest Savings: <span className="font-bold text-green-600">${interestSavings.toLocaleString()}</span></div>
+                                  <div>Time Saved: <span className="font-bold text-green-600">{Math.round(monthsSaved)} months</span></div>
+                                  <div>New Payoff Time: <span className="font-bold">{Math.round(optimizedMonths)} months</span></div>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="space-y-4">
+                            <div>
+                              <h4 className="font-semibold mb-2">Payoff Comparison</h4>
+                              <div className="w-full max-w-full overflow-hidden">
+                                <GrowthChart
+                                  data={[
+                                    { 
+                                      year: 0, 
+                                      value: liability.principal,
+                                      optimized: liability.principal 
+                                    },
+                                    { 
+                                      year: Math.round(liability.remainingMonths / 4), 
+                                      value: liability.principal * 0.75,
+                                      optimized: optimizedMonths < liability.remainingMonths / 4 ? 0 : liability.principal * 0.6
+                                    },
+                                    { 
+                                      year: Math.round(liability.remainingMonths / 2), 
+                                      value: liability.principal * 0.5,
+                                      optimized: optimizedMonths < liability.remainingMonths / 2 ? 0 : liability.principal * 0.3
+                                    },
+                                    { 
+                                      year: Math.round(liability.remainingMonths * 0.75), 
+                                      value: liability.principal * 0.25,
+                                      optimized: optimizedMonths < liability.remainingMonths * 0.75 ? 0 : liability.principal * 0.1
+                                    },
+                                    { 
+                                      year: liability.remainingMonths, 
+                                      value: 0,
+                                      optimized: 0
+                                    }
+                                  ]}
+                                  height={200}
+                                  showOptimized={true}
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                          </div>
                         </div>
-                      ) : (
-                        <>
-                          <h4 className={`font-medium ${
-                            opportunity.type === 'green' ? 'text-green-800' :
-                            opportunity.type === 'blue' ? 'text-blue-800' :
-                            'text-purple-800'
-                          }`}>{opportunity.title}</h4>
-                          <p className={`text-sm ${
-                            opportunity.type === 'green' ? 'text-green-600' :
-                            opportunity.type === 'blue' ? 'text-blue-600' :
-                            'text-purple-600'
-                          }`}>{opportunity.description}</p>
-                        </>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
 
-        <div className="flex justify-end space-x-3 pt-6 border-t">
-          <Button variant="outline" onClick={onClose}>
-            Close
-          </Button>
-          <Button>
-            Schedule Review
-          </Button>
-        </div>
-      </DialogContent>
-    </Dialog>
+                        {liability.description && (
+                          <p className="text-sm text-gray-600 mt-4">{liability.description}</p>
+                        )}
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+              </div>
+
+              {showAddLiabilityForm && (
+                <AddCorporateLiabilityForm 
+                  onAdd={handleAddLiability}
+                  onCancel={() => setShowAddLiabilityForm(false)}
+                />
+              )}
+            </TabsContent>
+
+            <TabsContent value="strategic" className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Target className="w-5 h-5 text-orange-600" />
+                      Strategic Objectives
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span>Market Expansion</span>
+                      <Badge variant="outline">Q2 2025</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Product Development</span>
+                      <Badge variant="outline">Q3 2025</Badge>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span>Team Growth</span>
+                      <Badge variant="outline">Ongoing</Badge>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      Key Metrics
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="flex justify-between">
+                      <span>Customer Acquisition Cost</span>
+                      <span className="font-bold">$125</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Customer Lifetime Value</span>
+                      <span className="font-bold">$2,400</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Monthly Recurring Revenue</span>
+                      <span className="font-bold">$28,500</span>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </DialogContent>
+      </Dialog>
+
+      <SectionAIDialog
+        isOpen={aiDialogOpen}
+        onClose={() => setAIDialogOpen(false)}
+        title={aiDialogTitle}
+        content={aiDialogContent}
+      />
+    </>
   );
 };
 
-export default BusinessDetailDialog;
+// Add Corporate Asset Form Component
+const AddCorporateAssetForm: React.FC<{
+  onAdd: (asset: Omit<CorporateAsset, 'id'>) => void;
+  onCancel: () => void;
+}> = ({ onAdd, onCancel }) => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    type: '',
+    currentValue: '',
+    purchaseDate: '',
+    appreciationRate: '',
+    description: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAdd({
+      name: formData.name,
+      type: formData.type,
+      currentValue: parseFloat(formData.currentValue),
+      purchaseDate: formData.purchaseDate,
+      appreciationRate: parseFloat(formData.appreciationRate),
+      description: formData.description
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Corporate Asset</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="asset-name">Asset Name</Label>
+              <Input
+                id="asset-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="asset-type">Asset Type</Label>
+              <Select 
+                value={formData.type} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select asset type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {corporateAssetTypes.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="current-value">Current Value ($)</Label>
+              <Input
+                id="current-value"
+                type="number"
+                value={formData.currentValue}
+                onChange={(e) => setFormData(prev => ({ ...prev, currentValue: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="purchase-date">Purchase Date</Label>
+              <Input
+                id="purchase-date"
+                type="date"
+                value={formData.purchaseDate}
+                onChange={(e) => setFormData(prev => ({ ...prev, purchaseDate: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="appreciation-rate">Annual Appreciation Rate (%)</Label>
+              <Input
+                id="appreciation-rate"
+                type="number"
+                step="0.1"
+                value={formData.appreciationRate}
+                onChange={(e) => setFormData(prev => ({ ...prev, appreciationRate: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="description">Description (Optional)</Label>
+            <Textarea
+              id="description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit">Add Asset</Button>
+            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
+
+// Add Corporate Liability Form Component
+const AddCorporateLiabilityForm: React.FC<{
+  onAdd: (liability: Omit<CorporateLiability, 'id'>) => void;
+  onCancel: () => void;
+}> = ({ onAdd, onCancel }) => {
+  const [formData, setFormData] = React.useState({
+    name: '',
+    type: '',
+    principal: '',
+    interestRate: '',
+    monthlyPayment: '',
+    remainingMonths: '',
+    description: ''
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onAdd({
+      name: formData.name,
+      type: formData.type,
+      principal: parseFloat(formData.principal),
+      interestRate: parseFloat(formData.interestRate),
+      monthlyPayment: parseFloat(formData.monthlyPayment),
+      remainingMonths: parseInt(formData.remainingMonths),
+      description: formData.description
+    });
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Add Corporate Liability</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="liability-name">Liability Name</Label>
+              <Input
+                id="liability-name"
+                value={formData.name}
+                onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="liability-type">Liability Type</Label>
+              <Select 
+                value={formData.type} 
+                onValueChange={(value) => setFormData(prev => ({ ...prev, type: value }))}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select liability type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {corporateLiabilityTypes.map((type) => (
+                    <SelectItem key={type} value={type}>{type}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="principal">Principal Balance ($)</Label>
+              <Input
+                id="principal"
+                type="number"
+                value={formData.principal}
+                onChange={(e) => setFormData(prev => ({ ...prev, principal: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="interest-rate">Interest Rate (%)</Label>
+              <Input
+                id="interest-rate"
+                type="number"
+                step="0.1"
+                value={formData.interestRate}
+                onChange={(e) => setFormData(prev => ({ ...prev, interestRate: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="monthly-payment">Monthly Payment ($)</Label>
+              <Input
+                id="monthly-payment"
+                type="number"
+                value={formData.monthlyPayment}
+                onChange={(e) => setFormData(prev => ({ ...prev, monthlyPayment: e.target.value }))}
+                required
+              />
+            </div>
+            <div>
+              <Label htmlFor="remaining-months">Remaining Months</Label>
+              <Input
+                id="remaining-months"
+                type="number"
+                value={formData.remainingMonths}
+                onChange={(e) => setFormData(prev => ({ ...prev, remainingMonths: e.target.value }))}
+                required
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="liability-description">Description (Optional)</Label>
+            <Textarea
+              id="liability-description"
+              value={formData.description}
+              onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button type="submit">Add Liability</Button>
+            <Button type="button" variant="outline" onClick={onCancel}>Cancel</Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  );
+};
