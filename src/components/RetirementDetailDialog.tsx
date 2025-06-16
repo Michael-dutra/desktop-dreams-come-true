@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -445,54 +446,57 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </div>
           </div>
 
-          {/* Tax Optimization Analysis */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Tax Optimization Analysis</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Estimated Total Taxes Owed (lifetime from drawdowns)
-                </h3>
-                <div className="text-4xl font-bold text-red-600">
-                  {formatCurrencyFull(estimatedLifetimeTaxes)}
-                </div>
-                <p className="text-gray-600 mt-2">
-                  Balanced withdrawals help manage steady tax rates over retirement.
+          {/* 30-Year Asset & Withdrawal Breakdown and Tax Optimization Analysis - Side by Side */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* 30-Year Asset & Withdrawal Breakdown */}
+            <Card>
+              <CardHeader>
+                <CardTitle>30-Year Asset & Withdrawal Breakdown</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Detailed projection showing asset growth, withdrawal amounts, and remaining balances over 30 years
                 </p>
-              </div>
-            </CardContent>
-          </Card>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={{
+                  rrsp: { label: "RRSP", color: "#3b82f6" },
+                  tfsa: { label: "TFSA", color: "#10b981" },
+                  nonReg: { label: "Non-Registered", color: "#f59e0b" },
+                  totalAssets: { label: "Total Assets", color: "#8b5cf6" }
+                }} className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={areaChartData}>
+                      <XAxis dataKey="age" />
+                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Area type="monotone" dataKey="rrsp" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="tfsa" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
+                      <Area type="monotone" dataKey="nonReg" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
 
-          {/* 30-Year Asset & Withdrawal Breakdown */}
-          <Card>
-            <CardHeader>
-              <CardTitle>30-Year Asset & Withdrawal Breakdown</CardTitle>
-              <p className="text-sm text-gray-600">
-                Detailed projection showing asset growth, withdrawal amounts, and remaining balances over 30 years
-              </p>
-            </CardHeader>
-            <CardContent>
-              <ChartContainer config={{
-                rrsp: { label: "RRSP", color: "#3b82f6" },
-                tfsa: { label: "TFSA", color: "#10b981" },
-                nonReg: { label: "Non-Registered", color: "#f59e0b" },
-                totalAssets: { label: "Total Assets", color: "#8b5cf6" }
-              }} className="h-80">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={areaChartData}>
-                    <XAxis dataKey="age" />
-                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Area type="monotone" dataKey="rrsp" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="tfsa" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
-                    <Area type="monotone" dataKey="nonReg" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </ChartContainer>
-            </CardContent>
-          </Card>
+            {/* Tax Optimization Analysis */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Tax Optimization Analysis</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold mb-2">
+                    Estimated Total Taxes Owed (lifetime from drawdowns)
+                  </h3>
+                  <div className="text-4xl font-bold text-red-600">
+                    {formatCurrencyFull(estimatedLifetimeTaxes)}
+                  </div>
+                  <p className="text-gray-600 mt-2">
+                    Balanced withdrawals help manage steady tax rates over retirement.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* CPP/OAS Calculators */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
