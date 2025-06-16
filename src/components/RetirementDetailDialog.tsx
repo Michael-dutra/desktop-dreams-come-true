@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -351,12 +352,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </CardContent>
           </Card>
 
-          {/* Enhanced Asset Funding Duration & Account Analysis */}
+          {/* Enhanced Retirement Duration & Account Analysis */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Enhanced Asset Funding Duration */}
+            {/* Enhanced Retirement Duration */}
             <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 p-8 rounded-xl border text-white shadow-lg">
               <div className="text-center">
-                <h4 className="text-4xl font-bold mb-8 text-purple-100">Asset Funding Duration</h4>
+                <h4 className="text-4xl font-bold mb-8 text-purple-100">Retirement</h4>
                 <div className="space-y-6">
                   <div className="text-9xl font-bold leading-none">
                     {actualAssetDuration === Infinity ? "∞" : actualAssetDuration.toFixed(1)}
@@ -367,8 +368,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 <div className="mt-10 pt-10 border-t border-purple-400">
                   <div className="text-7xl font-bold text-green-300 mb-4">{fundingPercentage.toFixed(0)}%</div>
                   <div className="text-3xl text-purple-200 mb-6">of Retirement Goal</div>
-                  <div className="text-xl text-purple-300 space-y-2">
-                    <div>Theoretical Retirement Years: {yearsInRetirement.toFixed(1)} years</div>
+                  <div className="text-xl text-purple-300">
                     <div>Funding Status: {fundingStatus}</div>
                   </div>
                 </div>
