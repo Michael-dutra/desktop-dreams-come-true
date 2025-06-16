@@ -53,18 +53,20 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const lifeExpectancy = 95;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
   
-  // Calculate future values at retirement
-  const calculateFutureValue = (currentValue: number) => {
+  // Calculate future values at retirement with proper compound growth
+  const calculateFutureValue = (currentValue: number, allocation: number) => {
     let futureValue = currentValue;
+    const monthlyContributionToAccount = (monthlyContribution * 12) * (allocation / 100);
+    
     for (let i = 0; i < yearsToRetirement; i++) {
-      futureValue = futureValue * (1 + rateOfReturn) + (monthlyContribution * 12 * 0.33); // Assume 1/3 goes to each account
+      futureValue = futureValue * (1 + rateOfReturn) + monthlyContributionToAccount;
     }
     return futureValue;
   };
 
-  const futureRRSP = calculateFutureValue(currentRRSP);
-  const futureTFSA = calculateFutureValue(currentTFSA);
-  const futureNonReg = calculateFutureValue(currentNonReg);
+  const futureRRSP = calculateFutureValue(currentRRSP, 33.33);
+  const futureTFSA = calculateFutureValue(currentTFSA, 33.33);
+  const futureNonReg = calculateFutureValue(currentNonReg, 33.34);
   const totalFutureSavings = futureRRSP + futureTFSA + futureNonReg;
 
   const annualIncomeNeeded = monthlyIncomeNeeded[0] * 12;
@@ -76,9 +78,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const annualNonRegWithdrawal = annualIncomeNeeded * (nonRegAllocation[0] / 100);
 
   // Calculate how long each account will last
-  const rrspDuration = futureRRSP / annualRrspWithdrawal;
-  const tfsaDuration = futureTFSA / annualTfsaWithdrawal;
-  const nonRegDuration = futureNonReg / annualNonRegWithdrawal;
+  const rrspDuration = annualRrspWithdrawal > 0 ? futureRRSP / annualRrspWithdrawal : Infinity;
+  const tfsaDuration = annualTfsaWithdrawal > 0 ? futureTFSA / annualTfsaWithdrawal : Infinity;
+  const nonRegDuration = annualNonRegWithdrawal > 0 ? futureNonReg / annualNonRegWithdrawal : Infinity;
 
   const fundingPercentage = Math.min(100, (totalFutureSavings / totalRetirementNeeded) * 100);
   const fundingStatus = fundingPercentage >= 100 ? "Fully Funded" : "Underfunded";
@@ -138,13 +140,14 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   
   // Calculate tax optimization
   const estimatedLifetimeTaxes = yearlyData.reduce((total, year) => {
-    const taxableWithdrawal = year.rrspWithdrawal + (year.nonRegWithdrawal * 0.5); // Assume 50% of non-reg is taxable
-    return total + (taxableWithdrawal * 0.25); // Assume 25% tax rate
+    const taxableWithdrawal = year.rrspWithdrawal + (year.nonRegWithdrawal * 0.5);
+    return total + (taxableWithdrawal * 0.25);
   }, 0);
 
-  // Chart data for 30-year breakdown
-  const chartData = yearlyData.slice(0, 30).map(year => ({
+  // Chart data for asset depletion visualization
+  const assetDepletionData = yearlyData.slice(0, 30).map(year => ({
     age: year.age,
+    year: `+${year.year}yr`,
     rrsp: year.rrspBalance,
     tfsa: year.tfsaBalance,
     nonReg: year.nonRegBalance,
@@ -165,9 +168,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return `$${Math.round(value).toLocaleString()}`;
   };
 
+  const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PiggyBank className="h-5 w-5" />
@@ -177,14 +182,14 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
         <Tabs defaultValue="controls" className="space-y-4">
           <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="controls">Controls</TabsTrigger>
-            <TabsTrigger value="analysis">Analysis</TabsTrigger>
-            <TabsTrigger value="tax">Tax Analysis</TabsTrigger>
+            <TabsTrigger value="controls">Retirement Planning Controls</TabsTrigger>
+            <TabsTrigger value="analysis">Assets Will Last</TabsTrigger>
+            <TabsTrigger value="depletion">Projected Asset Depletion by Account</TabsTrigger>
+            <TabsTrigger value="readiness">Retirement Readiness</TabsTrigger>
+            <TabsTrigger value="tax">Tax Optimization Analysis</TabsTrigger>
             <TabsTrigger value="breakdown">Asset Breakdown</TabsTrigger>
-            <TabsTrigger value="cpp">CPP/OAS</TabsTrigger>
-            <TabsTrigger value="rrif">RRIF Schedule</TabsTrigger>
-            <TabsTrigger value="requirements">Requirements</TabsTrigger>
-            <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="sources">Retirement Income Sources</TabsTrigger>
+            <TabsTrigger value="timeline">Income Timeline</TabsTrigger>
           </TabsList>
 
           <TabsContent value="controls" className="space-y-6">
@@ -264,12 +269,17 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         step={5}
                       />
                     </div>
+                    {totalAllocation !== 100 && (
+                      <div className="text-red-600 text-sm font-medium">
+                        Total allocation: {totalAllocation}% (must equal 100%)
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Asset Funding Duration</h4>
-                  <p className="text-2xl font-bold">{yearsInRetirement} years</p>
+                  <p className="text-2xl font-bold">{yearsInRetirement.toFixed(1)} years</p>
                 </div>
               </CardContent>
             </Card>
@@ -304,27 +314,61 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     <span>RRSP</span>
                     <div className="text-right">
                       <div className="font-bold">{rrspAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">Funds {rrspDuration.toFixed(1)} yrs</div>
+                      <div className="text-sm text-gray-600">
+                        Funds {rrspDuration === Infinity ? "∞" : rrspDuration.toFixed(1)} yrs
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>TFSA</span>
                     <div className="text-right">
                       <div className="font-bold">{tfsaAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">Funds {tfsaDuration.toFixed(1)} yrs</div>
+                      <div className="text-sm text-gray-600">
+                        Funds {tfsaDuration === Infinity ? "∞" : tfsaDuration.toFixed(1)} yrs
+                      </div>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span>Non-Reg</span>
                     <div className="text-right">
                       <div className="font-bold">{nonRegAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">Funds {nonRegDuration.toFixed(1)} yrs</div>
+                      <div className="text-sm text-gray-600">
+                        Funds {nonRegDuration === Infinity ? "∞" : nonRegDuration.toFixed(1)} yrs
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </div>
+          </TabsContent>
 
+          <TabsContent value="depletion" className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Projected Asset Depletion by Account</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={{
+                  rrsp: { label: "RRSP", color: "#3b82f6" },
+                  tfsa: { label: "TFSA", color: "#10b981" },
+                  nonReg: { label: "Non-Registered", color: "#f59e0b" }
+                }} className="h-80">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={assetDepletionData.slice(0, 10)}>
+                      <XAxis dataKey="year" />
+                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="rrsp" fill="#3b82f6" />
+                      <Bar dataKey="tfsa" fill="#10b981" />
+                      <Bar dataKey="nonReg" fill="#f59e0b" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </ChartContainer>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="readiness" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Retirement Readiness</CardTitle>
@@ -392,7 +436,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   withdrawal: { label: "Annual Withdrawal", color: "#ef4444" }
                 }} className="h-80">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData}>
+                    <LineChart data={assetDepletionData}>
                       <XAxis dataKey="age" />
                       <YAxis tickFormatter={(value) => formatCurrency(value)} />
                       <ChartTooltip content={<ChartTooltipContent />} />
@@ -400,7 +444,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       <Line type="monotone" dataKey="tfsa" stroke="#10b981" strokeWidth={2} />
                       <Line type="monotone" dataKey="nonReg" stroke="#f59e0b" strokeWidth={2} />
                       <Line type="monotone" dataKey="totalAssets" stroke="#8b5cf6" strokeWidth={3} />
-                      <Bar dataKey="withdrawal" fill="#ef4444" />
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
@@ -408,48 +451,46 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </Card>
           </TabsContent>
 
-          <TabsContent value="cpp" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>CPP/OAS Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <h4 className="font-semibold mb-2">CPP Projection</h4>
-                    <p className="text-2xl font-bold">$1,200/month</p>
-                    <p className="text-sm text-gray-600">Starting at age 65</p>
+          <TabsContent value="sources" className="space-y-6">
+            <div className="grid grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>CPP/OAS Analysis</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="font-semibold mb-2">CPP Projection</h4>
+                      <p className="text-2xl font-bold">$1,200/month</p>
+                      <p className="text-sm text-gray-600">Starting at age 65</p>
+                    </div>
+                    <div>
+                      <h4 className="font-semibold mb-2">OAS Projection</h4>
+                      <p className="text-2xl font-bold">$700/month</p>
+                      <p className="text-sm text-gray-600">Starting at age 65</p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="font-semibold mb-2">OAS Projection</h4>
-                    <p className="text-2xl font-bold">$700/month</p>
-                    <p className="text-sm text-gray-600">Starting at age 65</p>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>RRIF Schedule</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">
+                    RRSP must be converted to RRIF by age 71. Minimum withdrawal rates apply.
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div><strong>Age 71:</strong> 5.28% minimum</div>
+                    <div><strong>Age 75:</strong> 5.82% minimum</div>
+                    <div><strong>Age 80:</strong> 6.82% minimum</div>
+                    <div><strong>Age 85:</strong> 8.51% minimum</div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                </CardContent>
+              </Card>
+            </div>
 
-          <TabsContent value="rrif" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>RRIF Schedule</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-gray-600 mb-4">
-                  RRSP must be converted to RRIF by age 71. Minimum withdrawal rates apply.
-                </p>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div><strong>Age 71:</strong> 5.28% minimum</div>
-                  <div><strong>Age 75:</strong> 5.82% minimum</div>
-                  <div><strong>Age 80:</strong> 6.82% minimum</div>
-                  <div><strong>Age 85:</strong> 8.51% minimum</div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="requirements" className="space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Savings Requirements</CardTitle>
