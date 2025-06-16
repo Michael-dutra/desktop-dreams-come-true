@@ -827,6 +827,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     label, 
     isEditable = true, 
     prefix = "$",
+    suffix = "",
     isAutoCalculated = false,
     tip
   }: { 
@@ -835,6 +836,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     label: string; 
     isEditable?: boolean;
     prefix?: string;
+    suffix?: string;
     isAutoCalculated?: boolean;
     tip?: string;
   }) => {
@@ -863,7 +865,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
           <div className="flex items-center justify-between">
             <div className="flex-1">
               <p className={`font-semibold text-lg ${isAutoCalculated ? 'text-blue-600' : 'text-green-600'}`}>
-                {prefix}{value.toLocaleString()}
+                {prefix}{value.toLocaleString()}{suffix}
               </p>
               {tip && (
                 <p className="text-xs text-muted-foreground/80 mt-1 italic">
@@ -1096,7 +1098,7 @@ This projection assumes consistent market performance and regular contributions.
 
         <Card className="mb-6">
           <CardHeader>
-            <CardTitle className="text-xl">Portfolio Summary & Key Metrics</CardTitle>
+            <CardTitle className="text-xl">Summary & Key Metrics</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
