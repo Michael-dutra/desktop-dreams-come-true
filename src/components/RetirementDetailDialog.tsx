@@ -229,7 +229,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   
   // Enhanced tax optimization analysis
   const totalLifetimeTaxes = yearlyData.reduce((total, year) => total + year.taxesPaid, 0);
-  const averageAnnualTaxRate = totalLifetimeTaxes / (yearlyData.reduce((total, year) => total + year.totalWithdrawal, 0) || 1) * 100);
+  const averageAnnualTaxRate = totalLifetimeTaxes / (yearlyData.reduce((total, year) => total + year.totalWithdrawal, 0) || 1) * 100;
   
   // Calculate tax efficiency score (compare to worst-case scenario)
   const worstCaseStrategy = getOptimalAllocations("balanced"); // Use current as baseline
