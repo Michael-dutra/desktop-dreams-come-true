@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PiggyBank, Plus, Minus, Info } from "lucide-react";
+import { PiggyBank, Plus, Minus } from "lucide-react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 interface RetirementDetailDialogProps {
@@ -214,89 +215,42 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return `$${Math.round(value).toLocaleString()}`;
   };
 
-  // Enhanced CPP/OAS Calculation Functions with base amounts and detailed adjustments
-  const baseCPP = 15696; // Annual base CPP at age 65 (2024)
-  const baseOAS = 8484; // Annual base OAS at age 65 (2024)
-
-  const calculateCPPDetailed = (startAge: number, eligibilityPercent: number) => {
-    const baseAmount = baseCPP * (eligibilityPercent / 100);
-    
-    let timingAdjustmentFactor = 1.0;
-    let timingNote = "";
+  // CPP/OAS Calculation Functions with eligibility percentage
+  const calculateCPP = (startAge: number, eligibilityPercent: number) => {
+    const maxCPP = 1308; // Maximum CPP at age 65 (2024)
+    const baseAmount = maxCPP * (eligibilityPercent / 100);
     
     if (startAge < 65) {
-      // Early penalty: 7.2% per year before 65 (0.6% per month)
-      const yearsEarly = 65 - startAge;
-      const penalty = yearsEarly * 0.072;
-      timingAdjustmentFactor = 1 - penalty;
-      timingNote = `${yearsEarly} years early`;
+      // Early penalty: 0.6% per month before 65
+      const monthsEarly = (65 - startAge) * 12;
+      const penalty = monthsEarly * 0.006;
+      return baseAmount * (1 - penalty);
     } else if (startAge > 65) {
-      // Delayed credit: 8.4% per year after 65 (0.7% per month), max at 70
-      const yearsLate = Math.min(startAge - 65, 5);
-      const bonus = yearsLate * 0.084;
-      timingAdjustmentFactor = 1 + bonus;
-      timingNote = `${yearsLate} years delayed`;
-    } else {
-      timingNote = "Normal retirement timing";
+      // Delayed credit: 0.7% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.007;
+      return baseAmount * (1 + bonus);
     }
-
-    const adjustedAmount = baseAmount * timingAdjustmentFactor;
-    const monthlyAmount = adjustedAmount / 12;
-
-    return {
-      baseAmount,
-      eligibilityPercent,
-      timingAdjustmentFactor,
-      timingNote,
-      adjustedAmount,
-      monthlyAmount,
-      yearsFromNormal: startAge - 65
-    };
+    return baseAmount;
   };
 
-  const calculateOASDetailed = (startAge: number, eligibilityPercent: number) => {
-    const baseAmount = baseOAS * (eligibilityPercent / 100);
-    
-    let timingAdjustmentFactor = 1.0;
-    let timingNote = "";
+  const calculateOAS = (startAge: number, eligibilityPercent: number) => {
+    const maxOAS = 707; // Maximum OAS at age 65 (2024)
+    const baseAmount = maxOAS * (eligibilityPercent / 100);
     
     if (startAge < 65) {
-      timingNote = "Cannot start before 65";
-      return {
-        baseAmount: 0,
-        eligibilityPercent,
-        timingAdjustmentFactor: 0,
-        timingNote,
-        adjustedAmount: 0,
-        monthlyAmount: 0,
-        yearsFromNormal: startAge - 65
-      };
+      return 0; // OAS cannot be taken before 65
     } else if (startAge > 65) {
-      // Delayed credit: 7.2% per year after 65 (0.6% per month), max at 70
-      const yearsLate = Math.min(startAge - 65, 5);
-      const bonus = yearsLate * 0.072;
-      timingAdjustmentFactor = 1 + bonus;
-      timingNote = `${yearsLate} years delayed`;
-    } else {
-      timingNote = "Normal retirement timing";
+      // Delayed credit: 0.6% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.006;
+      return baseAmount * (1 + bonus);
     }
-
-    const adjustedAmount = baseAmount * timingAdjustmentFactor;
-    const monthlyAmount = adjustedAmount / 12;
-
-    return {
-      baseAmount,
-      eligibilityPercent,
-      timingAdjustmentFactor,
-      timingNote,
-      adjustedAmount,
-      monthlyAmount,
-      yearsFromNormal: startAge - 65
-    };
+    return baseAmount;
   };
 
-  const cppDetails = calculateCPPDetailed(cppStartAge, cppEligibilityPercent);
-  const oasDetails = calculateOASDetailed(oasStartAge, oasEligibilityPercent);
+  const cppAmount = calculateCPP(cppStartAge, cppEligibilityPercent);
+  const oasAmount = calculateOAS(oasStartAge, oasEligibilityPercent);
 
   const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
 
@@ -544,9 +498,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </Card>
           </div>
 
-          {/* Enhanced CPP/OAS Calculators */}
+          {/* CPP/OAS Calculators */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Enhanced CPP Calculator */}
+            {/* CPP Calculator */}
             <Card>
               <CardHeader>
                 <CardTitle>CPP Calculator</CardTitle>
@@ -555,22 +509,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Base Amount Display */}
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-gray-700">Base CPP (at 65)</div>
-                    <div className="text-2xl font-bold text-gray-800">${baseCPP.toLocaleString()}</div>
-                    <div className="text-sm text-gray-600">Annual maximum (2024)</div>
-                  </div>
-                </div>
-
-                {/* Controls */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Start Age: {cppStartAge}
+                      CPP Start Age: {cppStartAge}
                     </label>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
@@ -589,16 +533,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="text-xs text-center text-gray-500">
-                      {cppDetails.yearsFromNormal === 0 ? "0 years" : 
-                       cppDetails.yearsFromNormal > 0 ? `+${cppDetails.yearsFromNormal} years` : 
-                       `${cppDetails.yearsFromNormal} years`}
-                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Eligibility: {cppEligibilityPercent}%
+                      CPP Eligibility: {cppEligibilityPercent}%
                     </label>
                     <div className="flex items-center gap-2">
                       <Button
@@ -622,45 +561,28 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   </div>
                 </div>
 
-                {/* Timing Adjustment */}
-                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <div className="text-sm font-medium text-blue-800 mb-1">Timing Adjustment</div>
-                  <div className="text-xs text-blue-600">{cppDetails.timingNote}</div>
-                  <div className="text-sm font-semibold text-blue-700">
-                    Factor: {(cppDetails.timingAdjustmentFactor * 100).toFixed(1)}%
-                  </div>
-                </div>
-
-                {/* Final Result */}
                 <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="text-center">
-                    <div className="text-sm text-blue-600 mb-1">Adjusted CPP</div>
                     <div className="text-2xl font-bold text-blue-600">
-                      ${Math.round(cppDetails.monthlyAmount).toLocaleString()}
+                      ${Math.round(cppAmount).toLocaleString()}
                     </div>
-                    <div className="text-sm text-blue-600">Monthly Benefit</div>
-                    <div className="text-xs text-blue-500 mt-1">
-                      ${Math.round(cppDetails.adjustedAmount).toLocaleString()} annually
-                    </div>
-                  </div>
-                </div>
-
-                {/* Educational Notes */}
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-yellow-600 mt-0.5" />
-                    <div className="text-xs text-yellow-700">
-                      <div className="font-medium mb-1">CPP Guidelines:</div>
-                      <div>• Early (60-64): 7.2% penalty per year</div>
-                      <div>• Normal: Age 65</div>
-                      <div>• Delayed (66-70): 8.4% bonus per year</div>
-                    </div>
+                    <div className="text-sm text-blue-600">Monthly CPP Benefit</div>
+                    {cppStartAge < 65 && (
+                      <div className="text-xs text-red-600 mt-1">
+                        Early withdrawal penalty applied
+                      </div>
+                    )}
+                    {cppStartAge > 65 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Delayed retirement bonus applied
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Enhanced OAS Calculator */}
+            {/* OAS Calculator */}
             <Card>
               <CardHeader>
                 <CardTitle>OAS Calculator</CardTitle>
@@ -669,22 +591,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                {/* Base Amount Display */}
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <div className="text-center">
-                    <div className="text-lg font-semibold text-gray-700">Base OAS (at 65)</div>
-                    <div className="text-2xl font-bold text-gray-800">${baseOAS.toLocaleString()}</div>
-                    <div className="text-sm text-gray-600">Annual maximum (2024)</div>
-                  </div>
-                </div>
-
-                {/* Controls */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Start Age: {oasStartAge}
+                      OAS Start Age: {oasStartAge}
                     </label>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2">
                       <Button
                         variant="outline"
                         size="icon"
@@ -703,16 +615,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         <Plus className="h-4 w-4" />
                       </Button>
                     </div>
-                    <div className="text-xs text-center text-gray-500">
-                      {oasDetails.yearsFromNormal === 0 ? "0 years" : 
-                       oasDetails.yearsFromNormal > 0 ? `+${oasDetails.yearsFromNormal} years` : 
-                       `${oasDetails.yearsFromNormal} years`}
-                    </div>
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium mb-2">
-                      Eligibility: {oasEligibilityPercent}%
+                      OAS Eligibility: {oasEligibilityPercent}%
                     </label>
                     <div className="flex items-center gap-2">
                       <Button
@@ -736,44 +643,22 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   </div>
                 </div>
 
-                {/* Timing Adjustment */}
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="text-sm font-medium text-green-800 mb-1">Timing Adjustment</div>
-                  <div className="text-xs text-green-600">{oasDetails.timingNote}</div>
-                  <div className="text-sm font-semibold text-green-700">
-                    Factor: {(oasDetails.timingAdjustmentFactor * 100).toFixed(1)}%
-                  </div>
-                </div>
-
-                {/* Final Result */}
                 <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
                   <div className="text-center">
-                    <div className="text-sm text-green-600 mb-1">Adjusted OAS</div>
                     <div className="text-2xl font-bold text-green-600">
-                      ${Math.round(oasDetails.monthlyAmount).toLocaleString()}
+                      ${Math.round(oasAmount).toLocaleString()}
                     </div>
-                    <div className="text-sm text-green-600">Monthly Benefit</div>
-                    <div className="text-xs text-green-500 mt-1">
-                      ${Math.round(oasDetails.adjustedAmount).toLocaleString()} annually
-                    </div>
+                    <div className="text-sm text-green-600">Monthly OAS Benefit</div>
                     {oasStartAge < 65 && (
                       <div className="text-xs text-red-600 mt-1">
                         OAS cannot start before age 65
                       </div>
                     )}
-                  </div>
-                </div>
-
-                {/* Educational Notes */}
-                <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Info className="h-4 w-4 text-yellow-600 mt-0.5" />
-                    <div className="text-xs text-yellow-700">
-                      <div className="font-medium mb-1">OAS Guidelines:</div>
-                      <div>• Earliest: Age 65 (no early option)</div>
-                      <div>• Normal: Age 65</div>
-                      <div>• Delayed (66-70): 7.2% bonus per year</div>
-                    </div>
+                    {oasStartAge > 65 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Delayed retirement bonus applied
+                      </div>
+                    )}
                   </div>
                 </div>
               </CardContent>
