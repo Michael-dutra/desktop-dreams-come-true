@@ -56,12 +56,12 @@ const GoalsSection = () => {
   };
 
   const getProgressColor = (progress: number) => {
-    // Create a gradient from bright blue (0%) to bright green (100%)
+    // Create a gradient from bright red (0%) to bright green (100%)
     const normalizedProgress = progress / 100;
-    const blue = Math.round(255 * (1 - normalizedProgress));
+    const red = Math.round(255 * (1 - normalizedProgress));
     const green = Math.round(255 * normalizedProgress);
-    // Keep red component low for blue-to-green transition
-    const red = Math.round(50 * (1 - normalizedProgress));
+    // Keep blue component low for red-to-green transition
+    const blue = 0;
     return `rgb(${red}, ${green}, ${blue})`;
   };
 
