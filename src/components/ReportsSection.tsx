@@ -36,6 +36,16 @@ const ReportsSection = () => {
     setSelections(prev => ({ ...prev, [section]: checked }));
   };
 
+  const handleSelectAll = (checked: boolean) => {
+    const newSelections = { ...selections };
+    Object.keys(newSelections).forEach(key => {
+      newSelections[key as keyof typeof selections] = checked;
+    });
+    setSelections(newSelections);
+  };
+
+  const allSelected = Object.values(selections).every(value => value);
+
   const handleGenerateReport = () => {
     console.log("Generating report with selections:", selections);
     // Here you would implement the actual report generation logic
@@ -52,6 +62,19 @@ const ReportsSection = () => {
       <CardContent>
         <div className="space-y-4">
           <h3 className="text-sm font-medium">Generate Custom Report</h3>
+          
+          {/* All checkbox button */}
+          <div className="flex items-center space-x-3 pb-2 border-b">
+            <Checkbox 
+              id="selectAll"
+              checked={allSelected}
+              onCheckedChange={handleSelectAll}
+            />
+            <label htmlFor="selectAll" className="text-sm font-bold cursor-pointer">
+              All
+            </label>
+          </div>
+          
           <div className="grid grid-cols-2 gap-6">
             {/* First column - 5 items */}
             <div className="space-y-3">
