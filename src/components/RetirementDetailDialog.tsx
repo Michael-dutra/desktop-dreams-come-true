@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
@@ -6,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PiggyBank, Plus, Minus } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PiggyBank, Plus, Minus, TrendingUp, Calculator, Info } from "lucide-react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 interface RetirementDetailDialogProps {
@@ -25,7 +27,10 @@ interface YearlyData {
   nonRegWithdrawal: number;
   totalAssets: number;
   totalWithdrawal: number;
+  taxesPaid: number;
 }
+
+type WithdrawalStrategy = "balanced" | "tax-free-first" | "minimize-lifetime-tax" | "preserve-rrsp";
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const { assets } = useFinancialData();
@@ -45,6 +50,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const [tfsaAllocation, setTfsaAllocation] = useState([30]);
   const [nonRegAllocation, setNonRegAllocation] = useState([10]);
 
+  // New tax settings state
+  const [taxRate, setTaxRate] = useState([25]);
+  const [withdrawalStrategy, setWithdrawalStrategy] = useState<WithdrawalStrategy>("balanced");
+  const [isOptimized, setIsOptimized] = useState(false);
+
   // CPP/OAS Calculator State
   const [cppStartAge, setCppStartAge] = useState(65);
   const [oasStartAge, setOasStartAge] = useState(65);
@@ -57,7 +67,46 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const rateOfReturn = 0.05;
   const lifeExpectancy = 95;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
-  
+
+  // Strategy optimization functions
+  const getOptimalAllocations = (strategy: WithdrawalStrategy) => {
+    switch (strategy) {
+      case "tax-free-first":
+        return { rrsp: 20, tfsa: 70, nonReg: 10 };
+      case "minimize-lifetime-tax":
+        // Favor TFSA and Non-Reg early to avoid high RRSP taxes later
+        return { rrsp: 35, tfsa: 45, nonReg: 20 };
+      case "preserve-rrsp":
+        return { rrsp: 15, tfsa: 35, nonReg: 50 };
+      case "balanced":
+      default:
+        return { rrsp: 60, tfsa: 30, nonReg: 10 };
+    }
+  };
+
+  const handleOptimizeAllocations = () => {
+    const optimal = getOptimalAllocations(withdrawalStrategy);
+    setRrspAllocation([optimal.rrsp]);
+    setTfsaAllocation([optimal.tfsa]);
+    setNonRegAllocation([optimal.nonReg]);
+    setIsOptimized(true);
+  };
+
+  // Reset optimized flag when user manually adjusts allocations
+  useEffect(() => {
+    if (isOptimized) {
+      const optimal = getOptimalAllocations(withdrawalStrategy);
+      const isStillOptimal = 
+        rrspAllocation[0] === optimal.rrsp &&
+        tfsaAllocation[0] === optimal.tfsa &&
+        nonRegAllocation[0] === optimal.nonReg;
+      
+      if (!isStillOptimal) {
+        setIsOptimized(false);
+      }
+    }
+  }, [rrspAllocation, tfsaAllocation, nonRegAllocation, withdrawalStrategy, isOptimized]);
+
   // Calculate future values at retirement with proper compound growth
   const calculateFutureValue = (currentValue: number, allocation: number) => {
     let futureValue = currentValue;
@@ -90,7 +139,16 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const fundingPercentage = Math.min(100, (totalFutureSavings / totalRetirementNeeded) * 100);
   const fundingStatus = fundingPercentage >= 100 ? "Fully Funded" : "Underfunded";
 
-  // Generate year-by-year breakdown
+  // Enhanced tax calculation function
+  const calculateTaxes = (rrspWithdrawal: number, nonRegWithdrawal: number) => {
+    const rrspTax = rrspWithdrawal * (taxRate[0] / 100);
+    // Non-reg assumes 50% capital gains inclusion
+    const nonRegTaxable = nonRegWithdrawal * 0.5;
+    const nonRegTax = nonRegTaxable * (taxRate[0] / 100);
+    return rrspTax + nonRegTax;
+  };
+
+  // Generate year-by-year breakdown with tax calculations
   const generateYearlyData = (): YearlyData[] => {
     const data: YearlyData[] = [];
     let rrspBalance = futureRRSP;
@@ -121,6 +179,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
       const totalWithdrawal = rrspWithdrawal + tfsaWithdrawal + nonRegWithdrawal;
       const totalAssets = rrspBalance + tfsaBalance + nonRegBalance;
+      const taxesPaid = calculateTaxes(rrspWithdrawal, nonRegWithdrawal);
 
       data.push({
         age,
@@ -132,7 +191,8 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         nonRegBalance,
         nonRegWithdrawal,
         totalAssets,
-        totalWithdrawal
+        totalWithdrawal,
+        taxesPaid
       });
 
       if (totalAssets <= 0) break;
@@ -168,11 +228,16 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const actualAssetDuration = calculateActualAssetDuration();
   
-  // Calculate tax optimization
-  const estimatedLifetimeTaxes = yearlyData.reduce((total, year) => {
-    const taxableWithdrawal = year.rrspWithdrawal + (year.nonRegWithdrawal * 0.5);
-    return total + (taxableWithdrawal * 0.25);
+  // Enhanced tax optimization analysis
+  const totalLifetimeTaxes = yearlyData.reduce((total, year) => total + year.taxesPaid, 0);
+  const averageAnnualTaxRate = totalLifetimeTaxes / (yearlyData.reduce((total, year) => total + year.totalWithdrawal, 0) || 1) * 100;
+  
+  // Calculate tax efficiency score (compare to worst-case scenario)
+  const worstCaseStrategy = getOptimalAllocations("balanced"); // Use current as baseline
+  const worstCaseTaxes = yearlyData.reduce((total, year) => {
+    return total + calculateTaxes(year.rrspWithdrawal * 1.5, year.nonRegWithdrawal * 1.2);
   }, 0);
+  const taxEfficiencyScore = Math.max(0, Math.min(100, (1 - totalLifetimeTaxes / worstCaseTaxes) * 100));
 
   // Chart data for asset depletion visualization
   const assetDepletionData = yearlyData.slice(0, 10).map(year => ({
@@ -253,6 +318,20 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
 
+  const getStrategyDescription = (strategy: WithdrawalStrategy) => {
+    switch (strategy) {
+      case "tax-free-first":
+        return "Prioritizes TFSA withdrawals to maximize tax-free income";
+      case "minimize-lifetime-tax":
+        return "Optimizes withdrawal order to minimize total lifetime taxes";
+      case "preserve-rrsp":
+        return "Delays RRSP withdrawals to preserve tax-deferred growth";
+      case "balanced":
+      default:
+        return "Maintains steady withdrawal rates across all accounts";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
@@ -300,6 +379,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <div>
                 <h3 className="text-lg font-semibold mb-4">
                   Allocate how your retirement income is sourced from each account (total must be 100%):
+                  {isOptimized && (
+                    <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                      Optimized
+                    </span>
+                  )}
                 </h3>
                 <div className="space-y-4">
                   <div>
@@ -346,6 +430,100 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       Total allocation: {totalAllocation}% (must equal 100%)
                     </div>
                   )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Tax Settings & Optimization */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calculator className="h-5 w-5" />
+                Tax Settings & Optimization
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
+                    Tax Rate on Withdrawals: {taxRate[0]}%
+                    <Info className="h-4 w-4 text-gray-400" title="Applied to RRSP and 50% of Non-Registered withdrawals. TFSA is tax-free." />
+                  </label>
+                  <Slider
+                    value={taxRate}
+                    onValueChange={setTaxRate}
+                    min={15}
+                    max={40}
+                    step={1}
+                  />
+                  <p className="text-xs text-gray-600 mt-1">
+                    Applied to RRSP and 50% of Non-Registered withdrawals. TFSA is tax-free.
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Withdrawal Strategy
+                  </label>
+                  <Select value={withdrawalStrategy} onValueChange={(value: WithdrawalStrategy) => setWithdrawalStrategy(value)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="balanced">Balanced</SelectItem>
+                      <SelectItem value="tax-free-first">Tax-Free First</SelectItem>
+                      <SelectItem value="minimize-lifetime-tax">Minimize Lifetime Tax</SelectItem>
+                      <SelectItem value="preserve-rrsp">Preserve RRSP</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-gray-600 mt-1">
+                    {getStrategyDescription(withdrawalStrategy)}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Button 
+                  onClick={handleOptimizeAllocations}
+                  className="flex items-center gap-2"
+                  variant={isOptimized ? "secondary" : "default"}
+                >
+                  <TrendingUp className="h-4 w-4" />
+                  Optimize Allocations
+                </Button>
+                {isOptimized && (
+                  <div className="flex items-center gap-2 text-sm text-green-600">
+                    <span className="w-2 h-2 bg-green-600 rounded-full"></span>
+                    Using optimized allocation for {withdrawalStrategy.replace('-', ' ')} strategy
+                  </div>
+                )}
+              </div>
+
+              {/* Real-time tax impact */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+                <div className="text-center">
+                  <div className="text-lg font-bold text-blue-600">
+                    {averageAnnualTaxRate.toFixed(1)}%
+                  </div>
+                  <p className="text-xs text-gray-600">Avg Tax Rate</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-green-600">
+                    {taxEfficiencyScore.toFixed(0)}%
+                  </div>
+                  <p className="text-xs text-gray-600">Tax Efficiency</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-orange-600">
+                    {formatCurrency(totalLifetimeTaxes)}
+                  </div>
+                  <p className="text-xs text-gray-600">Lifetime Taxes</p>
+                </div>
+                <div className="text-center">
+                  <div className="text-lg font-bold text-purple-600">
+                    {formatCurrency(totalLifetimeTaxes / yearsInRetirement)}
+                  </div>
+                  <p className="text-xs text-gray-600">Annual Taxes</p>
                 </div>
               </div>
             </CardContent>
@@ -445,22 +623,40 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </div>
           </div>
 
-          {/* Tax Optimization Analysis */}
+          {/* Enhanced Tax Optimization Analysis */}
           <Card>
             <CardHeader>
               <CardTitle>Tax Optimization Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="text-center mb-4">
-                <h3 className="text-lg font-semibold mb-2">
-                  Estimated Total Taxes Owed (lifetime from drawdowns)
-                </h3>
-                <div className="text-4xl font-bold text-red-600">
-                  {formatCurrencyFull(estimatedLifetimeTaxes)}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold mb-2">
+                    Strategy: {withdrawalStrategy.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  </h3>
+                  <div className="text-4xl font-bold text-red-600 mb-2">
+                    {formatCurrencyFull(totalLifetimeTaxes)}
+                  </div>
+                  <p className="text-gray-600">Total Lifetime Taxes</p>
                 </div>
-                <p className="text-gray-600 mt-2">
-                  Balanced withdrawals help manage steady tax rates over retirement.
-                </p>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Applied Tax Rate:</span>
+                    <span className="font-semibold">{taxRate[0]}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Average Annual Tax Rate:</span>
+                    <span className="font-semibold">{averageAnnualTaxRate.toFixed(1)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tax Efficiency Score:</span>
+                    <span className="font-semibold text-green-600">{taxEfficiencyScore.toFixed(0)}%</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Annual Tax Burden:</span>
+                    <span className="font-semibold">{formatCurrency(totalLifetimeTaxes / yearsInRetirement)}</span>
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -661,12 +857,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </Card>
           </div>
 
-          {/* Year-by-Year Account Breakdown */}
+          {/* Year-by-Year Account Breakdown with Tax Column */}
           <Card>
             <CardHeader>
               <CardTitle>Year-by-Year Account Breakdown</CardTitle>
               <p className="text-sm text-gray-600">
-                Detailed annual breakdown showing each account balance and withdrawals until assets reach zero
+                Detailed annual breakdown showing each account balance, withdrawals, and taxes paid until assets reach zero
               </p>
             </CardHeader>
             <CardContent>
@@ -682,6 +878,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       <TableHead>TFSA Withdrawal</TableHead>
                       <TableHead>Non-Reg Balance</TableHead>
                       <TableHead>Non-Reg Withdrawal</TableHead>
+                      <TableHead>Taxes Paid</TableHead>
                       <TableHead>Total Assets</TableHead>
                       <TableHead>Total Withdrawal</TableHead>
                     </TableRow>
@@ -697,6 +894,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         <TableCell>{year.tfsaWithdrawal > 0 ? formatCurrencyFull(year.tfsaWithdrawal) : "-"}</TableCell>
                         <TableCell>{formatCurrencyFull(year.nonRegBalance)}</TableCell>
                         <TableCell>{year.nonRegWithdrawal > 0 ? formatCurrencyFull(year.nonRegWithdrawal) : "-"}</TableCell>
+                        <TableCell className="font-medium text-red-600">{year.taxesPaid > 0 ? formatCurrencyFull(year.taxesPaid) : "-"}</TableCell>
                         <TableCell className="font-bold">{formatCurrencyFull(year.totalAssets)}</TableCell>
                         <TableCell className="font-bold">{formatCurrencyFull(year.totalWithdrawal)}</TableCell>
                       </TableRow>
