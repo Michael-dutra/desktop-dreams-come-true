@@ -23,7 +23,8 @@ interface ChartData {
 }
 
 interface ChartConfig {
-  [key: string]: { label: string; color: string };
+  income: { label: string; color: string };
+  needs: { label: string; color: string };
 }
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
