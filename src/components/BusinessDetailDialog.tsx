@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1172,7 +1171,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                   <div className="text-center p-3 bg-green-50 border border-green-200 rounded-lg">
                     <p className="text-sm text-green-600">With Secondary Will</p>
                     <p className="text-2xl font-bold text-green-700">$0</p>
-                    <p className="text-xs text-green-500">Potential savings</p>
                   </div>
                 </div>
               </CardContent>
