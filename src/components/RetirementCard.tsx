@@ -1,10 +1,9 @@
-
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
-import RetirementDetailDialog from "./RetirementDetailDialog";
+import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
