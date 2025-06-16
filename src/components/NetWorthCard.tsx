@@ -86,7 +86,7 @@ const NetWorthCard = () => {
           <h4 className="text-lg font-semibold text-white mb-3">Net Worth Simulation</h4>
           <div className="space-y-2">
             <div className="flex justify-between items-center">
-              <span className="text-sm font-medium text-white">Rate of Return on All Assets</span>
+              <span className="text-sm font-medium text-white">Rate of Return</span>
               <span className="text-sm font-bold text-white">{rateOfReturn[0]}%</span>
             </div>
             <div className="slider-bright-green">

@@ -1,6 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
-// FIX: CHANGE TO NAMED IMPORT
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
 import { Eye, TrendingUp } from "lucide-react";
