@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -283,15 +282,31 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </CardContent>
           </Card>
 
-          {/* Asset Funding Duration & Account Analysis */}
+          {/* Enhanced Asset Funding Duration & Account Analysis */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
-              <h4 className="font-semibold mb-2 text-blue-800">Asset Funding Duration</h4>
-              <div className="text-3xl font-bold text-blue-600 mb-1">{yearsInRetirement.toFixed(1)} years</div>
-              <div className="text-lg font-semibold text-green-600">{fundingPercentage.toFixed(0)}% of Retirement Goal</div>
-              <p className="text-sm text-blue-600 mt-2">Funding Status: {fundingStatus}</p>
+            {/* Enhanced Asset Funding Duration */}
+            <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-8 rounded-xl border text-white">
+              <div className="text-center">
+                <h4 className="text-2xl font-bold mb-4 text-purple-100">Asset Funding Duration</h4>
+                <div className="space-y-2">
+                  <div className="text-6xl font-bold">{yearsInRetirement.toFixed(1)}</div>
+                  <div className="text-2xl font-semibold text-purple-100">Years</div>
+                  <div className="text-lg text-purple-200 mt-4">Assets Will Last</div>
+                </div>
+                <div className="mt-6 pt-6 border-t border-purple-400">
+                  <div className="text-4xl font-bold text-green-300">{fundingPercentage.toFixed(0)}%</div>
+                  <div className="text-lg text-purple-200">of Retirement Goal</div>
+                  <div className="text-sm text-purple-300 mt-2">
+                    Years in Retirement: {yearsInRetirement.toFixed(1)} years
+                  </div>
+                  <div className="text-sm text-purple-300">
+                    Funding Status: {fundingStatus}
+                  </div>
+                </div>
+              </div>
             </div>
 
+            {/* Account Funding Analysis */}
             <Card>
               <CardHeader>
                 <CardTitle>Account Funding Analysis</CardTitle>
@@ -334,25 +349,44 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </Card>
           </div>
 
-          {/* Projected Asset Depletion Chart */}
+          {/* Enhanced Full-Width Projected Asset Depletion Chart */}
           <Card>
             <CardHeader>
-              <CardTitle>Projected Asset Depletion by Account</CardTitle>
+              <CardTitle className="text-xl">Projected Asset Depletion by Account</CardTitle>
+              <p className="text-sm text-gray-600">
+                Visual breakdown showing how each account balance decreases over the first 10 years of retirement
+              </p>
             </CardHeader>
             <CardContent>
               <ChartContainer config={{
                 rrsp: { label: "RRSP", color: "#3b82f6" },
                 tfsa: { label: "TFSA", color: "#10b981" },
                 nonReg: { label: "Non-Registered", color: "#f59e0b" }
-              }} className="h-80">
+              }} className="h-96 w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={assetDepletionData}>
-                    <XAxis dataKey="year" />
-                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                    <ChartTooltip content={<ChartTooltipContent />} />
-                    <Bar dataKey="rrsp" fill="#3b82f6" />
-                    <Bar dataKey="tfsa" fill="#10b981" />
-                    <Bar dataKey="nonReg" fill="#f59e0b" />
+                  <BarChart data={assetDepletionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                    <XAxis 
+                      dataKey="year" 
+                      className="text-sm"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <YAxis 
+                      tickFormatter={(value) => formatCurrency(value)}
+                      className="text-sm"
+                      tick={{ fontSize: 12 }}
+                    />
+                    <ChartTooltip 
+                      content={<ChartTooltipContent />}
+                      contentStyle={{
+                        backgroundColor: 'white',
+                        border: '1px solid #ccc',
+                        borderRadius: '8px',
+                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                      }}
+                    />
+                    <Bar dataKey="rrsp" fill="#3b82f6" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="tfsa" fill="#10b981" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="nonReg" fill="#f59e0b" radius={[0, 0, 4, 4]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
