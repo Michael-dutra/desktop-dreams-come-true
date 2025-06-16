@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -506,53 +505,55 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    CPP Start Age: {cppStartAge}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCppStartAge(Math.max(60, cppStartAge - 1))}
-                      disabled={cppStartAge <= 60}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-16 text-center font-semibold">{cppStartAge}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCppStartAge(Math.min(70, cppStartAge + 1))}
-                      disabled={cppStartAge >= 70}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      CPP Start Age: {cppStartAge}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCppStartAge(Math.max(60, cppStartAge - 1))}
+                        disabled={cppStartAge <= 60}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-16 text-center font-semibold">{cppStartAge}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCppStartAge(Math.min(70, cppStartAge + 1))}
+                        disabled={cppStartAge >= 70}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    CPP Eligibility: {cppEligibilityPercent}%
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCppEligibilityPercent(Math.max(0, cppEligibilityPercent - 5))}
-                      disabled={cppEligibilityPercent <= 0}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-16 text-center font-semibold">{cppEligibilityPercent}%</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setCppEligibilityPercent(Math.min(100, cppEligibilityPercent + 5))}
-                      disabled={cppEligibilityPercent >= 100}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      CPP Eligibility: {cppEligibilityPercent}%
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCppEligibilityPercent(Math.max(0, cppEligibilityPercent - 5))}
+                        disabled={cppEligibilityPercent <= 0}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-16 text-center font-semibold">{cppEligibilityPercent}%</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setCppEligibilityPercent(Math.min(100, cppEligibilityPercent + 5))}
+                        disabled={cppEligibilityPercent >= 100}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
@@ -586,53 +587,55 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </p>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    OAS Start Age: {oasStartAge}
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setOasStartAge(Math.max(65, oasStartAge - 1))}
-                      disabled={oasStartAge <= 65}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-16 text-center font-semibold">{oasStartAge}</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setOasStartAge(Math.min(70, oasStartAge + 1))}
-                      disabled={oasStartAge >= 70}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      OAS Start Age: {oasStartAge}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setOasStartAge(Math.max(65, oasStartAge - 1))}
+                        disabled={oasStartAge <= 65}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-16 text-center font-semibold">{oasStartAge}</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setOasStartAge(Math.min(70, oasStartAge + 1))}
+                        disabled={oasStartAge >= 70}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    OAS Eligibility: {oasEligibilityPercent}%
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setOasEligibilityPercent(Math.max(0, oasEligibilityPercent - 5))}
-                      disabled={oasEligibilityPercent <= 0}
-                    >
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-16 text-center font-semibold">{oasEligibilityPercent}%</span>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setOasEligibilityPercent(Math.min(100, oasEligibilityPercent + 5))}
-                      disabled={oasEligibilityPercent >= 100}
-                    >
-                      <Plus className="h-4 w-4" />
-                    </Button>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">
+                      OAS Eligibility: {oasEligibilityPercent}%
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setOasEligibilityPercent(Math.max(0, oasEligibilityPercent - 5))}
+                        disabled={oasEligibilityPercent <= 0}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-16 text-center font-semibold">{oasEligibilityPercent}%</span>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setOasEligibilityPercent(Math.min(100, oasEligibilityPercent + 5))}
+                        disabled={oasEligibilityPercent >= 100}
+                      >
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
                 </div>
 
