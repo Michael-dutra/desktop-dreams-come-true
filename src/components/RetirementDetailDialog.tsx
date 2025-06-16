@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -448,13 +447,13 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 <div>
                   <label className="flex items-center gap-2 text-sm font-medium mb-2">
                     Tax Rate on Withdrawals: {taxRate[0]}%
-                    <Info className="h-4 w-4 text-gray-400" title="Applied to RRSP and 50% of Non-Registered withdrawals. TFSA is tax-free." />
+                    <Info className="h-4 w-4 text-gray-400" />
                   </label>
                   <Slider
                     value={taxRate}
                     onValueChange={setTaxRate}
                     min={15}
-                    max={40}
+                    max={55}
                     step={1}
                   />
                   <p className="text-xs text-gray-600 mt-1">
