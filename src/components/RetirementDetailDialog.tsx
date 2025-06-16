@@ -137,6 +137,31 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const yearlyData = generateYearlyData();
   
+  // Calculate actual asset duration based on when assets reach zero
+  const calculateActualAssetDuration = (): number => {
+    if (annualIncomeNeeded === 0) return Infinity;
+    
+    // Find the last year where total assets > 0
+    let lastYearWithAssets = 0;
+    for (const year of yearlyData) {
+      if (year.totalAssets > 0) {
+        lastYearWithAssets = year.year;
+      }
+    }
+    
+    // If we have withdrawals in the final year, add partial year calculation
+    const finalYear = yearlyData[lastYearWithAssets];
+    if (finalYear && finalYear.totalWithdrawal > 0) {
+      const remainingAssets = finalYear.totalAssets;
+      const partialYear = remainingAssets / annualIncomeNeeded;
+      return lastYearWithAssets + partialYear;
+    }
+    
+    return lastYearWithAssets;
+  };
+
+  const actualAssetDuration = calculateActualAssetDuration();
+  
   // Calculate tax optimization
   const estimatedLifetimeTaxes = yearlyData.reduce((total, year) => {
     const taxableWithdrawal = year.rrspWithdrawal + (year.nonRegWithdrawal * 0.5);
@@ -183,8 +208,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return `$${Math.round(value).toLocaleString()}`;
   };
 
-  const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
-
   // CPP/OAS Calculator State
   const [cppStartAge, setCppStartAge] = useState(65);
   const [oasStartAge, setOasStartAge] = useState(65);
@@ -224,6 +247,8 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const cppAmount = calculateCPP(cppStartAge);
   const oasAmount = calculateOAS(oasStartAge);
+
+  const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -330,7 +355,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <div className="text-center">
                 <h4 className="text-4xl font-bold mb-8 text-purple-100">Asset Funding Duration</h4>
                 <div className="space-y-6">
-                  <div className="text-9xl font-bold leading-none">{yearsInRetirement.toFixed(1)}</div>
+                  <div className="text-9xl font-bold leading-none">
+                    {actualAssetDuration === Infinity ? "∞" : actualAssetDuration.toFixed(1)}
+                  </div>
                   <div className="text-4xl font-semibold text-purple-100">Years</div>
                   <div className="text-3xl text-purple-200 mt-8">Assets Will Last</div>
                 </div>
@@ -338,7 +365,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   <div className="text-7xl font-bold text-green-300 mb-4">{fundingPercentage.toFixed(0)}%</div>
                   <div className="text-3xl text-purple-200 mb-6">of Retirement Goal</div>
                   <div className="text-xl text-purple-300 space-y-2">
-                    <div>Years in Retirement: {yearsInRetirement.toFixed(1)} years</div>
+                    <div>Theoretical Retirement Years: {yearsInRetirement.toFixed(1)} years</div>
                     <div>Funding Status: {fundingStatus}</div>
                   </div>
                 </div>
