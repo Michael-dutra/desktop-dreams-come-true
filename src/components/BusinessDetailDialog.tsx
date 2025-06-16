@@ -572,6 +572,285 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </CardContent>
               </Card>
             </div>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <TrendingUp className="h-5 w-5" />
+                    <span>Revenue, Profit & Expenses Trends</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsEditingFinancials(!isEditingFinancials)}
+                  >
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ChartContainer config={chartConfig} className="h-64">
+                  <AreaChart data={financialData}>
+                    <defs>
+                      <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#06b6d4" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="profitGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#10b981" stopOpacity={0.1}/>
+                      </linearGradient>
+                      <linearGradient id="expensesGradient" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ef4444" stopOpacity={0.8}/>
+                        <stop offset="95%" stopColor="#ef4444" stopOpacity={0.1}/>
+                      </linearGradient>
+                    </defs>
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="revenue" stroke="#06b6d4" fill="url(#revenueGradient)" />
+                    <Area type="monotone" dataKey="profit" stroke="#10b981" fill="url(#profitGradient)" />
+                    <Area type="monotone" dataKey="expenses" stroke="#ef4444" fill="url(#expensesGradient)" />
+                  </AreaChart>
+                </ChartContainer>
+
+                {isEditingFinancials && (
+                  <div className="space-y-4 mt-4">
+                    {financialData.map((data) => (
+                      <div key={data.year} className="grid grid-cols-5 gap-4 p-4 border rounded-lg">
+                        <div>
+                          <Label className="text-sm font-medium">{data.year}</Label>
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Revenue</Label>
+                          <Input
+                            type="number"
+                            value={data.revenue}
+                            onChange={(e) => updateFinancialData(data.year, 'revenue', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Profit</Label>
+                          <Input
+                            type="number"
+                            value={data.profit}
+                            onChange={(e) => updateFinancialData(data.year, 'profit', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Expenses</Label>
+                          <Input
+                            type="number"
+                            value={data.expenses}
+                            onChange={(e) => updateFinancialData(data.year, 'expenses', Number(e.target.value))}
+                          />
+                        </div>
+                        <div>
+                          <Label className="text-sm text-muted-foreground">Valuation</Label>
+                          <Input
+                            type="number"
+                            value={data.valuation}
+                            onChange={(e) => updateFinancialData(data.year, 'valuation', Number(e.target.value))}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-5 w-5" />
+                      <span>Current Year</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingCurrentYear(!isEditingCurrentYear)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isEditingCurrentYear ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium">Revenue</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.revenue}
+                          onChange={(e) => setCurrentYearData({...currentYearData, revenue: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Profit</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.profit}
+                          onChange={(e) => setCurrentYearData({...currentYearData, profit: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Valuation</Label>
+                        <Input
+                          type="number"
+                          value={currentYearData.valuation}
+                          onChange={(e) => setCurrentYearData({...currentYearData, valuation: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Revenue</p>
+                        <p className="text-2xl font-bold text-blue-600">${formatLargeNumber(currentYearData.revenue)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Profit</p>
+                        <p className="text-2xl font-bold text-green-600">${formatLargeNumber(currentYearData.profit)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valuation</p>
+                        <p className="text-2xl font-bold text-purple-600">${formatLargeNumber(currentYearData.valuation)}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5" />
+                      <span>Growth Rates</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingGrowthRates(!isEditingGrowthRates)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isEditingGrowthRates ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium">Revenue Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.revenueGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, revenueGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Profit Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.profitGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, profitGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">Valuation Growth (%)</Label>
+                        <Input
+                          type="number"
+                          value={growthRatesData.valuationGrowth}
+                          onChange={(e) => setGrowthRatesData({...growthRatesData, valuationGrowth: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">Revenue Growth</p>
+                        <p className="text-2xl font-bold text-blue-600">+{growthRatesData.revenueGrowth}% YoY</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Profit Growth</p>
+                        <p className="text-2xl font-bold text-green-600">+{growthRatesData.profitGrowth}% YoY</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">Valuation Growth</p>
+                        <p className="text-2xl font-bold text-purple-600">+{growthRatesData.valuationGrowth}% YoY</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Target className="h-5 w-5" />
+                      <span>Projections</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setIsEditingProjections(!isEditingProjections)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isEditingProjections ? (
+                    <div className="space-y-4">
+                      <div>
+                        <Label className="text-sm font-medium">2025 Revenue</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.revenue2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, revenue2025: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">2025 Profit</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.profit2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, profit2025: Number(e.target.value)})}
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-sm font-medium">2025 Valuation</Label>
+                        <Input
+                          type="number"
+                          value={projectionsData.valuation2025}
+                          onChange={(e) => setProjectionsData({...projectionsData, valuation2025: Number(e.target.value)})}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Revenue</p>
+                        <p className="text-2xl font-bold text-blue-600">${formatLargeNumber(projectionsData.revenue2025)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Profit</p>
+                        <p className="text-2xl font-bold text-green-600">${formatLargeNumber(projectionsData.profit2025)}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm text-muted-foreground">2025 Valuation</p>
+                        <p className="text-2xl font-bold text-purple-600">${formatLargeNumber(projectionsData.valuation2025)}</p>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="assets" className="space-y-6">
