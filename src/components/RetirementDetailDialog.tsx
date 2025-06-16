@@ -2,10 +2,9 @@
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Slider } from "@/components/ui/slider";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line } from "recharts";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { PiggyBank } from "lucide-react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
@@ -92,7 +91,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     let tfsaBalance = futureTFSA;
     let nonRegBalance = futureNonReg;
 
-    for (let year = 0; year <= 56; year++) {
+    for (let year = 0; year <= 30; year++) {
       const age = retirementAge[0] + year;
       
       let rrspWithdrawal = 0;
@@ -145,7 +144,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   }, 0);
 
   // Chart data for asset depletion visualization
-  const assetDepletionData = yearlyData.slice(0, 30).map(year => ({
+  const assetDepletionData = yearlyData.slice(0, 10).map(year => ({
     age: year.age,
     year: `+${year.year}yr`,
     rrsp: year.rrspBalance,
@@ -154,6 +153,22 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     totalAssets: year.totalAssets,
     withdrawal: year.totalWithdrawal
   }));
+
+  // Area chart data for 30-year breakdown
+  const areaChartData = yearlyData.map(year => ({
+    age: year.age,
+    rrsp: year.rrspBalance,
+    tfsa: year.tfsaBalance,
+    nonReg: year.nonRegBalance,
+    totalAssets: year.totalAssets
+  }));
+
+  // Pie chart data for income sources
+  const incomeSourceData = [
+    { name: "RRSP", value: rrspAllocation[0], color: "#3b82f6" },
+    { name: "TFSA", value: tfsaAllocation[0], color: "#10b981" },
+    { name: "Non-Reg", value: nonRegAllocation[0], color: "#f59e0b" }
+  ];
 
   const formatCurrency = (value: number) => {
     if (value >= 1000000) {
@@ -180,394 +195,417 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           </DialogTitle>
         </DialogHeader>
 
-        <Tabs defaultValue="controls" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-8">
-            <TabsTrigger value="controls">Retirement Planning Controls</TabsTrigger>
-            <TabsTrigger value="analysis">Assets Will Last</TabsTrigger>
-            <TabsTrigger value="depletion">Projected Asset Depletion by Account</TabsTrigger>
-            <TabsTrigger value="readiness">Retirement Readiness</TabsTrigger>
-            <TabsTrigger value="tax">Tax Optimization Analysis</TabsTrigger>
-            <TabsTrigger value="breakdown">Asset Breakdown</TabsTrigger>
-            <TabsTrigger value="sources">Retirement Income Sources</TabsTrigger>
-            <TabsTrigger value="timeline">Income Timeline</TabsTrigger>
-          </TabsList>
+        <div className="space-y-6">
+          {/* Retirement Planning Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Retirement Planning Controls</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Retirement Age: {retirementAge[0]}
+                  </label>
+                  <Slider
+                    value={retirementAge}
+                    onValueChange={setRetirementAge}
+                    min={55}
+                    max={75}
+                    step={1}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Net Monthly Income Needed: {formatCurrency(monthlyIncomeNeeded[0])}
+                  </label>
+                  <Slider
+                    value={monthlyIncomeNeeded}
+                    onValueChange={setMonthlyIncomeNeeded}
+                    min={2000}
+                    max={8000}
+                    step={100}
+                  />
+                </div>
+              </div>
 
-          <TabsContent value="controls" className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-4">
+                  Allocate how your retirement income is sourced from each account (total must be 100%):
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-sm font-medium">RRSP</label>
+                      <span className="text-sm font-bold">{rrspAllocation[0]}%</span>
+                    </div>
+                    <Slider
+                      value={rrspAllocation}
+                      onValueChange={setRrspAllocation}
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-sm font-medium">TFSA</label>
+                      <span className="text-sm font-bold">{tfsaAllocation[0]}%</span>
+                    </div>
+                    <Slider
+                      value={tfsaAllocation}
+                      onValueChange={setTfsaAllocation}
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <label className="text-sm font-medium">Non-Registered</label>
+                      <span className="text-sm font-bold">{nonRegAllocation[0]}%</span>
+                    </div>
+                    <Slider
+                      value={nonRegAllocation}
+                      onValueChange={setNonRegAllocation}
+                      min={0}
+                      max={100}
+                      step={5}
+                    />
+                  </div>
+                  {totalAllocation !== 100 && (
+                    <div className="text-red-600 text-sm font-medium">
+                      Total allocation: {totalAllocation}% (must equal 100%)
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Asset Funding Duration & Account Analysis */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+              <h4 className="font-semibold mb-2 text-blue-800">Asset Funding Duration</h4>
+              <div className="text-3xl font-bold text-blue-600 mb-1">{yearsInRetirement.toFixed(1)} years</div>
+              <div className="text-lg font-semibold text-green-600">{fundingPercentage.toFixed(0)}% of Retirement Goal</div>
+              <p className="text-sm text-blue-600 mt-2">Funding Status: {fundingStatus}</p>
+            </div>
+
             <Card>
               <CardHeader>
-                <CardTitle>Retirement Planning Controls</CardTitle>
+                <CardTitle>Account Funding Analysis</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Retirement Age: {retirementAge[0]}
-                    </label>
-                    <Slider
-                      value={retirementAge}
-                      onValueChange={setRetirementAge}
-                      min={55}
-                      max={75}
-                      step={1}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium mb-2">
-                      Net Monthly Income Needed: {formatCurrency(monthlyIncomeNeeded[0])}
-                    </label>
-                    <Slider
-                      value={monthlyIncomeNeeded}
-                      onValueChange={setMonthlyIncomeNeeded}
-                      min={2000}
-                      max={8000}
-                      step={100}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold mb-4">
-                    Allocate how your retirement income is sourced from each account (total must be 100%):
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-sm font-medium">RRSP</label>
-                        <span className="text-sm font-bold">{rrspAllocation[0]}%</span>
-                      </div>
-                      <Slider
-                        value={rrspAllocation}
-                        onValueChange={setRrspAllocation}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-sm font-medium">TFSA</label>
-                        <span className="text-sm font-bold">{tfsaAllocation[0]}%</span>
-                      </div>
-                      <Slider
-                        value={tfsaAllocation}
-                        onValueChange={setTfsaAllocation}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </div>
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <label className="text-sm font-medium">Non-Registered</label>
-                        <span className="text-sm font-bold">{nonRegAllocation[0]}%</span>
-                      </div>
-                      <Slider
-                        value={nonRegAllocation}
-                        onValueChange={setNonRegAllocation}
-                        min={0}
-                        max={100}
-                        step={5}
-                      />
-                    </div>
-                    {totalAllocation !== 100 && (
-                      <div className="text-red-600 text-sm font-medium">
-                        Total allocation: {totalAllocation}% (must equal 100%)
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Asset Funding Duration</h4>
-                  <p className="text-2xl font-bold">{yearsInRetirement.toFixed(1)} years</p>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="analysis" className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Assets Will Last</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-center">
-                    <div className="text-4xl font-bold text-green-600 mb-2">
-                      {fundingPercentage.toFixed(0)}%
-                    </div>
-                    <p className="text-lg">of Retirement Goal</p>
-                    <div className="mt-4 space-y-2">
-                      <p><strong>Years in Retirement:</strong> {yearsInRetirement} years</p>
-                      <p><strong>Funding Status:</strong> {fundingStatus}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Account Funding Analysis</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
+              <CardContent className="space-y-4">
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span>RRSP</span>
+                    <span className="font-medium">RRSP</span>
                     <div className="text-right">
-                      <div className="font-bold">{rrspAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-lg font-bold text-blue-600">{rrspAllocation[0]}%</div>
+                      <div className="text-sm text-blue-600">
                         Funds {rrspDuration === Infinity ? "∞" : rrspDuration.toFixed(1)} yrs
                       </div>
                     </div>
                   </div>
+                </div>
+                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span>TFSA</span>
+                    <span className="font-medium">TFSA</span>
                     <div className="text-right">
-                      <div className="font-bold">{tfsaAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-lg font-bold text-green-600">{tfsaAllocation[0]}%</div>
+                      <div className="text-sm text-green-600">
                         Funds {tfsaDuration === Infinity ? "∞" : tfsaDuration.toFixed(1)} yrs
                       </div>
                     </div>
                   </div>
+                </div>
+                <div className="p-3 bg-orange-50 border border-orange-200 rounded-lg">
                   <div className="flex justify-between items-center">
-                    <span>Non-Reg</span>
+                    <span className="font-medium">Non-Reg</span>
                     <div className="text-right">
-                      <div className="font-bold">{nonRegAllocation[0]}%</div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-lg font-bold text-orange-600">{nonRegAllocation[0]}%</div>
+                      <div className="text-sm text-orange-600">
                         Funds {nonRegDuration === Infinity ? "∞" : nonRegDuration.toFixed(1)} yrs
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
-          <TabsContent value="depletion" className="space-y-6">
+          {/* Projected Asset Depletion Chart */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Projected Asset Depletion by Account</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{
+                rrsp: { label: "RRSP", color: "#3b82f6" },
+                tfsa: { label: "TFSA", color: "#10b981" },
+                nonReg: { label: "Non-Registered", color: "#f59e0b" }
+              }} className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={assetDepletionData}>
+                    <XAxis dataKey="year" />
+                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Bar dataKey="rrsp" fill="#3b82f6" />
+                    <Bar dataKey="tfsa" fill="#10b981" />
+                    <Bar dataKey="nonReg" fill="#f59e0b" />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
+
+          {/* Retirement Readiness Metrics */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">
+                {formatCurrency(totalFutureSavings)}
+              </div>
+              <p className="text-sm text-blue-600">Projected Savings</p>
+            </div>
+            <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">
+                {formatCurrency(annualIncomeNeeded)}
+              </div>
+              <p className="text-sm text-green-600">Annual Income</p>
+            </div>
+            <div className="text-center p-4 bg-orange-50 border border-orange-200 rounded-lg">
+              <div className="text-2xl font-bold text-orange-600">
+                {formatCurrency(Math.max(0, totalRetirementNeeded - totalFutureSavings))}
+              </div>
+              <p className="text-sm text-orange-600">Income Gap</p>
+            </div>
+            <div className="text-center p-4 bg-purple-50 border border-purple-200 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">
+                {fundingPercentage.toFixed(0)}%
+              </div>
+              <p className="text-sm text-purple-600">Funded</p>
+            </div>
+          </div>
+
+          {/* Tax Optimization Analysis */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Tax Optimization Analysis</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold mb-2">
+                  Estimated Total Taxes Owed (lifetime from drawdowns)
+                </h3>
+                <div className="text-4xl font-bold text-red-600">
+                  {formatCurrencyFull(estimatedLifetimeTaxes)}
+                </div>
+                <p className="text-gray-600 mt-2">
+                  Balanced withdrawals help manage steady tax rates over retirement.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Income Sources and Timeline Charts */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Projected Asset Depletion by Account</CardTitle>
+                <CardTitle>Retirement Income Sources</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={{
                   rrsp: { label: "RRSP", color: "#3b82f6" },
                   tfsa: { label: "TFSA", color: "#10b981" },
                   nonReg: { label: "Non-Registered", color: "#f59e0b" }
-                }} className="h-80">
+                }} className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={assetDepletionData.slice(0, 10)}>
-                      <XAxis dataKey="year" />
-                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                    <PieChart>
+                      <Pie
+                        data={incomeSourceData}
+                        cx="50%"
+                        cy="50%"
+                        outerRadius={80}
+                        dataKey="value"
+                      >
+                        {incomeSourceData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Bar dataKey="rrsp" fill="#3b82f6" />
-                      <Bar dataKey="tfsa" fill="#10b981" />
-                      <Bar dataKey="nonReg" fill="#f59e0b" />
-                    </BarChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 </ChartContainer>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="readiness" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Retirement Readiness</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-3 gap-6 text-center">
-                  <div>
-                    <div className="text-2xl font-bold text-blue-600">
-                      {formatCurrency(totalFutureSavings)}
-                    </div>
-                    <p className="text-sm text-gray-600">Projected Savings</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-green-600">
-                      {formatCurrency(annualIncomeNeeded)}
-                    </div>
-                    <p className="text-sm text-gray-600">Annual Income</p>
-                  </div>
-                  <div>
-                    <div className="text-2xl font-bold text-orange-600">
-                      {formatCurrency(Math.max(0, totalRetirementNeeded - totalFutureSavings))}
-                    </div>
-                    <p className="text-sm text-gray-600">Income Gap</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="tax" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Tax Optimization Analysis</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center mb-4">
-                  <h3 className="text-lg font-semibold mb-2">
-                    Estimated Total Taxes Owed (lifetime from drawdowns)
-                  </h3>
-                  <div className="text-3xl font-bold text-red-600">
-                    {formatCurrencyFull(estimatedLifetimeTaxes)}
-                  </div>
-                </div>
-                <p className="text-center text-gray-600">
-                  Balanced withdrawals help manage steady tax rates over retirement.
-                </p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="breakdown" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>30-Year Asset & Withdrawal Breakdown</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Detailed projection showing asset growth, withdrawal amounts, and remaining balances over 30 years
-                </p>
+                <CardTitle>Income Timeline</CardTitle>
               </CardHeader>
               <CardContent>
                 <ChartContainer config={{
-                  rrsp: { label: "RRSP", color: "#3b82f6" },
-                  tfsa: { label: "TFSA", color: "#10b981" },
-                  nonReg: { label: "Non-Registered", color: "#f59e0b" },
-                  totalAssets: { label: "Total Assets", color: "#8b5cf6" },
                   withdrawal: { label: "Annual Withdrawal", color: "#ef4444" }
-                }} className="h-80">
+                }} className="h-64">
                   <ResponsiveContainer width="100%" height="100%">
                     <LineChart data={assetDepletionData}>
                       <XAxis dataKey="age" />
                       <YAxis tickFormatter={(value) => formatCurrency(value)} />
                       <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="rrsp" stroke="#3b82f6" strokeWidth={2} />
-                      <Line type="monotone" dataKey="tfsa" stroke="#10b981" strokeWidth={2} />
-                      <Line type="monotone" dataKey="nonReg" stroke="#f59e0b" strokeWidth={2} />
-                      <Line type="monotone" dataKey="totalAssets" stroke="#8b5cf6" strokeWidth={3} />
+                      <Line type="monotone" dataKey="withdrawal" stroke="#ef4444" strokeWidth={2} />
                     </LineChart>
                   </ResponsiveContainer>
                 </ChartContainer>
               </CardContent>
             </Card>
-          </TabsContent>
+          </div>
 
-          <TabsContent value="sources" className="space-y-6">
-            <div className="grid grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>CPP/OAS Analysis</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div>
-                      <h4 className="font-semibold mb-2">CPP Projection</h4>
-                      <p className="text-2xl font-bold">$1,200/month</p>
-                      <p className="text-sm text-gray-600">Starting at age 65</p>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2">OAS Projection</h4>
-                      <p className="text-2xl font-bold">$700/month</p>
-                      <p className="text-sm text-gray-600">Starting at age 65</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+          {/* 30-Year Asset & Withdrawal Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>30-Year Asset & Withdrawal Breakdown</CardTitle>
+              <p className="text-sm text-gray-600">
+                Detailed projection showing asset growth, withdrawal amounts, and remaining balances over 30 years
+              </p>
+            </CardHeader>
+            <CardContent>
+              <ChartContainer config={{
+                rrsp: { label: "RRSP", color: "#3b82f6" },
+                tfsa: { label: "TFSA", color: "#10b981" },
+                nonReg: { label: "Non-Registered", color: "#f59e0b" },
+                totalAssets: { label: "Total Assets", color: "#8b5cf6" }
+              }} className="h-80">
+                <ResponsiveContainer width="100%" height="100%">
+                  <AreaChart data={areaChartData}>
+                    <XAxis dataKey="age" />
+                    <YAxis tickFormatter={(value) => formatCurrency(value)} />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <Area type="monotone" dataKey="rrsp" stackId="1" stroke="#3b82f6" fill="#3b82f6" fillOpacity={0.6} />
+                    <Area type="monotone" dataKey="tfsa" stackId="1" stroke="#10b981" fill="#10b981" fillOpacity={0.6} />
+                    <Area type="monotone" dataKey="nonReg" stackId="1" stroke="#f59e0b" fill="#f59e0b" fillOpacity={0.6} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </CardContent>
+          </Card>
 
-              <Card>
-                <CardHeader>
-                  <CardTitle>RRIF Schedule</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600 mb-4">
-                    RRSP must be converted to RRIF by age 71. Minimum withdrawal rates apply.
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div><strong>Age 71:</strong> 5.28% minimum</div>
-                    <div><strong>Age 75:</strong> 5.82% minimum</div>
-                    <div><strong>Age 80:</strong> 6.82% minimum</div>
-                    <div><strong>Age 85:</strong> 8.51% minimum</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
+          {/* CPP/OAS and Additional Information */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
               <CardHeader>
-                <CardTitle>Savings Requirements</CardTitle>
+                <CardTitle>CPP/OAS Analysis</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <h4 className="font-semibold">Current Monthly Contribution</h4>
-                    <p className="text-2xl font-bold">{formatCurrency(monthlyContribution)}</p>
+                    <h4 className="font-semibold mb-2">CPP Projection</h4>
+                    <p className="text-2xl font-bold">$1,200/month</p>
+                    <p className="text-sm text-gray-600">Starting at age 65</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold">Recommended Rate of Return</h4>
-                    <p className="text-2xl font-bold">{(rateOfReturn * 100).toFixed(1)}%</p>
+                    <h4 className="font-semibold mb-2">OAS Projection</h4>
+                    <p className="text-2xl font-bold">$700/month</p>
+                    <p className="text-sm text-gray-600">Starting at age 65</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
 
-          <TabsContent value="timeline" className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Year-by-Year Account Breakdown</CardTitle>
-                <p className="text-sm text-gray-600">
-                  Detailed annual breakdown showing each account balance and withdrawals until assets reach zero
+                <CardTitle>RRIF Schedule</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 mb-4">
+                  RRSP must be converted to RRIF by age 71. Minimum withdrawal rates apply.
                 </p>
-              </CardHeader>
-              <CardContent>
-                <div className="max-h-96 overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Age</TableHead>
-                        <TableHead>Year</TableHead>
-                        <TableHead>RRSP Balance</TableHead>
-                        <TableHead>RRSP Withdrawal</TableHead>
-                        <TableHead>TFSA Balance</TableHead>
-                        <TableHead>TFSA Withdrawal</TableHead>
-                        <TableHead>Non-Reg Balance</TableHead>
-                        <TableHead>Non-Reg Withdrawal</TableHead>
-                        <TableHead>Total Assets</TableHead>
-                        <TableHead>Total Withdrawal</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {yearlyData.map((year, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{year.age}</TableCell>
-                          <TableCell>{year.year}</TableCell>
-                          <TableCell>{formatCurrencyFull(year.rrspBalance)}</TableCell>
-                          <TableCell>{year.rrspWithdrawal > 0 ? formatCurrencyFull(year.rrspWithdrawal) : "-"}</TableCell>
-                          <TableCell>{formatCurrencyFull(year.tfsaBalance)}</TableCell>
-                          <TableCell>{year.tfsaWithdrawal > 0 ? formatCurrencyFull(year.tfsaWithdrawal) : "-"}</TableCell>
-                          <TableCell>{formatCurrencyFull(year.nonRegBalance)}</TableCell>
-                          <TableCell>{year.nonRegWithdrawal > 0 ? formatCurrencyFull(year.nonRegWithdrawal) : "-"}</TableCell>
-                          <TableCell className="font-bold">{formatCurrencyFull(year.totalAssets)}</TableCell>
-                          <TableCell className="font-bold">{formatCurrencyFull(year.totalWithdrawal)}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><strong>Age 71:</strong> 5.28% minimum</div>
+                  <div><strong>Age 75:</strong> 5.82% minimum</div>
+                  <div><strong>Age 80:</strong> 6.82% minimum</div>
+                  <div><strong>Age 85:</strong> 8.51% minimum</div>
                 </div>
               </CardContent>
             </Card>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
-                <h4 className="font-semibold text-green-800">Growth Phase</h4>
-                <p className="text-sm text-green-600">Assets growing before retirement</p>
+          {/* Savings Requirements */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Savings Requirements</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-2 gap-6">
+                <div>
+                  <h4 className="font-semibold">Current Monthly Contribution</h4>
+                  <p className="text-2xl font-bold">{formatCurrency(monthlyContribution)}</p>
+                </div>
+                <div>
+                  <h4 className="font-semibold">Recommended Rate of Return</h4>
+                  <p className="text-2xl font-bold">{(rateOfReturn * 100).toFixed(1)}%</p>
+                </div>
               </div>
-              <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h4 className="font-semibold text-blue-800">Withdrawal Phase</h4>
-                <p className="text-sm text-blue-600">Assets being withdrawn in retirement</p>
+            </CardContent>
+          </Card>
+
+          {/* Year-by-Year Account Breakdown */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Year-by-Year Account Breakdown</CardTitle>
+              <p className="text-sm text-gray-600">
+                Detailed annual breakdown showing each account balance and withdrawals until assets reach zero
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div className="max-h-96 overflow-y-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Year</TableHead>
+                      <TableHead>RRSP Balance</TableHead>
+                      <TableHead>RRSP Withdrawal</TableHead>
+                      <TableHead>TFSA Balance</TableHead>
+                      <TableHead>TFSA Withdrawal</TableHead>
+                      <TableHead>Non-Reg Balance</TableHead>
+                      <TableHead>Non-Reg Withdrawal</TableHead>
+                      <TableHead>Total Assets</TableHead>
+                      <TableHead>Total Withdrawal</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {yearlyData.map((year, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{year.age}</TableCell>
+                        <TableCell>{year.year}</TableCell>
+                        <TableCell>{formatCurrencyFull(year.rrspBalance)}</TableCell>
+                        <TableCell>{year.rrspWithdrawal > 0 ? formatCurrencyFull(year.rrspWithdrawal) : "-"}</TableCell>
+                        <TableCell>{formatCurrencyFull(year.tfsaBalance)}</TableCell>
+                        <TableCell>{year.tfsaWithdrawal > 0 ? formatCurrencyFull(year.tfsaWithdrawal) : "-"}</TableCell>
+                        <TableCell>{formatCurrencyFull(year.nonRegBalance)}</TableCell>
+                        <TableCell>{year.nonRegWithdrawal > 0 ? formatCurrencyFull(year.nonRegWithdrawal) : "-"}</TableCell>
+                        <TableCell className="font-bold">{formatCurrencyFull(year.totalAssets)}</TableCell>
+                        <TableCell className="font-bold">{formatCurrencyFull(year.totalWithdrawal)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Growth and Withdrawal Phase Indicators */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+              <h4 className="font-semibold text-green-800">Growth Phase</h4>
+              <p className="text-sm text-green-600">Assets growing before retirement</p>
             </div>
-          </TabsContent>
-        </Tabs>
+            <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <h4 className="font-semibold text-blue-800">Withdrawal Phase</h4>
+              <p className="text-sm text-blue-600">Assets being withdrawn in retirement</p>
+            </div>
+          </div>
+        </div>
       </DialogContent>
     </Dialog>
   );
