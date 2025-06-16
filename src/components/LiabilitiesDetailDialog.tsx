@@ -12,7 +12,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import { calculateCanadianMortgage, calculatePayoffTime } from "@/utils/canadianMortgageCalculator";
 
 interface Liability {
   name: string;
@@ -121,42 +120,23 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
     setCustomLiabilities(customLiabilities.filter(liability => liability.id !== id));
   };
 
-  // Updated calculation functions to use Canadian mortgage calculations
-  const calculateDebtFreeDate = (balance: number, payment: number, rate: number, isMortgage: boolean = false) => {
-    if (isMortgage) {
-      return calculatePayoffTime(balance, payment, rate);
-    } else {
-      // Simple calculation for non-mortgage debts
-      const monthlyRate = rate / 100 / 12;
-      if (monthlyRate === 0) return balance / payment;
-      return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
-    }
+  // Calculation functions
+  const calculateDebtFreeDate = (balance: number, payment: number, rate: number) => {
+    const monthlyRate = rate / 100 / 12;
+    if (monthlyRate === 0) return balance / payment;
+    return Math.log(1 - (balance * monthlyRate / payment)) / Math.log(1 + monthlyRate) * -1;
   };
 
-  const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number, isMortgage: boolean = false) => {
+  const generateCombinedPayoffData = (balance: number, currentPayment: number, currentRate: number, newPayment: number, newRate: number) => {
     const data = [];
     let currentBalance = balance;
     let optimizedBalance = balance;
-    
-    // Use appropriate interest rate calculation
-    let currentMonthlyRate: number;
-    let newMonthlyRate: number;
-    
-    if (isMortgage) {
-      // Canadian mortgage calculation
-      const currentEffectiveAnnual = Math.pow(1 + currentRate / 100 / 2, 2) - 1;
-      const newEffectiveAnnual = Math.pow(1 + newRate / 100 / 2, 2) - 1;
-      currentMonthlyRate = Math.pow(1 + currentEffectiveAnnual, 1 / 12) - 1;
-      newMonthlyRate = Math.pow(1 + newEffectiveAnnual, 1 / 12) - 1;
-    } else {
-      // Simple calculation for other debts
-      currentMonthlyRate = currentRate / 100 / 12;
-      newMonthlyRate = newRate / 100 / 12;
-    }
+    const currentMonthlyRate = currentRate / 100 / 12;
+    const newMonthlyRate = newRate / 100 / 12;
     
     // Calculate actual payoff times to determine chart range
-    const currentPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, currentPayment, currentRate, isMortgage));
-    const optimizedPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, newPayment, newRate, isMortgage));
+    const currentPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, currentPayment, currentRate));
+    const optimizedPayoffMonths = Math.ceil(calculateDebtFreeDate(balance, newPayment, newRate));
     const maxPayoffMonths = Math.max(currentPayoffMonths, optimizedPayoffMonths);
     
     // Use the actual payoff timeline, but cap at reasonable maximum for display
@@ -236,18 +216,16 @@ export const LiabilitiesDetailDialog = ({ isOpen, onClose, liabilities }: Liabil
 
   const generateLiabilitySummary = (liability: LiabilityDetails) => {
     const newPayment = liability.monthlyPayment + liability.extraPayment;
-    const isMortgage = liability.type === "Mortgage";
-    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate, isMortgage);
-    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate, isMortgage);
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate);
     const monthsSaved = currentPayoff - newPayoff;
     const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
 
     // Generate initial write-up content
-    const calculationNote = isMortgage ? " (using Canadian semi-annual compounding)" : "";
     const initialWriteUp = `Your ${liability.type} currently has a balance of $${liability.currentBalance.toLocaleString()} and is projected to be paid off in ${Math.round(currentPayoff)} months with current payments.
 
 Current Balance: $${liability.currentBalance.toLocaleString()}
-Interest Rate: ${liability.interestRate}%${calculationNote}
+Interest Rate: ${liability.interestRate}%
 Monthly Payment: $${liability.monthlyPayment.toLocaleString()}${liability.extraPayment > 0 ? `\nExtra Payment: $${liability.extraPayment.toLocaleString()}` : ''}
 Payoff Timeline: ${Math.round(currentPayoff)} months${liability.newRate !== liability.interestRate ? `\nOptimized Rate: ${liability.newRate}%` : ''}
 Time Saved: ${Math.round(monthsSaved)} months
@@ -255,7 +233,7 @@ Interest Saved: $${Math.round(interestSaved).toLocaleString()}
 
 ${monthsSaved > 0 ? `With the proposed optimizations, you could save ${Math.round(monthsSaved)} months and $${Math.round(interestSaved).toLocaleString()} in interest payments.` : 'This debt is currently on track for optimal payoff with the current payment structure.'}
 
-${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual compounding for mortgage interest rates, providing accurate projections for Canadian mortgages.\n\n' : ''}This projection assumes consistent payment performance. Actual results may vary based on payment timing, rate changes, and other financial factors.`;
+This projection assumes consistent payment performance. Actual results may vary based on payment timing, rate changes, and other financial factors.`;
 
     setEditableWriteUp(initialWriteUp);
     setSelectedLiabilitySummary({
@@ -289,9 +267,8 @@ ${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual
   const renderLiabilityCard = (liability: LiabilityDetails) => {
     const Icon = getIconForType(liability.type);
     const newPayment = liability.monthlyPayment + liability.extraPayment;
-    const isMortgage = liability.type === "Mortgage";
-    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate, isMortgage);
-    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate, isMortgage);
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, newPayment, liability.newRate);
     const monthsSaved = currentPayoff - newPayoff;
     const interestSaved = (currentPayoff * liability.monthlyPayment) - (newPayoff * newPayment);
     const chartData = generateCombinedPayoffData(
@@ -299,27 +276,25 @@ ${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual
       liability.monthlyPayment,
       liability.interestRate,
       newPayment,
-      liability.newRate,
-      isMortgage
+      liability.newRate
     );
 
-    // Calculate amortization for mortgage using Canadian calculation
+    // Calculate amortization for mortgage
     const calculateAmortization = () => {
-      if (!isMortgage) return null;
+      if (liability.type !== "Mortgage") return null;
       
-      const mortgageCalc = calculateCanadianMortgage({
-        principal: liability.currentBalance,
-        annualNominalRate: liability.interestRate / 100,
-        amortizationYears: 25 // Default amortization
-      });
+      const monthlyRate = liability.interestRate / 100 / 12;
+      const numPayments = currentPayoff;
       
-      // Calculate breakdown of current payment
-      const monthlyInterest = liability.currentBalance * mortgageCalc.effectiveMonthlyRate;
-      const monthlyPrincipal = liability.monthlyPayment - monthlyInterest;
+      if (monthlyRate === 0) return { principal: liability.monthlyPayment, interest: 0 };
+      
+      const totalInterest = (liability.monthlyPayment * numPayments) - liability.currentBalance;
+      const principalPayment = liability.currentBalance / numPayments;
+      const interestPayment = totalInterest / numPayments;
       
       return {
-        principal: monthlyPrincipal,
-        interest: monthlyInterest
+        principal: principalPayment,
+        interest: interestPayment
       };
     };
 
@@ -337,11 +312,6 @@ ${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual
             <div className="flex items-center gap-2">
               <Icon className="w-6 h-6" />
               {liability.type}
-              {isMortgage && (
-                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full ml-2">
-                  CDN Semi-Annual
-                </span>
-              )}
             </div>
             <div className="flex items-center gap-2">
               <Button 
@@ -474,9 +444,9 @@ ${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual
             </div>
 
             {/* Amortization section for mortgage */}
-            {isMortgage && amortization && (
+            {liability.type === "Mortgage" && amortization && (
               <div className="border-t pt-3 space-y-3">
-                <h5 className="font-medium text-sm">Monthly Payment Breakdown (Canadian Calculation)</h5>
+                <h5 className="font-medium text-sm">Monthly Payment Breakdown</h5>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-blue-50">
                     <p className="text-sm font-medium text-blue-800">Principal</p>
@@ -608,15 +578,13 @@ ${isMortgage ? 'Note: This calculation uses the Canadian standard of semi-annual
   const totalDebt = allLiabilities.reduce((sum, liability) => sum + liability.currentBalance, 0);
   const totalMonthlyPayments = allLiabilities.reduce((sum, liability) => sum + liability.monthlyPayment + liability.extraPayment, 0);
   const totalMonthsSaved = allLiabilities.reduce((sum, liability) => {
-    const isMortgage = liability.type === "Mortgage";
-    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate, isMortgage);
-    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate, isMortgage);
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate);
     return sum + (currentPayoff - newPayoff);
   }, 0) / allLiabilities.length;
   const totalInterestSaved = allLiabilities.reduce((sum, liability) => {
-    const isMortgage = liability.type === "Mortgage";
-    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate, isMortgage);
-    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate, isMortgage);
+    const currentPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment, liability.interestRate);
+    const newPayoff = calculateDebtFreeDate(liability.currentBalance, liability.monthlyPayment + liability.extraPayment, liability.newRate);
     return sum + ((currentPayoff * liability.monthlyPayment) - (newPayoff * (liability.monthlyPayment + liability.extraPayment)));
   }, 0);
 

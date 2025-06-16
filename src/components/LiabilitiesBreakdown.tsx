@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
@@ -7,7 +6,6 @@ import { Slider } from "@/components/ui/slider";
 import { useState } from "react";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
-import { calculatePayoffTime } from "@/utils/canadianMortgageCalculator";
 
 const LiabilitiesBreakdown = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -35,8 +33,7 @@ const LiabilitiesBreakdown = () => {
       setRate: setMortgageRate,
       setExtra: setMortgageExtra,
       minRate: 2.0,
-      maxRate: 8.0,
-      isMortgage: true
+      maxRate: 8.0
     },
     { 
       name: "Car Loan", 
@@ -49,8 +46,7 @@ const LiabilitiesBreakdown = () => {
       setRate: setCarLoanRate,
       setExtra: setCarLoanExtra,
       minRate: 3.0,
-      maxRate: 12.0,
-      isMortgage: false
+      maxRate: 12.0
     },
     { 
       name: "Credit Cards", 
@@ -63,32 +59,37 @@ const LiabilitiesBreakdown = () => {
       setRate: setCreditCardRate,
       setExtra: setCreditCardExtra,
       minRate: 10.0,
-      maxRate: 30.0,
-      isMortgage: false
+      maxRate: 30.0
     },
   ];
 
-  // Calculate payoff details with proper Canadian mortgage calculation
-  const calculatePayoffDetails = (balance, monthlyPayment, rate, extraPayment = 0, isMortgage = false) => {
-    if (isMortgage) {
-      // Use Canadian mortgage calculation for mortgages
-      return calculatePayoffTime(balance, monthlyPayment, rate, extraPayment);
-    } else {
-      // Use simple calculation for other debts
-      const totalPayment = monthlyPayment + extraPayment;
-      const monthlyRate = rate / 100 / 12;
-      
-      if (monthlyRate === 0) {
-        return balance / totalPayment;
-      }
-      
-      if (totalPayment <= balance * monthlyRate) {
-        return 999; // Never pays off
-      }
-      
-      const months = -Math.log(1 - (balance * monthlyRate) / totalPayment) / Math.log(1 + monthlyRate);
-      return Math.ceil(months);
+  // Calculate payoff details
+  const calculatePayoffDetails = (balance, monthlyPayment, rate, extraPayment = 0) => {
+    const totalPayment = monthlyPayment + extraPayment;
+    const monthlyRate = rate / 100 / 12;
+    
+    if (monthlyRate === 0) {
+      return {
+        months: balance / totalPayment,
+        totalInterest: 0
+      };
     }
+    
+    if (totalPayment <= balance * monthlyRate) {
+      return {
+        months: 999, // Never pays off
+        totalInterest: Infinity
+      };
+    }
+    
+    const months = -Math.log(1 - (balance * monthlyRate) / totalPayment) / Math.log(1 + monthlyRate);
+    const totalPaid = totalPayment * months;
+    const totalInterest = totalPaid - balance;
+    
+    return {
+      months: Math.ceil(months),
+      totalInterest: Math.max(0, totalInterest)
+    };
   };
 
   const formatMonthsToDate = (months) => {
@@ -144,23 +145,25 @@ const LiabilitiesBreakdown = () => {
     text += `🔔 **Total Monthly Debt Payments:** $${totalMonthlyPayments.toLocaleString()}\n`;
 
     liabilities.forEach(liab => {
-      const original = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, 0, liab.isMortgage);
-      const origDate = formatMonthsToDate(original);
+      const original = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate);
+      const origDate = formatMonthsToDate(original.months);
       text += `\n• **${liab.name}:**\n`;
       text += `  - Balance: ${liab.amount}\n`;
-      text += `  - Interest Rate: ${liab.rate.toFixed(1)}%${liab.isMortgage ? ' (Canadian semi-annual compounding)' : ''}\n`;
+      text += `  - Interest Rate: ${liab.rate.toFixed(1)}%\n`;
       text += `  - Standard Payment: $${liab.monthlyPayment}/mo\n`;
       text += `  - Estimated Payoff Date: ${origDate}\n`;
 
       if (liab.extraPayment > 0) {
-        const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment, liab.isMortgage);
-        const saved = original - accelerated;
-        const accDate = formatMonthsToDate(accelerated);
+        const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment);
+        const saved = original.months - accelerated.months;
+        const accDate = formatMonthsToDate(accelerated.months);
         text += `  - **Accelerated Payments:** Paying an extra $${liab.extraPayment}/mo reduces your payoff to ${accDate}, saving approximately ${Math.round(saved)} months of payments and interest.\n`;
       }
+
+      text += `  - Estimated Total Interest: $${(original.totalInterest).toLocaleString(undefined, { maximumFractionDigits: 0 })}\n`;
     });
 
-    text += `\n💡 **Advisor's Note:** Your mortgage calculations use proper Canadian semi-annual compounding for accuracy. Maintaining manageable debt payments ensures long-term financial health. Speeding up repayments (even small acceleration) saves you thousands in interest and helps you reach your goals sooner.\n\n`;
+    text += `\n💡 **Advisor's Note:** Maintaining manageable debt payments ensures long-term financial health. Speeding up repayments (even small acceleration) saves you thousands in interest and helps you reach your goals sooner. Review your rates and look for consolidation or refinancing opportunities.\n\n`;
     text += `Tip: Regularly revisiting your repayment strategy keeps you motivated and can accommodate life's changes. Good luck on your debt-free journey!`;
 
     return text;
@@ -210,9 +213,9 @@ const LiabilitiesBreakdown = () => {
           {/* Individual Debt Cards - Takes up remaining space */}
           <div className="flex-1 flex flex-col space-y-4">
             {liabilities.map((liability, index) => {
-              const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, 0, liability.isMortgage);
-              const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment, liability.isMortgage);
-              const monthsSaved = originalPayoff - newPayoff;
+              const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
+              const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
+              const monthsSaved = originalPayoff.months - newPayoff.months;
               
               return (
                 <div key={index} className="p-4 rounded-lg border-2 space-y-3 flex-1" style={{ borderColor: liability.color }}>
@@ -221,11 +224,6 @@ const LiabilitiesBreakdown = () => {
                     <div className="flex items-center space-x-3">
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: liability.color }}></div>
                       <span className="font-bold text-base">{liability.name}</span>
-                      {liability.isMortgage && (
-                        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                          CDN Semi-Annual
-                        </span>
-                      )}
                     </div>
                     <div className="flex items-center space-x-4">
                       <span className="font-medium text-base">{liability.amount}</span>
@@ -267,11 +265,11 @@ const LiabilitiesBreakdown = () => {
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Original:</span>
-                      <span className="font-medium">{formatMonthsToDate(originalPayoff)}</span>
+                      <span className="font-medium">{formatMonthsToDate(originalPayoff.months)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">New:</span>
-                      <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff)}</span>
+                      <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
                     </div>
                   </div>
 
