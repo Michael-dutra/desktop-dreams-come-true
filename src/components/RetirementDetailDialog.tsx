@@ -7,7 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PiggyBank, Plus, Minus, TrendingUp, Calculator, Info } from "lucide-react";
+import { PiggyBank, Plus, Minus, TrendingUp, Calculator, Info, Check, X } from "lucide-react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 interface RetirementDetailDialogProps {
@@ -229,7 +229,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   
   // Enhanced tax optimization analysis
   const totalLifetimeTaxes = yearlyData.reduce((total, year) => total + year.taxesPaid, 0);
-  const averageAnnualTaxRate = totalLifetimeTaxes / (yearlyData.reduce((total, year) => total + year.totalWithdrawal, 0) || 1) * 100;
+  const averageAnnualTaxRate = totalLifetimeTaxes / (yearlyData.reduce((total, year) => total + year.totalWithdrawal, 0) || 1) * 100);
   
   // Calculate tax efficiency score (compare to worst-case scenario)
   const worstCaseStrategy = getOptimalAllocations("balanced"); // Use current as baseline
@@ -328,6 +328,65 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       case "balanced":
       default:
         return "Maintains steady withdrawal rates across all accounts";
+    }
+  };
+
+  const getStrategyProsAndCons = (strategy: WithdrawalStrategy) => {
+    switch (strategy) {
+      case "balanced":
+        return {
+          pros: [
+            "Keeps your taxes steady over time",
+            "Simple and intuitive approach",
+            "Draws from all account types evenly"
+          ],
+          cons: [
+            "May not be tax-optimal in all situations",
+            "Doesn't preserve TFSA growth potential",
+            "May trigger higher taxes in some years"
+          ]
+        };
+      case "tax-free-first":
+        return {
+          pros: [
+            "Zero taxes on withdrawals initially",
+            "Preserves taxable accounts longer",
+            "Simple to understand and implement"
+          ],
+          cons: [
+            "Depletes tax-free savings quickly",
+            "Higher tax burden in later years",
+            "No tax diversification benefits"
+          ]
+        };
+      case "minimize-lifetime-tax":
+        return {
+          pros: [
+            "Lowest total tax burden over lifetime",
+            "Optimizes withdrawal timing strategically",
+            "Smart tax bracket management"
+          ],
+          cons: [
+            "More complex planning required",
+            "Requires ongoing monitoring and adjustments",
+            "May not suit all personal situations"
+          ]
+        };
+      case "preserve-rrsp":
+        return {
+          pros: [
+            "Maximizes tax-deferred growth potential",
+            "Delays mandatory withdrawals until 71",
+            "Preserves largest retirement account"
+          ],
+          cons: [
+            "Higher tax burden at age 71+",
+            "Misses early retirement low-tax years",
+            "Limited withdrawal flexibility"
+          ]
+        };
+      default:
+        return { pros: [], cons: [] };
     }
   };
 
@@ -496,6 +555,43 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     Using optimized allocation for {withdrawalStrategy.replace('-', ' ')} strategy
                   </div>
                 )}
+              </div>
+
+              {/* Strategy Pros and Cons */}
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <h3 className="text-lg font-semibold mb-4 text-center">
+                  {withdrawalStrategy.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Strategy
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-medium text-green-800 mb-3 flex items-center gap-2">
+                      <Check className="h-4 w-4" />
+                      Pros
+                    </h4>
+                    <ul className="space-y-2">
+                      {getStrategyProsAndCons(withdrawalStrategy).pros.map((pro, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <Check className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                          <span>{pro}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div>
+                    <h4 className="font-medium text-red-800 mb-3 flex items-center gap-2">
+                      <X className="h-4 w-4" />
+                      Cons
+                    </h4>
+                    <ul className="space-y-2">
+                      {getStrategyProsAndCons(withdrawalStrategy).cons.map((con, index) => (
+                        <li key={index} className="flex items-start gap-2 text-sm">
+                          <X className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                          <span>{con}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
               </div>
 
               {/* Real-time tax impact */}
