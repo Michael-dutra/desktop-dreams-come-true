@@ -463,59 +463,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </CardContent>
           </Card>
 
-          {/* Income Sources and Timeline Charts */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Retirement Income Sources</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={{
-                  rrsp: { label: "RRSP", color: "#3b82f6" },
-                  tfsa: { label: "TFSA", color: "#10b981" },
-                  nonReg: { label: "Non-Registered", color: "#f59e0b" }
-                }} className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={incomeSourceData}
-                        cx="50%"
-                        cy="50%"
-                        outerRadius={80}
-                        dataKey="value"
-                      >
-                        {incomeSourceData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.color} />
-                        ))}
-                      </Pie>
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Income Timeline</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ChartContainer config={{
-                  withdrawal: { label: "Annual Withdrawal", color: "#ef4444" }
-                }} className="h-64">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={assetDepletionData}>
-                      <XAxis dataKey="age" />
-                      <YAxis tickFormatter={(value) => formatCurrency(value)} />
-                      <ChartTooltip content={<ChartTooltipContent />} />
-                      <Line type="monotone" dataKey="withdrawal" stroke="#ef4444" strokeWidth={2} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </ChartContainer>
-              </CardContent>
-            </Card>
-          </div>
-
           {/* 30-Year Asset & Withdrawal Breakdown */}
           <Card>
             <CardHeader>
