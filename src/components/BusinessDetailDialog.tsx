@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1152,13 +1153,13 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     value={businessValuationForWill}
                     onValueChange={setBusinessValuationForWill}
                     min={100000}
-                    max={2000000}
-                    step={10000}
+                    max={25000000}
+                    step={50000}
                     className="mt-2"
                   />
                   <div className="flex justify-between text-xs text-muted-foreground mt-1">
                     <span>$100K</span>
-                    <span>$2M</span>
+                    <span>$25M</span>
                   </div>
                 </div>
 
