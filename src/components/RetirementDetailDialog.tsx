@@ -71,7 +71,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const getOptimalAllocations = (strategy: WithdrawalStrategy) => {
     switch (strategy) {
       case "tax-free-first":
-        return { rrsp: 20, tfsa: 70, nonReg: 10 };
+        return { rrsp: 0, tfsa: 100, nonReg: 0 };
       case "minimize-lifetime-tax":
         // Favor TFSA and Non-Reg early to avoid high RRSP taxes later
         return { rrsp: 35, tfsa: 45, nonReg: 20 };
@@ -320,7 +320,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const getStrategyDescription = (strategy: WithdrawalStrategy) => {
     switch (strategy) {
       case "tax-free-first":
-        return "Prioritizes TFSA withdrawals to maximize tax-free income";
+        return "TFSA is used to fully fund retirement income until depleted. RRSP and Non-Registered assets will be drawn next.";
       case "minimize-lifetime-tax":
         return "Optimizes withdrawal order to minimize total lifetime taxes";
       case "preserve-rrsp":
