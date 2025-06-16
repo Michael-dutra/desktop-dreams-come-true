@@ -17,15 +17,6 @@ interface AssetsDetailDialogProps {
   onClose: () => void;
 }
 
-interface DynamicAsset {
-  id: string;
-  name: string;
-  value: number;
-  rateOfReturn: number[];
-  timeHorizon: number[];
-  color: string;
-}
-
 export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
   const { assets, getTotalAssets } = useFinancialData();
   
@@ -37,8 +28,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     "Non-Registered": { rateOfReturn: [6], timeHorizon: [10] }
   });
 
-  const [dynamicAssets, setDynamicAssets] = useState<DynamicAsset[]>([]);
-
   // Update settings for specific asset
   const updateAssetSetting = (assetName: string, setting: 'rateOfReturn' | 'timeHorizon', value: number[]) => {
     setAssetSettings(prev => ({
@@ -48,30 +37,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
         [setting]: value
       }
     }));
-  };
-
-  const updateDynamicAssetSetting = (id: string, setting: 'rateOfReturn' | 'timeHorizon', value: number[]) => {
-    setDynamicAssets(prev => prev.map(asset => 
-      asset.id === id 
-        ? { ...asset, [setting]: value }
-        : asset
-    ));
-  };
-
-  const addDynamicAsset = (baseAsset: any) => {
-    const newAsset: DynamicAsset = {
-      id: Date.now().toString(),
-      name: `${baseAsset.name} (Copy)`,
-      value: baseAsset.value,
-      rateOfReturn: [6],
-      timeHorizon: [10],
-      color: baseAsset.color
-    };
-    setDynamicAssets(prev => [...prev, newAsset]);
-  };
-
-  const removeDynamicAsset = (id: string) => {
-    setDynamicAssets(prev => prev.filter(asset => asset.id !== id));
   };
 
   // Calculate projected values for main assets
@@ -89,25 +54,10 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     });
   };
 
-  // Calculate projected values for dynamic assets
-  const calculateDynamicProjections = () => {
-    return dynamicAssets.map(asset => {
-      const projectedValue = asset.value * Math.pow(1 + asset.rateOfReturn[0] / 100, asset.timeHorizon[0]);
-      return {
-        ...asset,
-        currentValue: asset.value,
-        projectedValue: projectedValue,
-        growth: projectedValue - asset.value
-      };
-    });
-  };
-
   const projectedAssets = calculateProjections();
-  const projectedDynamicAssets = calculateDynamicProjections();
-  const allProjectedAssets = [...projectedAssets, ...projectedDynamicAssets];
 
-  const totalCurrentValue = getTotalAssets() + dynamicAssets.reduce((sum, asset) => sum + asset.value, 0);
-  const totalProjectedValue = allProjectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
+  const totalCurrentValue = getTotalAssets();
+  const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
   const formatCurrency = (value: number) => {
@@ -119,7 +69,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
   };
 
   // Chart data for asset allocation
-  const assetAllocationData = allProjectedAssets.map(asset => ({
+  const assetAllocationData = projectedAssets.map(asset => ({
     name: asset.name,
     value: asset.projectedValue,
     color: asset.color
@@ -128,9 +78,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
   // Chart data for growth over time
   const growthOverTimeData = Array.from({ length: 11 }, (_, year) => {
     const dataPoint: any = { year };
-    allProjectedAssets.forEach(asset => {
-      const settings = asset.settings || { rateOfReturn: asset.rateOfReturn || [6], timeHorizon: [10] };
-      const rate = settings.rateOfReturn ? settings.rateOfReturn[0] : asset.rateOfReturn[0];
+    projectedAssets.forEach(asset => {
+      const rate = asset.settings.rateOfReturn[0];
       const value = asset.currentValue * Math.pow(1 + rate / 100, year);
       dataPoint[asset.name] = value;
     });
@@ -199,16 +148,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                       <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }}></div>
                       {asset.name}
                     </CardTitle>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => addDynamicAsset(asset)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </Button>
-                    </div>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     {/* Controls */}
@@ -262,82 +201,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                 </Card>
               ))}
             </div>
-
-            {/* Dynamic Assets */}
-            {projectedDynamicAssets.length > 0 && (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Additional Assets</h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {projectedDynamicAssets.map((asset) => (
-                    <Card key={asset.id}>
-                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                        <CardTitle className="text-lg flex items-center gap-2">
-                          <div className="w-4 h-4 rounded-full" style={{ backgroundColor: asset.color }}></div>
-                          {asset.name}
-                        </CardTitle>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => removeDynamicAsset(asset.id)}
-                          className="h-8 w-8 p-0 text-red-500 hover:text-red-700"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        {/* Controls */}
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                              Rate of Return: {asset.rateOfReturn[0]}%
-                            </label>
-                            <Slider
-                              value={asset.rateOfReturn}
-                              onValueChange={(value) => updateDynamicAssetSetting(asset.id, 'rateOfReturn', value)}
-                              onClick={(e) => e.stopPropagation()}
-                              min={1}
-                              max={15}
-                              step={0.5}
-                              className="w-full"
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <label className="text-sm font-medium">
-                              Time Horizon: {asset.timeHorizon[0]} years
-                            </label>
-                            <Slider
-                              value={asset.timeHorizon}
-                              onValueChange={(value) => updateDynamicAssetSetting(asset.id, 'timeHorizon', value)}
-                              onClick={(e) => e.stopPropagation()}
-                              min={1}
-                              max={30}
-                              step={1}
-                              className="w-full"
-                            />
-                          </div>
-                        </div>
-
-                        {/* Asset Projections */}
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="text-center p-3 bg-gray-50 rounded-lg">
-                            <p className="text-xs text-muted-foreground">Current</p>
-                            <p className="text-sm font-bold">{formatCurrency(asset.currentValue)}</p>
-                          </div>
-                          <div className="text-center p-3 bg-blue-50 rounded-lg">
-                            <p className="text-xs text-muted-foreground">Projected</p>
-                            <p className="text-sm font-bold text-blue-600">{formatCurrency(asset.projectedValue)}</p>
-                          </div>
-                          <div className="text-center p-3 bg-green-50 rounded-lg col-span-2">
-                            <p className="text-xs text-muted-foreground">Growth</p>
-                            <p className="text-sm font-bold text-green-600">+{formatCurrency(asset.growth)}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </div>
-              </div>
-            )}
           </TabsContent>
 
           <TabsContent value="allocation" className="space-y-6">
@@ -407,7 +270,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                           formatter={(value, name) => [formatCurrency(Number(value)), name]}
                         />}
                       />
-                      {allProjectedAssets.map((asset, index) => (
+                      {projectedAssets.map((asset, index) => (
                         <Line
                           key={index}
                           type="monotone"
@@ -434,9 +297,8 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                       </tr>
                     </thead>
                     <tbody>
-                      {allProjectedAssets.map((asset, index) => {
-                        const settings = asset.settings || { rateOfReturn: asset.rateOfReturn || [6] };
-                        const rate = settings.rateOfReturn ? settings.rateOfReturn[0] : asset.rateOfReturn[0];
+                      {projectedAssets.map((asset, index) => {
+                        const rate = asset.settings.rateOfReturn[0];
                         const value5Years = asset.currentValue * Math.pow(1 + rate / 100, 5);
                         const value10Years = asset.currentValue * Math.pow(1 + rate / 100, 10);
                         
