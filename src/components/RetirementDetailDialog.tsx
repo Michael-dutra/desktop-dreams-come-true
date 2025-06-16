@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PiggyBank } from "lucide-react";
+import { PiggyBank, Plus, Minus } from "lucide-react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 interface RetirementDetailDialogProps {
@@ -184,6 +185,46 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
 
+  // CPP/OAS Calculator State
+  const [cppStartAge, setCppStartAge] = useState(65);
+  const [oasStartAge, setOasStartAge] = useState(65);
+
+  // CPP/OAS Calculation Functions
+  const calculateCPP = (startAge: number) => {
+    const maxCPP = 1308; // Maximum CPP at age 65 (2024)
+    const baseAmount = maxCPP * 0.85; // Assume 85% of max for this user
+    
+    if (startAge < 65) {
+      // Early penalty: 0.6% per month before 65
+      const monthsEarly = (65 - startAge) * 12;
+      const penalty = monthsEarly * 0.006;
+      return baseAmount * (1 - penalty);
+    } else if (startAge > 65) {
+      // Delayed credit: 0.7% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.007;
+      return baseAmount * (1 + bonus);
+    }
+    return baseAmount;
+  };
+
+  const calculateOAS = (startAge: number) => {
+    const maxOAS = 707; // Maximum OAS at age 65 (2024)
+    
+    if (startAge < 65) {
+      return 0; // OAS cannot be taken before 65
+    } else if (startAge > 65) {
+      // Delayed credit: 0.6% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.006;
+      return maxOAS * (1 + bonus);
+    }
+    return maxOAS;
+  };
+
+  const cppAmount = calculateCPP(cppStartAge);
+  const oasAmount = calculateOAS(oasStartAge);
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
@@ -285,22 +326,20 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           {/* Enhanced Asset Funding Duration & Account Analysis */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Enhanced Asset Funding Duration */}
-            <div className="bg-gradient-to-br from-purple-500 to-purple-700 p-8 rounded-xl border text-white">
+            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 p-8 rounded-xl border text-white shadow-lg">
               <div className="text-center">
-                <h4 className="text-2xl font-bold mb-4 text-purple-100">Asset Funding Duration</h4>
-                <div className="space-y-2">
-                  <div className="text-6xl font-bold">{yearsInRetirement.toFixed(1)}</div>
-                  <div className="text-2xl font-semibold text-purple-100">Years</div>
-                  <div className="text-lg text-purple-200 mt-4">Assets Will Last</div>
+                <h4 className="text-3xl font-bold mb-6 text-purple-100">Asset Funding Duration</h4>
+                <div className="space-y-4">
+                  <div className="text-8xl font-bold leading-none">{yearsInRetirement.toFixed(1)}</div>
+                  <div className="text-3xl font-semibold text-purple-100">Years</div>
+                  <div className="text-2xl text-purple-200 mt-6">Assets Will Last</div>
                 </div>
-                <div className="mt-6 pt-6 border-t border-purple-400">
-                  <div className="text-4xl font-bold text-green-300">{fundingPercentage.toFixed(0)}%</div>
-                  <div className="text-lg text-purple-200">of Retirement Goal</div>
-                  <div className="text-sm text-purple-300 mt-2">
-                    Years in Retirement: {yearsInRetirement.toFixed(1)} years
-                  </div>
-                  <div className="text-sm text-purple-300">
-                    Funding Status: {fundingStatus}
+                <div className="mt-8 pt-8 border-t border-purple-400">
+                  <div className="text-6xl font-bold text-green-300 mb-2">{fundingPercentage.toFixed(0)}%</div>
+                  <div className="text-2xl text-purple-200 mb-4">of Retirement Goal</div>
+                  <div className="text-lg text-purple-300 space-y-1">
+                    <div>Years in Retirement: {yearsInRetirement.toFixed(1)} years</div>
+                    <div>Funding Status: {fundingStatus}</div>
                   </div>
                 </div>
               </div>
@@ -350,10 +389,10 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           </div>
 
           {/* Enhanced Full-Width Projected Asset Depletion Chart */}
-          <Card>
+          <Card className="w-full">
             <CardHeader>
-              <CardTitle className="text-xl">Projected Asset Depletion by Account</CardTitle>
-              <p className="text-sm text-gray-600">
+              <CardTitle className="text-2xl">Projected Asset Depletion by Account</CardTitle>
+              <p className="text-base text-gray-600">
                 Visual breakdown showing how each account balance decreases over the first 10 years of retirement
               </p>
             </CardHeader>
@@ -362,31 +401,35 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 rrsp: { label: "RRSP", color: "#3b82f6" },
                 tfsa: { label: "TFSA", color: "#10b981" },
                 nonReg: { label: "Non-Registered", color: "#f59e0b" }
-              }} className="h-96 w-full">
+              }} className="h-[500px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={assetDepletionData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+                  <BarChart data={assetDepletionData} margin={{ top: 30, right: 40, left: 40, bottom: 20 }}>
                     <XAxis 
                       dataKey="year" 
-                      className="text-sm"
-                      tick={{ fontSize: 12 }}
+                      className="text-sm font-medium"
+                      tick={{ fontSize: 14, fill: '#374151' }}
+                      axisLine={{ stroke: '#9CA3AF' }}
                     />
                     <YAxis 
                       tickFormatter={(value) => formatCurrency(value)}
-                      className="text-sm"
-                      tick={{ fontSize: 12 }}
+                      className="text-sm font-medium"
+                      tick={{ fontSize: 14, fill: '#374151' }}
+                      axisLine={{ stroke: '#9CA3AF' }}
+                      gridLine={{ stroke: '#E5E7EB', strokeDasharray: '3 3' }}
                     />
                     <ChartTooltip 
                       content={<ChartTooltipContent />}
                       contentStyle={{
                         backgroundColor: 'white',
-                        border: '1px solid #ccc',
-                        borderRadius: '8px',
-                        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
+                        border: '1px solid #D1D5DB',
+                        borderRadius: '12px',
+                        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.15)',
+                        fontSize: '14px'
                       }}
                     />
-                    <Bar dataKey="rrsp" fill="#3b82f6" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="tfsa" fill="#10b981" radius={[0, 0, 4, 4]} />
-                    <Bar dataKey="nonReg" fill="#f59e0b" radius={[0, 0, 4, 4]} />
+                    <Bar dataKey="rrsp" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="tfsa" fill="#10b981" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="nonReg" fill="#f59e0b" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </ChartContainer>
@@ -440,6 +483,110 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </div>
             </CardContent>
           </Card>
+
+          {/* CPP/OAS Interactive Calculator */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* CPP Calculator */}
+            <Card>
+              <CardHeader>
+                <CardTitle>CPP Calculator</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Adjust when you start taking CPP to see benefit changes
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Start Age:</span>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppStartAge(Math.max(60, cppStartAge - 1))}
+                      disabled={cppStartAge <= 60}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xl font-bold w-12 text-center">{cppStartAge}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppStartAge(Math.min(70, cppStartAge + 1))}
+                      disabled={cppStartAge >= 70}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-3xl font-bold text-blue-600">
+                    ${Math.round(cppAmount)}/month
+                  </div>
+                  <p className="text-sm text-blue-600 mt-2">
+                    {cppStartAge < 65 && `${((65 - cppStartAge) * 12 * 0.6).toFixed(1)}% early penalty`}
+                    {cppStartAge === 65 && 'Standard benefit at 65'}
+                    {cppStartAge > 65 && `${(Math.min((cppStartAge - 65) * 12, 60) * 0.7).toFixed(1)}% delayed bonus`}
+                  </p>
+                </div>
+
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div>• Early: 60-64 (0.6% penalty per month)</div>
+                  <div>• Standard: 65 (full benefit)</div>
+                  <div>• Delayed: 66-70 (0.7% bonus per month)</div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* OAS Calculator */}
+            <Card>
+              <CardHeader>
+                <CardTitle>OAS Calculator</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Adjust when you start taking OAS to see benefit changes
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-medium">Start Age:</span>
+                  <div className="flex items-center gap-3">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasStartAge(Math.max(65, oasStartAge - 1))}
+                      disabled={oasStartAge <= 65}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="text-xl font-bold w-12 text-center">{oasStartAge}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasStartAge(Math.min(70, oasStartAge + 1))}
+                      disabled={oasStartAge >= 70}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+                
+                <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-3xl font-bold text-green-600">
+                    ${Math.round(oasAmount)}/month
+                  </div>
+                  <p className="text-sm text-green-600 mt-2">
+                    {oasStartAge === 65 && 'Standard benefit at 65'}
+                    {oasStartAge > 65 && `${(Math.min((oasStartAge - 65) * 12, 60) * 0.6).toFixed(1)}% delayed bonus`}
+                  </p>
+                </div>
+
+                <div className="text-xs text-gray-500 space-y-1">
+                  <div>• Minimum: 65 (cannot start earlier)</div>
+                  <div>• Standard: 65 (full benefit)</div>
+                  <div>• Delayed: 66-70 (0.6% bonus per month)</div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Income Sources and Timeline Charts */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -533,13 +680,13 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 <div className="grid grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-semibold mb-2">CPP Projection</h4>
-                    <p className="text-2xl font-bold">$1,200/month</p>
-                    <p className="text-sm text-gray-600">Starting at age 65</p>
+                    <p className="text-2xl font-bold">${Math.round(cppAmount)}/month</p>
+                    <p className="text-sm text-gray-600">Starting at age {cppStartAge}</p>
                   </div>
                   <div>
                     <h4 className="font-semibold mb-2">OAS Projection</h4>
-                    <p className="text-2xl font-bold">$700/month</p>
-                    <p className="text-sm text-gray-600">Starting at age 65</p>
+                    <p className="text-2xl font-bold">${Math.round(oasAmount)}/month</p>
+                    <p className="text-sm text-gray-600">Starting at age {oasStartAge}</p>
                   </div>
                 </div>
               </CardContent>
