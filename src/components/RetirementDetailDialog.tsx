@@ -45,6 +45,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const [tfsaAllocation, setTfsaAllocation] = useState([30]);
   const [nonRegAllocation, setNonRegAllocation] = useState([10]);
 
+  // CPP/OAS Calculator State
+  const [cppStartAge, setCppStartAge] = useState(65);
+  const [oasStartAge, setOasStartAge] = useState(65);
+  const [cppEligibilityPercent, setCppEligibilityPercent] = useState(85);
+  const [oasEligibilityPercent, setOasEligibilityPercent] = useState(100);
+
   const currentAge = 25;
   const yearsToRetirement = retirementAge[0] - currentAge;
   const monthlyContribution = 500;
@@ -208,14 +214,10 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return `$${Math.round(value).toLocaleString()}`;
   };
 
-  // CPP/OAS Calculator State
-  const [cppStartAge, setCppStartAge] = useState(65);
-  const [oasStartAge, setOasStartAge] = useState(65);
-
-  // CPP/OAS Calculation Functions
-  const calculateCPP = (startAge: number) => {
+  // CPP/OAS Calculation Functions with eligibility percentage
+  const calculateCPP = (startAge: number, eligibilityPercent: number) => {
     const maxCPP = 1308; // Maximum CPP at age 65 (2024)
-    const baseAmount = maxCPP * 0.85; // Assume 85% of max for this user
+    const baseAmount = maxCPP * (eligibilityPercent / 100);
     
     if (startAge < 65) {
       // Early penalty: 0.6% per month before 65
@@ -231,8 +233,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return baseAmount;
   };
 
-  const calculateOAS = (startAge: number) => {
+  const calculateOAS = (startAge: number, eligibilityPercent: number) => {
     const maxOAS = 707; // Maximum OAS at age 65 (2024)
+    const baseAmount = maxOAS * (eligibilityPercent / 100);
     
     if (startAge < 65) {
       return 0; // OAS cannot be taken before 65
@@ -240,13 +243,13 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       // Delayed credit: 0.6% per month after 65, max at 70
       const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
       const bonus = monthsLate * 0.006;
-      return maxOAS * (1 + bonus);
+      return baseAmount * (1 + bonus);
     }
-    return maxOAS;
+    return baseAmount;
   };
 
-  const cppAmount = calculateCPP(cppStartAge);
-  const oasAmount = calculateOAS(oasStartAge);
+  const cppAmount = calculateCPP(cppStartAge, cppEligibilityPercent);
+  const oasAmount = calculateOAS(oasStartAge, oasEligibilityPercent);
 
   const totalAllocation = rrspAllocation[0] + tfsaAllocation[0] + nonRegAllocation[0];
 
@@ -491,6 +494,169 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </ChartContainer>
             </CardContent>
           </Card>
+
+          {/* CPP/OAS Calculators */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* CPP Calculator */}
+            <Card>
+              <CardHeader>
+                <CardTitle>CPP Calculator</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Calculate your Canada Pension Plan benefits
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    CPP Start Age: {cppStartAge}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppStartAge(Math.max(60, cppStartAge - 1))}
+                      disabled={cppStartAge <= 60}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-16 text-center font-semibold">{cppStartAge}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppStartAge(Math.min(70, cppStartAge + 1))}
+                      disabled={cppStartAge >= 70}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    CPP Eligibility: {cppEligibilityPercent}%
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppEligibilityPercent(Math.max(0, cppEligibilityPercent - 5))}
+                      disabled={cppEligibilityPercent <= 0}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-16 text-center font-semibold">{cppEligibilityPercent}%</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setCppEligibilityPercent(Math.min(100, cppEligibilityPercent + 5))}
+                      disabled={cppEligibilityPercent >= 100}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-blue-600">
+                      ${Math.round(cppAmount).toLocaleString()}
+                    </div>
+                    <div className="text-sm text-blue-600">Monthly CPP Benefit</div>
+                    {cppStartAge < 65 && (
+                      <div className="text-xs text-red-600 mt-1">
+                        Early withdrawal penalty applied
+                      </div>
+                    )}
+                    {cppStartAge > 65 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Delayed retirement bonus applied
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* OAS Calculator */}
+            <Card>
+              <CardHeader>
+                <CardTitle>OAS Calculator</CardTitle>
+                <p className="text-sm text-gray-600">
+                  Calculate your Old Age Security benefits
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    OAS Start Age: {oasStartAge}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasStartAge(Math.max(65, oasStartAge - 1))}
+                      disabled={oasStartAge <= 65}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-16 text-center font-semibold">{oasStartAge}</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasStartAge(Math.min(70, oasStartAge + 1))}
+                      disabled={oasStartAge >= 70}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    OAS Eligibility: {oasEligibilityPercent}%
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasEligibilityPercent(Math.max(0, oasEligibilityPercent - 5))}
+                      disabled={oasEligibilityPercent <= 0}
+                    >
+                      <Minus className="h-4 w-4" />
+                    </Button>
+                    <span className="w-16 text-center font-semibold">{oasEligibilityPercent}%</span>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setOasEligibilityPercent(Math.min(100, oasEligibilityPercent + 5))}
+                      disabled={oasEligibilityPercent >= 100}
+                    >
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">
+                      ${Math.round(oasAmount).toLocaleString()}
+                    </div>
+                    <div className="text-sm text-green-600">Monthly OAS Benefit</div>
+                    {oasStartAge < 65 && (
+                      <div className="text-xs text-red-600 mt-1">
+                        OAS cannot start before age 65
+                      </div>
+                    )}
+                    {oasStartAge > 65 && (
+                      <div className="text-xs text-green-600 mt-1">
+                        Delayed retirement bonus applied
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
 
           {/* Year-by-Year Account Breakdown */}
           <Card>
