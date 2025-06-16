@@ -76,7 +76,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         // Favor TFSA and Non-Reg early to avoid high RRSP taxes later
         return { rrsp: 35, tfsa: 45, nonReg: 20 };
       case "preserve-rrsp":
-        return { rrsp: 15, tfsa: 35, nonReg: 50 };
+        return { rrsp: 0, tfsa: 50, nonReg: 50 };
       case "balanced":
       default:
         return { rrsp: 34, tfsa: 33, nonReg: 33 };
@@ -324,7 +324,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       case "minimize-lifetime-tax":
         return "Optimizes withdrawal order to minimize total lifetime taxes";
       case "preserve-rrsp":
-        return "Delays RRSP withdrawals to preserve tax-deferred growth";
+        return "RRSP is preserved and only used as a last resort — or once mandatory withdrawals start at age 71.";
       case "balanced":
       default:
         return "Maintains steady withdrawal rates across all accounts";
