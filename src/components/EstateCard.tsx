@@ -113,7 +113,7 @@ const EstateCard = () => {
 
 • Projected Time Horizon: ${timeHorizon[0]} year${timeHorizon[0] > 1 ? "s" : ""} at ${rateOfReturn[0]}% rate of return.
 • Total projected estate value: ${formatCurrency(estateValues.totalEstate)}
-• Estimated estate taxes: ${formatCurrency(estateValues.finalTaxes)}
+• Estimated final taxes: ${formatCurrency(estateValues.finalTaxes)}
 • Estimated net to beneficiaries: ${formatCurrency(estateValues.netToBeneficiaries)}
 
 Breakdown by asset type:
@@ -246,7 +246,7 @@ Adjust the sliders to instantly see the implication of growth and time on your l
                 <p className="text-2xl font-bold" style={{ color: '#8b5cf6' }}>{formatCurrency(estateValues.totalEstate)}</p>
               </div>
               <div className="text-center">
-                <p className="text-lg font-bold" style={{ color: '#ef4444' }}>Estate Taxes</p>
+                <p className="text-lg font-bold" style={{ color: '#ef4444' }}>Final Taxes</p>
                 <p className="text-2xl font-bold" style={{ color: '#ef4444' }}>{formatCurrency(estateValues.finalTaxes)}</p>
               </div>
               <div className="text-center">
