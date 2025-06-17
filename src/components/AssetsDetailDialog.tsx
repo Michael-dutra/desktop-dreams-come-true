@@ -140,13 +140,6 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     }
   };
 
-  const handleAddTabClick = () => {
-    const addTabTrigger = document.querySelector('[data-state]:not([data-state="active"])[value="add"]') as HTMLElement;
-    if (addTabTrigger) {
-      addTabTrigger.click();
-    }
-  };
-
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -163,103 +156,90 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
           </TabsList>
 
           <TabsContent value="overview" className="space-y-6">
-            {assets.length === 0 ? (
+            {/* Asset Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card>
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                    <TrendingUp className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No Assets Added</h3>
-                  <p className="text-gray-600 text-center max-w-sm mb-4">
-                    Start building your asset portfolio by adding your first asset. You can track real estate, investments, retirement accounts, and more.
-                  </p>
-                  <Button onClick={handleAddTabClick}>
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Your First Asset
-                  </Button>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{formatCurrency(totalCurrentValue)}</div>
                 </CardContent>
               </Card>
-            ) : (
-              <>
-                {/* Asset Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Total Assets</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{formatCurrency(totalCurrentValue)}</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Asset Count</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">{assets.length}</div>
-                    </CardContent>
-                  </Card>
-                  <Card>
-                    <CardHeader className="pb-2">
-                      <CardTitle className="text-sm font-medium">Retirement Eligible</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="text-2xl font-bold">
-                        {formatCurrency(assets.filter(a => a.isRetirementEligible).reduce((sum, a) => sum + a.value, 0))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </div>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Asset Count</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{assets.length}</div>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-sm font-medium">Retirement Eligible</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">
+                    {formatCurrency(assets.filter(a => a.isRetirementEligible).reduce((sum, a) => sum + a.value, 0))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Assets List */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Your Assets</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {assets.map((asset) => (
-                        <div key={asset.id} className="flex items-center justify-between p-4 border rounded-lg">
-                          <div className="flex items-center space-x-3">
-                            <div 
-                              className="w-4 h-4 rounded-full" 
-                              style={{ backgroundColor: asset.color }}
-                            />
-                            {getCategoryIcon(asset.category)}
-                            <div>
-                              <h3 className="font-semibold">{asset.name}</h3>
-                              <div className="flex items-center space-x-2">
-                                <Badge variant="secondary">{asset.category}</Badge>
-                                {asset.isRetirementEligible && (
-                                  <Badge variant="outline">Retirement Eligible</Badge>
-                                )}
-                                <Badge variant="outline">{asset.taxStatus}</Badge>
-                              </div>
+            {/* Assets List */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Your Assets</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {assets.length === 0 ? (
+                  <div className="text-center py-8">
+                    <TrendingUp className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-600">No assets added yet. Use the "Add Asset" tab to get started.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {assets.map((asset) => (
+                      <div key={asset.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="w-4 h-4 rounded-full" 
+                            style={{ backgroundColor: asset.color }}
+                          />
+                          {getCategoryIcon(asset.category)}
+                          <div>
+                            <h3 className="font-semibold">{asset.name}</h3>
+                            <div className="flex items-center space-x-2">
+                              <Badge variant="secondary">{asset.category}</Badge>
+                              {asset.isRetirementEligible && (
+                                <Badge variant="outline">Retirement Eligible</Badge>
+                              )}
+                              <Badge variant="outline">{asset.taxStatus}</Badge>
                             </div>
                           </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold">{formatCurrency(asset.value)}</div>
-                            {asset.acquisitionCost && (
-                              <div className="text-sm text-gray-600">
-                                Gain: {formatCurrency(asset.value - asset.acquisitionCost)}
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleRemoveAsset(asset.id)}
-                            className="ml-4"
-                          >
-                            Remove
-                          </Button>
                         </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </>
-            )}
+                        <div className="text-right">
+                          <div className="text-lg font-bold">{formatCurrency(asset.value)}</div>
+                          {asset.acquisitionCost && (
+                            <div className="text-sm text-gray-600">
+                              Gain: {formatCurrency(asset.value - asset.acquisitionCost)}
+                            </div>
+                          )}
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleRemoveAsset(asset.id)}
+                          className="ml-4"
+                        >
+                          Remove
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="add" className="space-y-6">
