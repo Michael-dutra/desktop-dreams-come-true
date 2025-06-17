@@ -8,7 +8,7 @@ import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
-import { useFinancialData } from "@/contexts/FinancialDataContext";
+import { useAssets } from "@/contexts/AssetsContext";
 
 const AssetsBreakdown = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -16,7 +16,7 @@ const AssetsBreakdown = () => {
   const [timeHorizon, setTimeHorizon] = useState([10]);
   const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
-  const { assets, getTotalAssets } = useFinancialData();
+  const { assets, getTotalAssets } = useAssets();
 
   // Check if we have any assets
   const hasAssets = assets.length > 0;
@@ -124,7 +124,7 @@ const AssetsBreakdown = () => {
     );
   }
 
-  // Normal state when assets exist - show the actual assets from context
+  // Normal state when assets exist - show the shared assets
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -191,7 +191,7 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Assets Table - Shows only assets from FinancialDataContext */}
+            {/* Assets Table - Shows shared assets */}
             <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
               <Table className="h-full">
                 <TableHeader>

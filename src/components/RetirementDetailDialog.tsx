@@ -8,7 +8,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, Area
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { PiggyBank, Plus, Minus, TrendingUp, Calculator, Info, Check, X } from "lucide-react";
-import { useFinancialData } from "@/contexts/FinancialDataContext";
+import { useAssets } from "@/contexts/AssetsContext";
 
 interface RetirementDetailDialogProps {
   isOpen: boolean;
@@ -32,9 +32,9 @@ interface YearlyData {
 type WithdrawalStrategy = "balanced" | "tax-free-first" | "minimize-lifetime-tax" | "preserve-rrsp";
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
-  const { assets } = useFinancialData();
+  const { assets } = useAssets();
   
-  // Get current account values from context
+  // Get current account values from shared context
   const rrspAsset = assets.find(asset => asset.name === "RRSP");
   const tfsaAsset = assets.find(asset => asset.name === "TFSA");
   const nonRegAsset = assets.find(asset => asset.name === "Non-Registered");
