@@ -45,6 +45,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   
   const [retirementAge, setRetirementAge] = useState([65]);
   const [monthlyIncomeNeeded, setMonthlyIncomeNeeded] = useState([4500]);
+  const [rateOfReturn, setRateOfReturn] = useState([5]);
   const [rrspAllocation, setRrspAllocation] = useState([60]);
   const [tfsaAllocation, setTfsaAllocation] = useState([30]);
   const [nonRegAllocation, setNonRegAllocation] = useState([10]);
@@ -62,7 +63,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const currentAge = 25;
   const yearsToRetirement = retirementAge[0] - currentAge;
   const monthlyContribution = 500;
-  const rateOfReturn = 0.05;
+  const preRetirementRateOfReturn = 0.05;
   const lifeExpectancy = 95;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
 
@@ -100,7 +101,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     const monthlyContributionToAccount = (monthlyContribution * 12) * (allocation / 100);
     
     for (let i = 0; i < yearsToRetirement; i++) {
-      futureValue = futureValue * (1 + rateOfReturn) + monthlyContributionToAccount;
+      futureValue = futureValue * (1 + preRetirementRateOfReturn) + monthlyContributionToAccount;
     }
     return futureValue;
   };
@@ -140,14 +141,23 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     let rrspBalance = futureRRSP;
     let tfsaBalance = futureTFSA;
     let nonRegBalance = futureNonReg;
+    const annualRateOfReturn = rateOfReturn[0] / 100;
 
     for (let year = 0; year <= 30; year++) {
       const age = retirementAge[0] + year;
+      
+      // Apply investment growth at the beginning of the year (before withdrawals)
+      if (year > 0) {
+        rrspBalance = rrspBalance * (1 + annualRateOfReturn);
+        tfsaBalance = tfsaBalance * (1 + annualRateOfReturn);
+        nonRegBalance = nonRegBalance * (1 + annualRateOfReturn);
+      }
       
       let rrspWithdrawal = 0;
       let tfsaWithdrawal = 0;
       let nonRegWithdrawal = 0;
 
+      // Calculate withdrawals after growth
       if (rrspBalance > 0) {
         rrspWithdrawal = Math.min(rrspBalance, annualRrspWithdrawal);
         rrspBalance -= rrspWithdrawal;
@@ -406,7 +416,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <CardTitle>Retirement Planning Controls</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Retirement Age: {retirementAge[0]}
@@ -429,6 +439,18 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     min={2000}
                     max={8000}
                     step={100}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Rate of Return (During Retirement): {rateOfReturn[0]}%
+                  </label>
+                  <Slider
+                    value={rateOfReturn}
+                    onValueChange={setRateOfReturn}
+                    min={0}
+                    max={15}
+                    step={0.5}
                   />
                 </div>
               </div>
@@ -935,25 +957,29 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           {/* Year-by-Year Account Breakdown with Tax Column */}
           <Card>
             <CardHeader>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Age</TableHead>
-                  <TableHead>Year</TableHead>
-                  <TableHead>RRSP Balance</TableHead>
-                  <TableHead>RRSP Withdrawal</TableHead>
-                  <TableHead>TFSA Balance</TableHead>
-                  <TableHead>TFSA Withdrawal</TableHead>
-                  <TableHead>Non-Reg Balance</TableHead>
-                  <TableHead>Non-Reg Withdrawal</TableHead>
-                  <TableHead>Taxes Paid</TableHead>
-                  <TableHead>Total Assets</TableHead>
-                  <TableHead>Total Withdrawal</TableHead>
-                </TableRow>
-              </TableHeader>
+              <CardTitle>Year-by-Year Account Breakdown</CardTitle>
+              <p className="text-sm text-gray-600">
+                Detailed year-by-year breakdown showing investment growth and withdrawals
+              </p>
             </CardHeader>
             <CardContent>
               <div className="max-h-96 overflow-y-auto">
                 <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Year</TableHead>
+                      <TableHead>RRSP Balance</TableHead>
+                      <TableHead>RRSP Withdrawal</TableHead>
+                      <TableHead>TFSA Balance</TableHead>
+                      <TableHead>TFSA Withdrawal</TableHead>
+                      <TableHead>Non-Reg Balance</TableHead>
+                      <TableHead>Non-Reg Withdrawal</TableHead>
+                      <TableHead>Taxes Paid</TableHead>
+                      <TableHead>Total Assets</TableHead>
+                      <TableHead>Total Withdrawal</TableHead>
+                    </TableRow>
+                  </TableHeader>
                   <TableBody>
                     {yearlyData.map((year, index) => (
                       <TableRow key={index}>
