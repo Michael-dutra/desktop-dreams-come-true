@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
@@ -41,7 +42,6 @@ import { Edit, Trash2 } from 'lucide-react';
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator"
 import { Textarea } from "@/components/ui/textarea"
-import { useProStore } from "@/stores/pro-store";
 import { cn } from "@/lib/utils";
 
 interface AssetsDetailDialogProps {
@@ -57,16 +57,14 @@ interface ChartData {
 interface Asset {
   id: string;
   name: string;
-  type: string;
   value: number;
-  interestRate: number;
   description?: string;
+  color?: string;
 }
 
 export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
   const { assets, updateAsset, addAsset, deleteAsset } = useAssets();
   const { toast } = useToast();
-  const isPro = useProStore((state) => state.isPro);
 
   const [realEstateValue, setRealEstateValue] = useState([500000]);
   const [realEstateGrowthRate, setRealEstateGrowthRate] = useState([3]);
@@ -84,17 +82,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
 
   // New asset form state
   const [newAssetName, setNewAssetName] = useState("");
-  const [newAssetType, setNewAssetType] = useState("");
   const [newAssetValue, setNewAssetValue] = useState(0);
-  const [newAssetInterestRate, setNewAssetInterestRate] = useState(0);
   const [newAssetDescription, setNewAssetDescription] = useState("");
 
   // Edit asset form state
   const [editAssetId, setEditAssetId] = useState<string | null>(null);
   const [editAssetName, setEditAssetName] = useState("");
-  const [editAssetType, setEditAssetType] = useState("");
   const [editAssetValue, setEditAssetValue] = useState(0);
-  const [editAssetInterestRate, setEditAssetInterestRate] = useState(0);
   const [editAssetDescription, setEditAssetDescription] = useState("");
 
   const generateChartData = (baseValue: number, rate: number, years: number): ChartData[] => {
@@ -166,29 +160,25 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
   };
 
   const handleAddAsset = () => {
-    if (!newAssetName || !newAssetType || !newAssetValue || !newAssetInterestRate) {
+    if (!newAssetName || !newAssetValue) {
       toast({
         title: "Error",
-        description: "Please fill in all fields.",
+        description: "Please fill in all required fields.",
         variant: "destructive",
       });
       return;
     }
 
-    const newAsset: Asset = {
+    const newAsset = {
       id: uuidv4(),
       name: newAssetName,
-      type: newAssetType,
       value: newAssetValue,
-      interestRate: newAssetInterestRate,
       description: newAssetDescription,
     };
 
     addAsset(newAsset);
     setNewAssetName("");
-    setNewAssetType("");
     setNewAssetValue(0);
-    setNewAssetInterestRate(0);
     setNewAssetDescription("");
 
     toast({
@@ -200,25 +190,21 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
   const handleEditAsset = (asset: Asset) => {
     setEditAssetId(asset.id);
     setEditAssetName(asset.name);
-    setEditAssetType(asset.type);
     setEditAssetValue(asset.value);
-    setEditAssetInterestRate(asset.interestRate);
     setEditAssetDescription(asset.description || "");
   };
 
   const handleUpdateAsset = () => {
     if (!editAssetId) return;
 
-    const updatedAsset: Asset = {
+    const updatedAsset = {
       id: editAssetId,
       name: editAssetName,
-      type: editAssetType,
       value: editAssetValue,
-      interestRate: editAssetInterestRate,
       description: editAssetDescription,
     };
 
-    updateAsset(updatedAsset);
+    updateAsset(editAssetId, updatedAsset);
     setEditAssetId(null);
 
     toast({
@@ -589,32 +575,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                   />
                 </div>
                 <div>
-                  <Label htmlFor="newAssetType">Asset Type</Label>
-                  <Input
-                    type="text"
-                    id="newAssetType"
-                    value={newAssetType}
-                    onChange={(e) => setNewAssetType(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
                   <Label htmlFor="newAssetValue">Current Value</Label>
                   <Input
                     type="number"
                     id="newAssetValue"
                     value={newAssetValue}
                     onChange={(e) => setNewAssetValue(Number(e.target.value))}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="newAssetInterestRate">Interest Rate (%)</Label>
-                  <Input
-                    type="number"
-                    id="newAssetInterestRate"
-                    value={newAssetInterestRate}
-                    onChange={(e) => setNewAssetInterestRate(Number(e.target.value))}
                   />
                 </div>
               </div>
@@ -641,9 +607,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                   <TableHeader>
                     <TableRow>
                       <TableHead>Name</TableHead>
-                      <TableHead>Type</TableHead>
                       <TableHead>Value</TableHead>
-                      <TableHead>Interest Rate</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -651,9 +615,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                     {assets.map((asset) => (
                       <TableRow key={asset.id}>
                         <TableCell>{asset.name}</TableCell>
-                        <TableCell>{asset.type}</TableCell>
                         <TableCell>{formatValue(asset.value)}</TableCell>
-                        <TableCell>{asset.interestRate}%</TableCell>
                         <TableCell className="text-right">
                           <Button
                             variant="ghost"
@@ -698,32 +660,12 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                     />
                   </div>
                   <div>
-                    <Label htmlFor="editAssetType">Asset Type</Label>
-                    <Input
-                      type="text"
-                      id="editAssetType"
-                      value={editAssetType}
-                      onChange={(e) => setEditAssetType(e.target.value)}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                  <div>
                     <Label htmlFor="editAssetValue">Current Value</Label>
                     <Input
                       type="number"
                       id="editAssetValue"
                       value={editAssetValue}
                       onChange={(e) => setEditAssetValue(Number(e.target.value))}
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor="editAssetInterestRate">Interest Rate (%)</Label>
-                    <Input
-                      type="number"
-                      id="editAssetInterestRate"
-                      value={editAssetInterestRate}
-                      onChange={(e) => setEditAssetInterestRate(Number(e.target.value))}
                     />
                   </div>
                 </div>
@@ -744,3 +686,4 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     </Dialog>
   );
 };
+```
