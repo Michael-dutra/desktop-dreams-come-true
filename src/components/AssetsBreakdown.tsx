@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp } from "lucide-react";
+import { Eye, TrendingUp, Plus } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Bot } from "lucide-react";
@@ -18,8 +18,11 @@ const AssetsBreakdown = () => {
 
   const { assets, getTotalAssets } = useFinancialData();
 
-  // Calculate projected values
-  const projectedAssets = assets.map(asset => {
+  // Check if we have any assets
+  const hasAssets = assets.length > 0;
+
+  // Calculate projected values only if we have assets
+  const projectedAssets = hasAssets ? assets.map(asset => {
     const projectedValue = asset.value * Math.pow(1 + rateOfReturn[0] / 100, timeHorizon[0]);
     return {
       ...asset,
@@ -27,10 +30,10 @@ const AssetsBreakdown = () => {
       projectedValue: projectedValue,
       growth: projectedValue - asset.value
     };
-  });
+  }) : [];
 
   const totalCurrentValue = getTotalAssets();
-  const totalProjectedValue = projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0);
+  const totalProjectedValue = hasAssets ? projectedAssets.reduce((sum, asset) => sum + asset.projectedValue, 0) : 0;
   const totalGrowth = totalProjectedValue - totalCurrentValue;
 
   const formatCurrency = (value: number) => {
@@ -43,6 +46,10 @@ const AssetsBreakdown = () => {
 
   // Generate AI write-up based on live section data
   const generateAIAnalysis = () => {
+    if (!hasAssets) {
+      return `Your Asset Portfolio Awaits:\n\nHello! You haven't added any assets yet. Getting started is simple:\n\n1. Click the "Add Asset" button to begin\n2. Choose from various asset types (real estate, investments, retirement accounts, etc.)\n3. Watch your net worth automatically update\n\nTips for Getting Started:\n- Start with your largest assets first (home, retirement accounts)\n- Include all investment accounts (RRSP, TFSA, non-registered)\n- Don't forget about business assets or other valuable holdings\n- Real estate should reflect current market value\n\nOnce you add assets, you'll be able to:\n- Project future growth with interactive sliders\n- See detailed tax implications\n- Analyze your asset allocation\n- Plan for retirement and estate needs\n\nReady to build your financial picture? Click "Add Asset" to start!`;
+    }
+
     let text = `Your Personalized Asset Overview:\n\n`;
     text += `Hello! Here's a breakdown of your current and projected net worth:\n\n`;
     text += `- Current total assets: ${formatCurrency(totalCurrentValue)}\n`;
@@ -59,6 +66,65 @@ const AssetsBreakdown = () => {
     return text;
   };
 
+  // Blank state when no assets
+  if (!hasAssets) {
+    return (
+      <>
+        <Card className="h-full flex flex-col">
+          <CardHeader className="flex flex-row items-center justify-between pb-3">
+            <CardTitle className="text-2xl flex items-center space-x-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <TrendingUp className="h-6 w-6 text-blue-600" />
+              </div>
+              <span>Assets</span>
+            </CardTitle>
+            <div className="flex gap-2">
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex items-center border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-3 rounded-lg shadow-sm"
+                onClick={() => setAIDialogOpen(true)}
+                style={{ border: '2px solid #6366f1' }}
+              >
+                <Bot className="w-4 h-4 mr-1 text-indigo-600" /> 
+                AI
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="flex-1 flex flex-col items-center justify-center p-6 pt-0">
+            <div className="text-center space-y-6">
+              <div className="w-24 h-24 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                <TrendingUp className="h-12 w-12 text-gray-400" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-xl font-semibold text-gray-900">No Assets Added Yet</h3>
+                <p className="text-gray-600 max-w-sm">Start building your financial picture by adding your first asset. Track real estate, investments, retirement accounts, and more.</p>
+              </div>
+              <Button 
+                onClick={() => setIsDialogOpen(true)}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-lg font-medium"
+              >
+                <Plus className="w-5 h-5 mr-2" />
+                Add Asset
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+        <AssetsDetailDialog 
+          isOpen={isDialogOpen} 
+          onClose={() => setIsDialogOpen(false)} 
+        />
+        <SectionAIDialog
+          isOpen={aiDialogOpen}
+          onClose={() => setAIDialogOpen(false)}
+          title="Assets"
+          content={generateAIAnalysis()}
+        />
+      </>
+    );
+  }
+
+  // Normal state when assets exist
   return (
     <>
       <Card className="h-full flex flex-col">

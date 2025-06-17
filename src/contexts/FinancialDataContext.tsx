@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface Asset {
   id: string;
@@ -9,6 +9,8 @@ export interface Asset {
   color: string;
   category: 'retirement' | 'investment' | 'real-estate' | 'business' | 'other';
   isRetirementEligible: boolean;
+  acquisitionCost?: number;
+  taxStatus?: 'fully-taxable' | 'capital-gains' | 'tax-free';
 }
 
 export interface Liability {
@@ -50,54 +52,7 @@ export const useFinancialData = () => {
 };
 
 export const FinancialDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [assets, setAssets] = useState<Asset[]>([
-    { 
-      id: "1", 
-      name: "Real Estate", 
-      amount: "$620,000", 
-      value: 620000, 
-      color: "#3b82f6", 
-      category: "real-estate",
-      isRetirementEligible: false
-    },
-    { 
-      id: "2", 
-      name: "RRSP", 
-      amount: "$52,000", 
-      value: 52000, 
-      color: "#10b981", 
-      category: "retirement",
-      isRetirementEligible: true
-    },
-    { 
-      id: "3", 
-      name: "TFSA", 
-      amount: "$38,000", 
-      value: 38000, 
-      color: "#8b5cf6", 
-      category: "retirement",
-      isRetirementEligible: true
-    },
-    { 
-      id: "4", 
-      name: "Non-Registered", 
-      amount: "$25,000", 
-      value: 25000, 
-      color: "#f59e0b", 
-      category: "investment",
-      isRetirementEligible: true
-    },
-    { 
-      id: "5", 
-      name: "Digital Asset", 
-      amount: "$15,000", 
-      value: 15000, 
-      color: "#ef4444", 
-      category: "investment",
-      isRetirementEligible: false
-    },
-  ]);
-
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [liabilities, setLiabilities] = useState<Liability[]>([
     { 
       id: "1", 
@@ -116,6 +71,24 @@ export const FinancialDataProvider: React.FC<{ children: React.ReactNode }> = ({
       category: "credit"
     },
   ]);
+
+  // Load assets from localStorage on component mount
+  useEffect(() => {
+    const savedAssets = localStorage.getItem('financialAssets');
+    if (savedAssets) {
+      try {
+        const parsedAssets = JSON.parse(savedAssets);
+        setAssets(parsedAssets);
+      } catch (error) {
+        console.error('Error parsing saved assets:', error);
+      }
+    }
+  }, []);
+
+  // Save assets to localStorage whenever assets change
+  useEffect(() => {
+    localStorage.setItem('financialAssets', JSON.stringify(assets));
+  }, [assets]);
 
   const addAsset = (asset: Asset) => {
     setAssets(prev => [...prev, asset]);
