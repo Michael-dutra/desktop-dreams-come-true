@@ -140,6 +140,13 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
     }
   };
 
+  const handleAddTabClick = () => {
+    const addTabTrigger = document.querySelector('[data-state]:not([data-state="active"])[value="add"]') as HTMLElement;
+    if (addTabTrigger) {
+      addTabTrigger.click();
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
@@ -166,7 +173,7 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                   <p className="text-gray-600 text-center max-w-sm mb-4">
                     Start building your asset portfolio by adding your first asset. You can track real estate, investments, retirement accounts, and more.
                   </p>
-                  <Button onClick={() => document.querySelector('[data-tabs-trigger="add"]')?.click()}>
+                  <Button onClick={handleAddTabClick}>
                     <Plus className="w-4 h-4 mr-2" />
                     Add Your First Asset
                   </Button>
