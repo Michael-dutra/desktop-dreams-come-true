@@ -1,7 +1,10 @@
+
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { InsuranceDetailDialog } from "./InsuranceDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
@@ -12,6 +15,9 @@ import { SectionAIDialog } from "./SectionAIDialog";
 const InsuranceCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [aiDialogOpen, setAIDialogOpen] = useState(false);
+
+  // Annual income state
+  const [annualIncome, setAnnualIncome] = useState(75000);
 
   // Life Insurance needs with slider values (0 to max amount)
   const [needsValues, setNeedsValues] = useState({
@@ -79,6 +85,7 @@ const InsuranceCard = () => {
   const generateAIAnalysis = () => {
     let text = `Personalized Insurance Coverage Review:\n\n`;
     text += `Hi! Let's review your insurance needs based on your current profile:\n\n`;
+    text += `• Annual income: ${formatCurrency(annualIncome)}\n`;
     text += `• Current coverage: ${formatCurrency(currentLifeCoverage)}\n`;
     text += `• Coverage needed (based on your sliders): ${formatCurrency(calculatedLifeNeed)}\n`;
     text += `• Coverage gap: ${formatCurrency(lifeGap)}\n\n`;
@@ -186,30 +193,96 @@ const InsuranceCard = () => {
           <div className="p-4 bg-gray-50 border border-gray-200 rounded-xl">
             <h4 className="font-medium text-gray-900 mb-4">Life Insurance Needs</h4>
             <div className="space-y-4">
-              {Object.entries(needsConfig).map(([key, config]) => (
-                <div key={key} className="space-y-2">
+              {/* Row 1: Annual Income + Income Replacement */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="annualIncome" className="text-sm font-medium text-gray-700">
+                    Annual Income
+                  </Label>
+                  <Input
+                    id="annualIncome"
+                    type="number"
+                    value={annualIncome}
+                    onChange={(e) => setAnnualIncome(Number(e.target.value) || 0)}
+                    className="w-full"
+                  />
+                  <div className="text-sm font-bold text-gray-900">
+                    {formatCurrency(annualIncome)}
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">
-                      {config.label}
+                      Income Replacement
                     </span>
                     <span className="text-sm font-bold text-gray-900">
-                      {formatCurrency(needsValues[key as keyof typeof needsValues][0])}
+                      {formatCurrency(needsValues.incomeReplacement[0])}
                     </span>
                   </div>
                   <Slider
-                    value={needsValues[key as keyof typeof needsValues]}
-                    onValueChange={(value) => handleSliderChange(key as keyof typeof needsValues, value)}
-                    max={config.max}
+                    value={needsValues.incomeReplacement}
+                    onValueChange={(value) => handleSliderChange('incomeReplacement', value)}
+                    max={needsConfig.incomeReplacement.max}
                     min={0}
                     step={5000}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-gray-500">
                     <span>$0</span>
-                    <span>{formatCurrency(config.max)}</span>
+                    <span>{formatCurrency(needsConfig.incomeReplacement.max)}</span>
                   </div>
                 </div>
-              ))}
+              </div>
+
+              {/* Row 2: Debt Coverage + Final Expenses */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      Debt Coverage
+                    </span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {formatCurrency(needsValues.debtCoverage[0])}
+                    </span>
+                  </div>
+                  <Slider
+                    value={needsValues.debtCoverage}
+                    onValueChange={(value) => handleSliderChange('debtCoverage', value)}
+                    max={needsConfig.debtCoverage.max}
+                    min={0}
+                    step={5000}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>$0</span>
+                    <span>{formatCurrency(needsConfig.debtCoverage.max)}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-700">
+                      Final Expenses
+                    </span>
+                    <span className="text-sm font-bold text-gray-900">
+                      {formatCurrency(needsValues.finalExpenses[0])}
+                    </span>
+                  </div>
+                  <Slider
+                    value={needsValues.finalExpenses}
+                    onValueChange={(value) => handleSliderChange('finalExpenses', value)}
+                    max={needsConfig.finalExpenses.max}
+                    min={0}
+                    step={5000}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-gray-500">
+                    <span>$0</span>
+                    <span>{formatCurrency(needsConfig.finalExpenses.max)}</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>
