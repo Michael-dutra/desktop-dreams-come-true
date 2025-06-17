@@ -1,4 +1,3 @@
-
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,9 +17,9 @@ const RetirementCard = () => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [netMonthlyIncomeNeeded, setNetMonthlyIncomeNeeded] = useState([4500]);
   
-  const { getTotalRetirementSavings, getRetirementAssets } = useFinancialData();
+  const { getTotalAssets, getRetirementAssets } = useFinancialData();
   
-  const totalRetirementSavings = getTotalRetirementSavings();
+  const totalAssets = getTotalAssets();
   const retirementAssets = getRetirementAssets();
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
@@ -28,14 +27,14 @@ const RetirementCard = () => {
   
   // Calculate total retirement needs and percentage saved
   const totalRetirementNeeded = netMonthlyIncomeNeeded[0] * 12 * yearsInRetirement;
-  const savingsPercentage = Math.min(100, (totalRetirementSavings / totalRetirementNeeded) * 100);
+  const savingsPercentage = Math.min(100, (totalAssets / totalRetirementNeeded) * 100);
 
   const generateAIAnalysis = () => {
     let text = `Personalized Retirement Analysis:\n\n`;
     text += `Hi there, here's an overview based on your selections:\n\n`;
     text += `🎂 Target retirement age: ${retirementAge[0]}\n`;
     text += `💸 Monthly income goal in retirement: $${netMonthlyIncomeNeeded[0].toLocaleString()}\n`;
-    text += `💰 Current savings: $${totalRetirementSavings.toLocaleString()}\n`;
+    text += `💰 Total assets available: $${totalAssets.toLocaleString()}\n`;
     text += `📈 Projected monthly income (pensions & savings): $${projectedMonthlyIncome.toLocaleString()}\n`;
     text += `⏳ Estimated years in retirement: ${yearsInRetirement} (up to age ${lifeExpectancy})\n\n`;
     
@@ -96,10 +95,10 @@ const RetirementCard = () => {
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col space-y-6">
-          {/* Total Savings */}
+          {/* Total Assets */}
           <div className="text-center p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-            <p className="text-4xl font-bold text-purple-600 mb-2">{formatCurrency(totalRetirementSavings)}</p>
-            <p className="text-base text-purple-700 font-medium">Total Retirement Savings</p>
+            <p className="text-4xl font-bold text-purple-600 mb-2">{formatCurrency(totalAssets)}</p>
+            <p className="text-base text-purple-700 font-medium">Total Assets Available</p>
           </div>
 
           {/* Interactive Controls - Reduced size */}
