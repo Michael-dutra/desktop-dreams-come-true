@@ -1,4 +1,3 @@
-
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,18 +18,17 @@ const InsuranceCard = () => {
   // Annual income state
   const [annualIncome, setAnnualIncome] = useState(75000);
 
-  // Life Insurance needs with slider values (0 to max amount)
+  // Life Insurance needs with slider values - income replacement is now a multiplier
   const [needsValues, setNeedsValues] = useState({
-    incomeReplacement: [450000],
+    incomeReplacement: [6], // multiplier instead of total amount
     debtCoverage: [120000],
     finalExpenses: [25000]
   });
 
   // Calculate total need based on slider values
   const calculateTotalNeed = () => {
-    return Object.values(needsValues).reduce((total, valueArray) => {
-      return total + valueArray[0];
-    }, 0);
+    const incomeReplacementAmount = needsValues.incomeReplacement[0] * annualIncome;
+    return incomeReplacementAmount + needsValues.debtCoverage[0] + needsValues.finalExpenses[0];
   };
 
   const currentLifeCoverage = 320000;
@@ -77,7 +75,7 @@ const InsuranceCard = () => {
   };
 
   const needsConfig = {
-    incomeReplacement: { label: "Income Replacement", max: 5000000 },
+    incomeReplacement: { label: "Income Replacement (Years)", max: 30 }, // changed to multiplier config
     debtCoverage: { label: "Debt Coverage", max: 5000000 },
     finalExpenses: { label: "Final Expenses", max: 5000000 }
   };
@@ -90,9 +88,9 @@ const InsuranceCard = () => {
     text += `• Coverage needed (based on your sliders): ${formatCurrency(calculatedLifeNeed)}\n`;
     text += `• Coverage gap: ${formatCurrency(lifeGap)}\n\n`;
     text += `🔍 Needs breakdown:\n`;
-    Object.entries(needsConfig).forEach(([key, config]) => {
-      text += `  - ${config.label}: ${formatCurrency(needsValues[key as keyof typeof needsValues][0])}\n`;
-    });
+    text += `  - Income Replacement: ${needsValues.incomeReplacement[0]} years × ${formatCurrency(annualIncome)} = ${formatCurrency(needsValues.incomeReplacement[0] * annualIncome)}\n`;
+    text += `  - Debt Coverage: ${formatCurrency(needsValues.debtCoverage[0])}\n`;
+    text += `  - Final Expenses: ${formatCurrency(needsValues.finalExpenses[0])}\n`;
     text += lifeGap > 0
       ? `\n🚨 You have a shortfall in coverage. It's a good time to discuss additional protection for your family's income, debts, and final expenses.\n`
       : `\n✅ Your insurance coverage meets your current needs! Review annually or after major life events.\n`;
@@ -206,18 +204,15 @@ const InsuranceCard = () => {
                     onChange={(e) => setAnnualIncome(Number(e.target.value) || 0)}
                     className="w-full"
                   />
-                  <div className="text-sm font-bold text-gray-900">
-                    {formatCurrency(annualIncome)}
-                  </div>
                 </div>
                 
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-700">
-                      Income Replacement
+                      Income Replacement (Years)
                     </span>
                     <span className="text-sm font-bold text-gray-900">
-                      {formatCurrency(needsValues.incomeReplacement[0])}
+                      {needsValues.incomeReplacement[0]} years = {formatCurrency(needsValues.incomeReplacement[0] * annualIncome)}
                     </span>
                   </div>
                   <Slider
@@ -225,12 +220,12 @@ const InsuranceCard = () => {
                     onValueChange={(value) => handleSliderChange('incomeReplacement', value)}
                     max={needsConfig.incomeReplacement.max}
                     min={0}
-                    step={5000}
+                    step={1}
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-gray-500">
-                    <span>$0</span>
-                    <span>{formatCurrency(needsConfig.incomeReplacement.max)}</span>
+                    <span>0 years</span>
+                    <span>{needsConfig.incomeReplacement.max} years</span>
                   </div>
                 </div>
               </div>
