@@ -1,3 +1,4 @@
+
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,7 @@ import { RetirementDetailDialog } from "./RetirementDetailDialog";
 import { useState } from "react";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
+import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const RetirementCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -16,7 +18,10 @@ const RetirementCard = () => {
   const [retirementAge, setRetirementAge] = useState([65]);
   const [netMonthlyIncomeNeeded, setNetMonthlyIncomeNeeded] = useState([4500]);
   
-  const totalRetirementSavings = 90000;
+  const { getTotalRetirementSavings, getRetirementAssets } = useFinancialData();
+  
+  const totalRetirementSavings = getTotalRetirementSavings();
+  const retirementAssets = getRetirementAssets();
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
@@ -33,6 +38,13 @@ const RetirementCard = () => {
     text += `💰 Current savings: $${totalRetirementSavings.toLocaleString()}\n`;
     text += `📈 Projected monthly income (pensions & savings): $${projectedMonthlyIncome.toLocaleString()}\n`;
     text += `⏳ Estimated years in retirement: ${yearsInRetirement} (up to age ${lifeExpectancy})\n\n`;
+    
+    text += `📊 Your retirement portfolio breakdown:\n`;
+    retirementAssets.forEach(asset => {
+      text += `  • ${asset.name}: $${asset.value.toLocaleString()}\n`;
+    });
+    text += `\n`;
+    
     text += `🔢 Based on your needs, your total retirement funding requirement is $${(totalRetirementNeeded/1000).toFixed(1)}K.\n`;
     text += `So far, you've achieved ${savingsPercentage.toFixed(1)}% of your goal.\n\n`;
     text += savingsPercentage >= 100
@@ -40,6 +52,14 @@ const RetirementCard = () => {
       : "⚠️ There's a funding gap. Consider increasing your savings, delaying retirement, or reducing monthly expenses for a more secure plan.\n";
     text += `\n👤 Looking for more? Add info like other pensions, expected inheritances, or part-time work for an even more personalized analysis.\n\nAdjust the sliders to explore different retirement scenarios!`;
     return text;
+  };
+
+  const formatCurrency = (value: number) => {
+    if (value >= 1000000) {
+      return `$${(value / 1000000).toFixed(2)}M`;
+    } else {
+      return `$${(value / 1000).toFixed(0)}K`;
+    }
   };
 
   return (
@@ -78,7 +98,7 @@ const RetirementCard = () => {
         <CardContent className="flex-1 flex flex-col space-y-6">
           {/* Total Savings */}
           <div className="text-center p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-            <p className="text-4xl font-bold text-purple-600 mb-2">$90,000</p>
+            <p className="text-4xl font-bold text-purple-600 mb-2">{formatCurrency(totalRetirementSavings)}</p>
             <p className="text-base text-purple-700 font-medium">Total Retirement Savings</p>
           </div>
 

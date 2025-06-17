@@ -8,6 +8,7 @@ import { EstateDetailDialog } from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { SectionAIDialog } from "./SectionAIDialog";
+import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -15,37 +16,8 @@ const EstateCard = () => {
   const [timeHorizon, setTimeHorizon] = useState([15]);
   const [isAIDialogOpen, setAIDialogOpen] = useState(false);
 
-  // Current estate assets with tax implications
-  const estateAssets = [
-    {
-      name: "Real Estate",
-      currentValue: 620000,
-      acquisitionCost: 450000,
-      taxStatus: "Capital Gains", // 50% inclusion rate
-      color: "#8b5cf6"
-    },
-    {
-      name: "RRSP", 
-      currentValue: 52000,
-      acquisitionCost: 35000,
-      taxStatus: "Fully Taxable", // 100% taxable at marginal rate
-      color: "#10b981"
-    },
-    {
-      name: "TFSA",
-      currentValue: 38000,
-      acquisitionCost: 30000,
-      taxStatus: "Tax-Free", // No tax implications
-      color: "#06b6d4"
-    },
-    {
-      name: "Non-Registered",
-      currentValue: 25000,
-      acquisitionCost: 20000,
-      taxStatus: "Capital Gains", // 50% inclusion rate
-      color: "#f59e0b"
-    }
-  ];
+  const { getEstateAssets } = useFinancialData();
+  const estateAssets = getEstateAssets();
 
   // Calculate projected values based on time horizon
   const calculateEstateValues = () => {
@@ -54,7 +26,7 @@ const EstateCard = () => {
     
     // Calculate total estate value with growth
     const totalEstateValue = estateAssets.reduce((total, asset) => {
-      return total + (asset.currentValue * Math.pow(1 + rate, years));
+      return total + (asset.value * Math.pow(1 + rate, years));
     }, 0);
     
     // Calculate estimated final taxes based on sliders (simplified calculation)
@@ -119,8 +91,11 @@ const EstateCard = () => {
 Breakdown by asset type:
 `;
     estateAssets.forEach(asset => {
-      const projectedValue = asset.currentValue * Math.pow(1 + (rateOfReturn[0]/100), timeHorizon[0]);
-      text += `  – ${asset.name}: ${formatCurrency(projectedValue)} (${asset.taxStatus})\n`;
+      const projectedValue = asset.value * Math.pow(1 + (rateOfReturn[0]/100), timeHorizon[0]);
+      const taxStatus = asset.name === "TFSA" ? "Tax-Free" : 
+                       asset.name === "RRSP" ? "Fully Taxable" : 
+                       asset.name === "Real Estate" || asset.name === "Non-Registered" ? "Capital Gains" : "Taxable";
+      text += `  – ${asset.name}: ${formatCurrency(projectedValue)} (${taxStatus})\n`;
     });
     text += `
 
