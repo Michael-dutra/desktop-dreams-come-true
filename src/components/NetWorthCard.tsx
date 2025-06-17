@@ -12,9 +12,9 @@ const NetWorthCard = () => {
   
   const { getTotalAssets, getTotalLiabilities, getNetWorth } = useFinancialData();
   
-  const currentAssets = getTotalAssets();
+  const currentAssets = 735000; // Fixed to $735K
   const currentLiabilities = getTotalLiabilities();
-  const currentNetWorth = getNetWorth();
+  const currentNetWorth = currentAssets - currentLiabilities;
   
   // Calculate monthly growth as a percentage of total assets (e.g., 0.5% monthly)
   const monthlyGrowthRate = 0.005; // 0.5% monthly growth rate
