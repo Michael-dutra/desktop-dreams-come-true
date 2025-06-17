@@ -4,10 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, LineChart, Line, AreaChart, Area, PieChart, Pie, Cell } from "recharts";
+import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis } from "recharts";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PiggyBank, Plus, Minus, TrendingUp, Calculator, Info, Check, X } from "lucide-react";
+import { PiggyBank, Plus, Minus, Calculator, Info, Check, X } from "lucide-react";
 import { useAssets } from "@/contexts/AssetsContext";
 
 interface RetirementDetailDialogProps {
@@ -52,7 +52,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   // New tax settings state
   const [taxRate, setTaxRate] = useState([25]);
   const [withdrawalStrategy, setWithdrawalStrategy] = useState<WithdrawalStrategy>("balanced");
-  const [isOptimized, setIsOptimized] = useState(false);
 
   // CPP/OAS Calculator State
   const [cppStartAge, setCppStartAge] = useState(65);
@@ -86,31 +85,15 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     }
   };
 
-  const handleOptimizeAllocations = () => {
-    // Don't optimize if custom is selected - user wants manual control
-    if (withdrawalStrategy === "custom") return;
-    
-    const optimal = getOptimalAllocations(withdrawalStrategy);
-    setRrspAllocation([optimal.rrsp]);
-    setTfsaAllocation([optimal.tfsa]);
-    setNonRegAllocation([optimal.nonReg]);
-    setIsOptimized(true);
-  };
-
-  // Reset optimized flag when user manually adjusts allocations
+  // Auto-apply allocations when withdrawal strategy changes
   useEffect(() => {
-    if (isOptimized && withdrawalStrategy !== "custom") {
+    if (withdrawalStrategy !== "custom") {
       const optimal = getOptimalAllocations(withdrawalStrategy);
-      const isStillOptimal = 
-        rrspAllocation[0] === optimal.rrsp &&
-        tfsaAllocation[0] === optimal.tfsa &&
-        nonRegAllocation[0] === optimal.nonReg;
-      
-      if (!isStillOptimal) {
-        setIsOptimized(false);
-      }
+      setRrspAllocation([optimal.rrsp]);
+      setTfsaAllocation([optimal.tfsa]);
+      setNonRegAllocation([optimal.nonReg]);
     }
-  }, [rrspAllocation, tfsaAllocation, nonRegAllocation, withdrawalStrategy, isOptimized]);
+  }, [withdrawalStrategy]);
 
   const calculateFutureValue = (currentValue: number, allocation: number) => {
     let futureValue = currentValue;
@@ -455,11 +438,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 <div>
                   <h3 className="text-lg font-semibold mb-4">
                     Allocate how your retirement income is sourced from each account (total must be 100%):
-                    {isOptimized && (
-                      <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                        Optimized
-                      </span>
-                    )}
                   </h3>
                   <div className="space-y-4">
                     <div>
@@ -558,30 +536,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     {getStrategyDescription(withdrawalStrategy)}
                   </p>
                 </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={handleOptimizeAllocations}
-                  className="flex items-center gap-2"
-                  variant={isOptimized ? "secondary" : "default"}
-                  disabled={withdrawalStrategy === "custom"}
-                >
-                  <TrendingUp className="h-4 w-4" />
-                  Optimize Allocations
-                </Button>
-                {isOptimized && withdrawalStrategy !== "custom" && (
-                  <div className="flex items-center gap-2 text-sm text-green-600">
-                    <span className="w-2 h-2 bg-green-600 rounded-full"></span>
-                    Using optimized allocation for {withdrawalStrategy.replace('-', ' ')} strategy
-                  </div>
-                )}
-                {withdrawalStrategy === "custom" && (
-                  <div className="flex items-center gap-2 text-sm text-blue-600">
-                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
-                    Using custom allocations
-                  </div>
-                )}
               </div>
 
               {/* Strategy Pros and Cons */}
