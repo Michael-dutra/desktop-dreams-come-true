@@ -124,7 +124,7 @@ const AssetsBreakdown = () => {
     );
   }
 
-  // Normal state when assets exist
+  // Normal state when assets exist - Details button permanently visible
   return (
     <>
       <Card className="h-full flex flex-col">
