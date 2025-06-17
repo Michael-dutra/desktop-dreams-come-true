@@ -287,8 +287,8 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
 
   // LCGE Calculator state
   const [lcgeUsed, setLcgeUsed] = useState(0);
-  const [totalLcgeLimit] = useState(971190); // 2024 LCGE limit
-  const [activeBusinessAssets, setActiveBusinessAssets] = useState(325000); // Default to current business valuation
+  const [totalLcgeLimit] = useState(1250000); // Updated LCGE limit
+  const [activeBusinessAssets, setActiveBusinessAssets] = useState([325000]);
 
   // Secondary Will calculation
   const calculateProbateFees = () => {
@@ -386,8 +386,20 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     return totalLcgeLimit - lcgeUsed;
   };
 
+  const calculateCorporateAssetsRatio = () => {
+    const totalCorporateAssets = corporateAssets.reduce((sum, asset) => sum + asset.currentValue, 0);
+    const companyValue = activeBusinessAssets[0];
+    const ratio = companyValue > 0 ? (totalCorporateAssets / companyValue) * 100 : 0;
+    return {
+      totalCorporateAssets,
+      companyValue,
+      ratio,
+      isGood: ratio >= 90
+    };
+  };
+
   const calculateLcgeUtilization = () => {
-    const potentialGain = Math.max(0, activeBusinessAssets - 100000); // Assuming $100K cost base
+    const potentialGain = Math.max(0, activeBusinessAssets[0] - 100000); // Assuming $100K cost base
     const utilizationPercentage = Math.min(100, (potentialGain / totalLcgeLimit) * 100);
     return {
       potentialGain,
@@ -397,6 +409,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   };
 
   const lcgeData = calculateLcgeUtilization();
+  const corporateAssetsData = calculateCorporateAssetsRatio();
 
   const calculateFutureValue = (currentValue: number, growthRate: number, years: number, monthlyContribution: number) => {
     const monthlyRate = (growthRate / 100) / 12;
@@ -518,13 +531,22 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 <CardContent className="space-y-4">
                   <div className="space-y-4">
                     <div>
-                      <Label className="text-sm font-medium">Active Business Assets Value</Label>
-                      <Input
-                        type="number"
-                        value={activeBusinessAssets}
-                        onChange={(e) => setActiveBusinessAssets(Number(e.target.value))}
-                        placeholder="Current business valuation"
-                      />
+                      <Label className="text-sm font-medium">Company Valuation</Label>
+                      <div className="mt-1">
+                        <Slider
+                          value={activeBusinessAssets}
+                          onValueChange={setActiveBusinessAssets}
+                          min={100000}
+                          max={5000000}
+                          step={25000}
+                          className="mt-2"
+                        />
+                        <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                          <span>$100K</span>
+                          <span className="font-medium">${activeBusinessAssets[0].toLocaleString()}</span>
+                          <span>$5M</span>
+                        </div>
+                      </div>
                     </div>
                     
                     <div>
@@ -537,6 +559,76 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                       />
                     </div>
 
+                    {/* Corporate Assets Analysis */}
+                    <div className="p-4 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+                      <h4 className="font-semibold text-purple-800 mb-3 flex items-center">
+                        <Building2 className="h-4 w-4 mr-2" />
+                        Active Business Assets Analysis
+                      </h4>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Total Corporate Assets</p>
+                          <p className="text-lg font-bold text-purple-600">${corporateAssetsData.totalCorporateAssets.toLocaleString()}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Company Value</p>
+                          <p className="text-lg font-bold text-blue-600">${corporateAssetsData.companyValue.toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Active Assets Ratio:</span>
+                          <div className="flex items-center">
+                            <span className="font-medium mr-2">{corporateAssetsData.ratio.toFixed(1)}%</span>
+                            {corporateAssetsData.isGood ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <AlertTriangle className="h-4 w-4 text-yellow-500" />
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Progress bar for active assets ratio */}
+                        <div className="mt-4">
+                          <div className="flex justify-between text-xs text-gray-600 mb-1">
+                            <span>Active Business Assets</span>
+                            <span>{corporateAssetsData.ratio.toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div 
+                              className={`h-2 rounded-full transition-all duration-300 ${
+                                corporateAssetsData.isGood 
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                                  : 'bg-gradient-to-r from-yellow-500 to-orange-500'
+                              }`}
+                              style={{ width: `${Math.min(100, corporateAssetsData.ratio)}%` }}
+                            />
+                          </div>
+                        </div>
+
+                        <div className={`mt-3 p-2 border rounded text-xs ${
+                          corporateAssetsData.isGood 
+                            ? 'bg-green-100 border-green-300 text-green-800' 
+                            : 'bg-yellow-100 border-yellow-300 text-yellow-800'
+                        }`}>
+                          {corporateAssetsData.isGood ? (
+                            <div className="flex items-center">
+                              <CheckCircle className="h-4 w-4 inline mr-1" />
+                              Excellent! 90%+ of business value is in active assets.
+                            </div>
+                          ) : (
+                            <div className="flex items-center">
+                              <AlertTriangle className="h-4 w-4 inline mr-1" />
+                              Consider increasing active business assets to reach 90%+ ratio.
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* LCGE Analysis */}
                     <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
                       <h4 className="font-semibold text-blue-800 mb-3">LCGE Analysis</h4>
                       
