@@ -1,4 +1,3 @@
-
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -80,6 +79,21 @@ const BusinessCard = () => {
     text += `- Review and revisit these estimates annually as your business evolves.\n\n`;
     text += `If you'd like, we can personalize further based on real data or other business strengths/challenges you share. Adjust the sliders above to see different scenarios and their impact.`;
     return text;
+  };
+
+  // Mock business data for the dialog
+  const mockBusiness = {
+    id: "1",
+    name: "Business",
+    industry: "Technology",
+    value: currentValuation,
+    ownership: 100,
+    revenue: grossRevenue,
+    netIncome: grossRevenue * 0.2,
+    employees: 25,
+    founded: 2020,
+    location: "Toronto, ON",
+    description: "Innovative technology company focused on growth and expansion"
   };
 
   return (
@@ -260,8 +274,9 @@ const BusinessCard = () => {
         </CardContent>
       </Card>
       <BusinessDetailDialog 
-        isOpen={showDetailDialog} 
-        onClose={() => setShowDetailDialog(false)} 
+        open={showDetailDialog} 
+        onOpenChange={setShowDetailDialog}
+        business={mockBusiness}
       />
       <SectionAIDialog
         isOpen={aiDialogOpen}
