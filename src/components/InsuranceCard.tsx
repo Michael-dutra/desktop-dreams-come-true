@@ -1,3 +1,4 @@
+
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -18,6 +19,9 @@ const InsuranceCard = () => {
   // Annual income state
   const [annualIncome, setAnnualIncome] = useState(75000);
 
+  // Current life insurance coverage - now editable
+  const [currentLifeCoverage, setCurrentLifeCoverage] = useState(320000);
+
   // Life Insurance needs with slider values - income replacement is now a multiplier
   const [needsValues, setNeedsValues] = useState({
     incomeReplacement: [6], // multiplier instead of total amount
@@ -31,7 +35,6 @@ const InsuranceCard = () => {
     return incomeReplacementAmount + needsValues.debtCoverage[0] + needsValues.finalExpenses[0];
   };
 
-  const currentLifeCoverage = 320000;
   const calculatedLifeNeed = calculateTotalNeed();
   const lifeGap = Math.max(0, calculatedLifeNeed - currentLifeCoverage);
 
@@ -277,6 +280,24 @@ const InsuranceCard = () => {
                     <span>{formatCurrency(needsConfig.finalExpenses.max)}</span>
                   </div>
                 </div>
+              </div>
+
+              {/* Row 3: Current Life Insurance */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="currentLifeCoverage" className="text-sm font-medium text-gray-700">
+                    Current Life Insurance Coverage
+                  </Label>
+                  <Input
+                    id="currentLifeCoverage"
+                    type="number"
+                    value={currentLifeCoverage}
+                    onChange={(e) => setCurrentLifeCoverage(Number(e.target.value) || 0)}
+                    className="w-full"
+                  />
+                </div>
+                {/* Empty space for alignment */}
+                <div></div>
               </div>
             </div>
           </div>
