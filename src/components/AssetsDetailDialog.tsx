@@ -614,22 +614,22 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
                     isEditable={false}
                   />
                   <DynamicEditableField 
-                    fieldKey="nonReg.inclusionRate" 
-                    value={asset.inclusionRate} 
+                    fieldKey="inclusionRate" 
+                    value={asset.inclusionRate || 50} 
                     label="Inclusion Rate" 
                     prefix=""
                     suffix="%"
                   />
                   <DynamicEditableField 
-                    fieldKey="nonReg.taxRate" 
-                    value={asset.taxRate} 
+                    fieldKey="taxRate" 
+                    value={asset.taxRate || 25} 
                     label="Tax Rate" 
                     prefix=""
                     suffix="%"
                   />
                   <DynamicEditableField 
-                    fieldKey="estimated-capital-gains-tax-nonreg" 
-                    value={Math.round((nonRegisteredDetails.totalValue - nonRegisteredDetails.costBase) * (nonRegisteredDetails.inclusionRate / 100) * (nonRegisteredDetails.taxRate / 100))} 
+                    fieldKey="estimatedCapitalGainsTaxNonReg" 
+                    value={Math.round(estimatedCapitalGainsTaxNonReg)} 
                     label="Estimated Capital Gains Tax" 
                     isAutoCalculated={true}
                     isEditable={false}
@@ -719,13 +719,48 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Growth Visualization */}
-          <GrowthChart 
-            data={chartData}
-            currentValue={asset.currentValue}
-            futureValue={futureValue}
-            years={asset.years[0]}
-            color={asset.color}
-          />
+          <div className="h-48 w-full">
+            <ChartContainer config={{}} className="h-full w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <defs>
+                    <linearGradient id={`colorGradient-${asset.id}`} x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor={asset.color} stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor={asset.color} stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <XAxis 
+                    dataKey="yearLabel" 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    tickLine={false}
+                    axisLine={false}
+                    tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`}
+                  />
+                  <ChartTooltip 
+                    content={<ChartTooltipContent 
+                      formatter={(value, name) => [
+                        `$${Number(value).toLocaleString()}`,
+                        name === 'future' ? 'Projected Value' : 'Current Value'
+                      ]}
+                    />}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="future" 
+                    stroke={asset.color} 
+                    fillOpacity={1} 
+                    fill={`url(#colorGradient-${asset.id})`}
+                    strokeWidth={2}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          </div>
 
           {/* Controls */}
           <div className="bg-muted/30 p-4 rounded-lg space-y-3">
@@ -773,6 +808,20 @@ export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps)
           )}
         </CardContent>
       </Card>
+    );
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Assets Detail
+          </DialogTitle>
+        </DialogHeader>
+        {/* Rest of dialog content would go here */}
+      </DialogContent>
     </Dialog>
   );
 };
