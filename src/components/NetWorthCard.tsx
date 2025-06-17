@@ -1,4 +1,3 @@
-
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -8,6 +7,7 @@ import { useState } from "react";
 import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const NetWorthCard = () => {
+  
   const [rateOfReturn, setRateOfReturn] = useState([7]);
   const [timeHorizon, setTimeHorizon] = useState([5]);
   
@@ -68,6 +68,7 @@ const NetWorthCard = () => {
         </div>
       </CardHeader>
       <CardContent className="space-y-6 pb-6">
+        
         {/* Main Net Worth Display */}
         <div className="text-center py-2">
           <p className="text-sm text-white/80 mb-1">Current Net Worth</p>
@@ -153,7 +154,17 @@ const NetWorthCard = () => {
             <p className="text-xs text-gray-300">At {rateOfReturn[0]}% annual growth</p>
           </div>
           <div className="w-full overflow-hidden">
-            <ChartContainer config={chartConfig} className="h-44 w-full">
+            <style>
+              {`
+                .white-axis-chart .recharts-cartesian-axis-tick text {
+                  fill: white !important;
+                }
+                .white-axis-chart [data-chart] .recharts-cartesian-axis-tick text {
+                  fill: white !important;
+                }
+              `}
+            </style>
+            <ChartContainer config={chartConfig} className="h-44 w-full white-axis-chart">
               <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
