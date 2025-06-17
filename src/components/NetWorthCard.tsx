@@ -1,4 +1,3 @@
-
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -16,7 +15,10 @@ const NetWorthCard = () => {
   const currentAssets = getTotalAssets();
   const currentLiabilities = getTotalLiabilities();
   const currentNetWorth = getNetWorth();
-  const monthlyGrowth = 32500;
+  
+  // Calculate monthly growth as a percentage of total assets (e.g., 0.5% monthly)
+  const monthlyGrowthRate = 0.005; // 0.5% monthly growth rate
+  const monthlyGrowth = currentAssets * monthlyGrowthRate;
 
   // Generate dynamic projection data based on sliders
   const generateProjectionData = () => {
@@ -71,7 +73,7 @@ const NetWorthCard = () => {
           <p className="text-4xl font-bold text-white mb-3">{formatCurrency(currentNetWorth)}</p>
           <div className="flex items-center justify-center space-x-2 text-green-300">
             <TrendingUp className="h-5 w-5" />
-            <span className="text-lg font-medium">+${monthlyGrowth.toLocaleString()} this month</span>
+            <span className="text-lg font-medium">+${Math.round(monthlyGrowth).toLocaleString()} this month</span>
           </div>
         </div>
         
