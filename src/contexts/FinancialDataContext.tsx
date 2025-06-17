@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 export interface Asset {
@@ -9,6 +8,10 @@ export interface Asset {
   color: string;
   category: 'retirement' | 'investment' | 'real-estate' | 'business' | 'other';
   isRetirementEligible: boolean;
+  acquisitionCost?: number;
+  taxableStatus?: 'Fully Taxable' | 'Capital Gains' | 'Tax-Free';
+  rateOfReturn?: number;
+  timeHorizon?: number;
 }
 
 export interface Liability {
