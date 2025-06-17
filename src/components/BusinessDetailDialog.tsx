@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2, FileText, Calendar, Share2, PiggyBank } from "lucide-react";
+import { Building2, TrendingUp, Shield, Users, DollarSign, Target, AlertTriangle, CheckCircle, Plus, Edit, Trash2, FileText, Calendar, Share2, PiggyBank, Calculator } from "lucide-react";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, BarChart, Bar, PieChart, Pie, Cell } from "recharts";
 import { EditableField } from "./EditableField";
@@ -285,6 +285,11 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     monthlyContribution: 0
   });
 
+  // LCGE Calculator state
+  const [lcgeUsed, setLcgeUsed] = useState(0);
+  const [totalLcgeLimit] = useState(971190); // 2024 LCGE limit
+  const [activeBusinessAssets, setActiveBusinessAssets] = useState(325000); // Default to current business valuation
+
   // Secondary Will calculation
   const calculateProbateFees = () => {
     return businessValuationForWill[0] * 0.015;
@@ -375,6 +380,23 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
       asset.id === id ? { ...asset, [field]: value } : asset
     ));
   };
+
+  // LCGE Calculator functions
+  const calculateRemainingLcge = () => {
+    return totalLcgeLimit - lcgeUsed;
+  };
+
+  const calculateLcgeUtilization = () => {
+    const potentialGain = Math.max(0, activeBusinessAssets - 100000); // Assuming $100K cost base
+    const utilizationPercentage = Math.min(100, (potentialGain / totalLcgeLimit) * 100);
+    return {
+      potentialGain,
+      utilizationPercentage,
+      taxSavings: Math.min(potentialGain, calculateRemainingLcge()) * 0.265 // 26.5% marginal tax rate on capital gains
+    };
+  };
+
+  const lcgeData = calculateLcgeUtilization();
 
   const calculateFutureValue = (currentValue: number, growthRate: number, years: number, monthlyContribution: number) => {
     const monthlyRate = (growthRate / 100) / 12;
@@ -484,6 +506,95 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Calculator className="h-5 w-5" />
+                      <span>LCGE Auto-Calculator</span>
+                    </div>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-4">
+                    <div>
+                      <Label className="text-sm font-medium">Active Business Assets Value</Label>
+                      <Input
+                        type="number"
+                        value={activeBusinessAssets}
+                        onChange={(e) => setActiveBusinessAssets(Number(e.target.value))}
+                        placeholder="Current business valuation"
+                      />
+                    </div>
+                    
+                    <div>
+                      <Label className="text-sm font-medium">LCGE Already Used</Label>
+                      <Input
+                        type="number"
+                        value={lcgeUsed}
+                        onChange={(e) => setLcgeUsed(Number(e.target.value))}
+                        placeholder="Amount of LCGE used to date"
+                      />
+                    </div>
+
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
+                      <h4 className="font-semibold text-blue-800 mb-3">LCGE Analysis</h4>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-4">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Total LCGE Limit</p>
+                          <p className="text-lg font-bold text-blue-600">${totalLcgeLimit.toLocaleString()}</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm text-gray-600">Remaining LCGE</p>
+                          <p className="text-lg font-bold text-green-600">${calculateRemainingLcge().toLocaleString()}</p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Potential Capital Gain:</span>
+                          <span className="font-medium">${lcgeData.potentialGain.toLocaleString()}</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">LCGE Utilization:</span>
+                          <span className="font-medium">{lcgeData.utilizationPercentage.toFixed(1)}%</span>
+                        </div>
+                        
+                        <div className="flex justify-between items-center p-2 bg-green-100 rounded">
+                          <span className="text-sm font-medium text-green-700">Potential Tax Savings:</span>
+                          <span className="font-bold text-green-700">${lcgeData.taxSavings.toLocaleString()}</span>
+                        </div>
+                      </div>
+
+                      {/* Progress bar for LCGE utilization */}
+                      <div className="mt-4">
+                        <div className="flex justify-between text-xs text-gray-600 mb-1">
+                          <span>LCGE Usage</span>
+                          <span>{lcgeData.utilizationPercentage.toFixed(1)}%</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" 
+                            style={{ width: `${Math.min(100, lcgeData.utilizationPercentage)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {lcgeData.utilizationPercentage > 100 && (
+                        <div className="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-800">
+                          <AlertTriangle className="h-4 w-4 inline mr-1" />
+                          Capital gain exceeds remaining LCGE. Consider tax planning strategies.
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
