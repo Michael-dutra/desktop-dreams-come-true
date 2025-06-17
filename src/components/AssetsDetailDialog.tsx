@@ -59,7 +59,6 @@ interface Asset {
   name: string;
   value: number;
   description?: string;
-  color?: string;
 }
 
 export const AssetsDetailDialog = ({ isOpen, onClose }: AssetsDetailDialogProps) => {
