@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -720,12 +719,12 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
                           <span>Company Valuation Progress to LCGE Limit</span>
-                          <span>{valuationPercentage.toFixed(1)}%</span>
+                          <span>{Math.min(100, valuationPercentage).toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${valuationPercentage}%` }}
+                            style={{ width: `${Math.min(100, valuationPercentage)}%` }}
                           />
                         </div>
                         <div className="flex justify-between text-xs text-gray-500 mt-1">
@@ -746,7 +745,365 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
               </Card>
             </div>
 
-            {/* ... keep existing code (rest of the overview tab content) the same */}
+            {/* Revenue Streams and Financial Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <DollarSign className="h-5 w-5" />
+                      <span>Revenue Streams</span>
+                    </div>
+                    <Button 
+                      variant={isEditingRevenue ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setIsEditingRevenue(!isEditingRevenue)}
+                    >
+                      {isEditingRevenue ? "Done" : "Edit"}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {isEditingRevenue && (
+                    <div className="flex space-x-2">
+                      <Input
+                        placeholder="Stream name"
+                        value={newRevenueName}
+                        onChange={(e) => setNewRevenueName(e.target.value)}
+                      />
+                      <Input
+                        type="number"
+                        placeholder="Amount"
+                        value={newRevenueValue || ""}
+                        onChange={(e) => setNewRevenueValue(Number(e.target.value))}
+                      />
+                      <Button onClick={addRevenueStream}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  )}
+                  
+                  <div className="space-y-3">
+                    {revenueStreams.map((stream) => (
+                      <div key={stream.id} className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: stream.color }}></div>
+                          {isEditingRevenue ? (
+                            <Input
+                              value={stream.name}
+                              onChange={(e) => updateRevenueStream(stream.id, 'name', e.target.value)}
+                              className="w-32"
+                            />
+                          ) : (
+                            <span className="font-medium">{stream.name}</span>
+                          )}
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {isEditingRevenue ? (
+                            <Input
+                              type="number"
+                              value={stream.value}
+                              onChange={(e) => updateRevenueStream(stream.id, 'value', Number(e.target.value))}
+                              className="w-24"
+                            />
+                          ) : (
+                            <span className="font-bold">${stream.value.toLocaleString()}</span>
+                          )}
+                          {isEditingRevenue && (
+                            <Button variant="ghost" size="sm" onClick={() => deleteRevenueStream(stream.id)}>
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <ChartContainer config={{}} className="h-64">
+                    <PieChart>
+                      <Pie
+                        data={revenueStreams}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={40}
+                        outerRadius={80}
+                        dataKey="value"
+                        nameKey="name"
+                      >
+                        {revenueStreams.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.color} />
+                        ))}
+                      </Pie>
+                      <ChartTooltip content={<ChartTooltipContent formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]} />} />
+                    </PieChart>
+                  </ChartContainer>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5" />
+                      <span>Financial Projections</span>
+                    </div>
+                    <Button 
+                      variant={isEditingFinancials ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setIsEditingFinancials(!isEditingFinancials)}
+                    >
+                      {isEditingFinancials ? "Done" : "Edit"}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ChartContainer config={chartConfig} className="h-64">
+                    <BarChart data={financialData}>
+                      <XAxis dataKey="year" />
+                      <YAxis tickFormatter={(value) => `$${(value / 1000).toFixed(0)}K`} />
+                      <ChartTooltip content={<ChartTooltipContent />} />
+                      <Bar dataKey="revenue" fill="#06b6d4" />
+                      <Bar dataKey="profit" fill="#10b981" />
+                    </BarChart>
+                  </ChartContainer>
+                  
+                  {isEditingFinancials && (
+                    <div className="mt-4 space-y-2">
+                      {financialData.map((data) => (
+                        <div key={data.year} className="grid grid-cols-4 gap-2 text-sm">
+                          <span>{data.year}</span>
+                          <Input
+                            type="number"
+                            value={data.revenue}
+                            onChange={(e) => updateFinancialData(data.year, 'revenue', Number(e.target.value))}
+                            placeholder="Revenue"
+                          />
+                          <Input
+                            type="number"
+                            value={data.profit}
+                            onChange={(e) => updateFinancialData(data.year, 'profit', Number(e.target.value))}
+                            placeholder="Profit"
+                          />
+                          <Input
+                            type="number"
+                            value={data.valuation}
+                            onChange={(e) => updateFinancialData(data.year, 'valuation', Number(e.target.value))}
+                            placeholder="Valuation"
+                          />
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Current Year Performance */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Target className="h-5 w-5" />
+                    <span>Current Year Performance (2024)</span>
+                  </div>
+                  <Button 
+                    variant={isEditingCurrentYear ? "default" : "outline"} 
+                    size="sm"
+                    onClick={() => setIsEditingCurrentYear(!isEditingCurrentYear)}
+                  >
+                    {isEditingCurrentYear ? "Done" : "Edit"}
+                  </Button>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-6">
+                  <div className="text-center p-4 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-600 mb-2">Current Revenue</p>
+                    {isEditingCurrentYear ? (
+                      <Input
+                        type="number"
+                        value={currentYearData.revenue}
+                        onChange={(e) => setCurrentYearData({ ...currentYearData, revenue: Number(e.target.value) })}
+                        className="text-center font-bold text-xl"
+                      />
+                    ) : (
+                      <p className="text-2xl font-bold text-blue-800">${currentYearData.revenue.toLocaleString()}</p>
+                    )}
+                  </div>
+                  <div className="text-center p-4 bg-green-50 rounded-lg">
+                    <p className="text-sm text-green-600 mb-2">Current Profit</p>
+                    {isEditingCurrentYear ? (
+                      <Input
+                        type="number"
+                        value={currentYearData.profit}
+                        onChange={(e) => setCurrentYearData({ ...currentYearData, profit: Number(e.target.value) })}
+                        className="text-center font-bold text-xl"
+                      />
+                    ) : (
+                      <p className="text-2xl font-bold text-green-800">${currentYearData.profit.toLocaleString()}</p>
+                    )}
+                  </div>
+                  <div className="text-center p-4 bg-purple-50 rounded-lg">
+                    <p className="text-sm text-purple-600 mb-2">Current Valuation</p>
+                    {isEditingCurrentYear ? (
+                      <Input
+                        type="number"
+                        value={currentYearData.valuation}
+                        onChange={(e) => setCurrentYearData({ ...currentYearData, valuation: Number(e.target.value) })}
+                        className="text-center font-bold text-xl"
+                      />
+                    ) : (
+                      <p className="text-2xl font-bold text-purple-800">${currentYearData.valuation.toLocaleString()}</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Growth Rates */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <TrendingUp className="h-5 w-5" />
+                      <span>Growth Rates</span>
+                    </div>
+                    <Button 
+                      variant={isEditingGrowthRates ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setIsEditingGrowthRates(!isEditingGrowthRates)}
+                    >
+                      {isEditingGrowthRates ? "Done" : "Edit"}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label>Revenue Growth</Label>
+                      <span className="font-bold">{growthRatesData.revenueGrowth}%</span>
+                    </div>
+                    {isEditingGrowthRates ? (
+                      <Slider
+                        value={[growthRatesData.revenueGrowth]}
+                        onValueChange={(value) => setGrowthRatesData({ ...growthRatesData, revenueGrowth: value[0] })}
+                        min={0}
+                        max={50}
+                        step={1}
+                      />
+                    ) : (
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-blue-500 h-2 rounded-full" style={{ width: `${(growthRatesData.revenueGrowth / 50) * 100}%` }}></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label>Profit Growth</Label>
+                      <span className="font-bold">{growthRatesData.profitGrowth}%</span>
+                    </div>
+                    {isEditingGrowthRates ? (
+                      <Slider
+                        value={[growthRatesData.profitGrowth]}
+                        onValueChange={(value) => setGrowthRatesData({ ...growthRatesData, profitGrowth: value[0] })}
+                        min={0}
+                        max={50}
+                        step={1}
+                      />
+                    ) : (
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-green-500 h-2 rounded-full" style={{ width: `${(growthRatesData.profitGrowth / 50) * 100}%` }}></div>
+                      </div>
+                    )}
+                  </div>
+                  
+                  <div>
+                    <div className="flex justify-between items-center mb-2">
+                      <Label>Valuation Growth</Label>
+                      <span className="font-bold">{growthRatesData.valuationGrowth}%</span>
+                    </div>
+                    {isEditingGrowthRates ? (
+                      <Slider
+                        value={[growthRatesData.valuationGrowth]}
+                        onValueChange={(value) => setGrowthRatesData({ ...growthRatesData, valuationGrowth: value[0] })}
+                        min={0}
+                        max={50}
+                        step={1}
+                      />
+                    ) : (
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${(growthRatesData.valuationGrowth / 50) * 100}%` }}></div>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between">
+                    <div className="flex items-center space-x-2">
+                      <Target className="h-5 w-5" />
+                      <span>2025 Projections</span>
+                    </div>
+                    <Button 
+                      variant={isEditingProjections ? "default" : "outline"} 
+                      size="sm"
+                      onClick={() => setIsEditingProjections(!isEditingProjections)}
+                    >
+                      {isEditingProjections ? "Done" : "Edit"}
+                    </Button>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center p-3 bg-blue-50 rounded">
+                      <span className="text-blue-700">Revenue Target</span>
+                      {isEditingProjections ? (
+                        <Input
+                          type="number"
+                          value={projectionsData.revenue2025}
+                          onChange={(e) => setProjectionsData({ ...projectionsData, revenue2025: Number(e.target.value) })}
+                          className="w-32 text-right"
+                        />
+                      ) : (
+                        <span className="font-bold text-blue-800">${projectionsData.revenue2025.toLocaleString()}</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-green-50 rounded">
+                      <span className="text-green-700">Profit Target</span>
+                      {isEditingProjections ? (
+                        <Input
+                          type="number"
+                          value={projectionsData.profit2025}
+                          onChange={(e) => setProjectionsData({ ...projectionsData, profit2025: Number(e.target.value) })}
+                          className="w-32 text-right"
+                        />
+                      ) : (
+                        <span className="font-bold text-green-800">${projectionsData.profit2025.toLocaleString()}</span>
+                      )}
+                    </div>
+                    
+                    <div className="flex justify-between items-center p-3 bg-purple-50 rounded">
+                      <span className="text-purple-700">Valuation Target</span>
+                      {isEditingProjections ? (
+                        <Input
+                          type="number"
+                          value={projectionsData.valuation2025}
+                          onChange={(e) => setProjectionsData({ ...projectionsData, valuation2025: Number(e.target.value) })}
+                          className="w-32 text-right"
+                        />
+                      ) : (
+                        <span className="font-bold text-purple-800">${projectionsData.valuation2025.toLocaleString()}</span>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </TabsContent>
 
           <TabsContent value="assets" className="space-y-6">
@@ -1061,14 +1418,14 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                 </div>
                 
                 <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <h4 className="font-semibold text-yellow-800 mb-2">Probate Fee Savings</h4>
+                  <h4 className="font-semibold text-yellow-800 mb-2">Estimated Probate Fee Savings</h4>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="text-center">
                       <p className="text-sm text-yellow-700">Business Valuation</p>
                       <p className="text-lg font-bold text-yellow-800">${businessValuationForWill[0].toLocaleString()}</p>
                     </div>
                     <div className="text-center">
-                      <p className="text-sm text-yellow-700">Estimated Probate Fees</p>
+                      <p className="text-sm text-yellow-700">Estimated Probate Fee Savings</p>
                       <p className="text-lg font-bold text-yellow-800">${probateFees.toLocaleString()}</p>
                     </div>
                   </div>
