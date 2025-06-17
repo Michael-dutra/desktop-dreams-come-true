@@ -27,6 +27,10 @@ interface YearlyData {
   totalAssets: number;
   totalWithdrawal: number;
   taxesPaid: number;
+  cppIncome: number;
+  oasIncome: number;
+  totalGovernmentBenefits: number;
+  netWithdrawalNeeded: number;
 }
 
 type WithdrawalStrategy = "balanced" | "tax-free-first" | "rrsp-first" | "minimize-lifetime-tax" | "preserve-rrsp" | "custom";
@@ -168,12 +172,49 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return rrspTax + nonRegTax;
   };
 
+  const calculateCPP = (startAge: number, eligibilityPercent: number) => {
+    const maxCPP = 1308; // Maximum CPP at age 65 (2024)
+    const baseAmount = maxCPP * (eligibilityPercent / 100);
+    
+    if (startAge < 65) {
+      // Early penalty: 0.6% per month before 65
+      const monthsEarly = (65 - startAge) * 12;
+      const penalty = monthsEarly * 0.006;
+      return baseAmount * (1 - penalty);
+    } else if (startAge > 65) {
+      // Delayed credit: 0.7% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.007;
+      return baseAmount * (1 + bonus);
+    }
+    return baseAmount;
+  };
+
+  const calculateOAS = (startAge: number, eligibilityPercent: number) => {
+    const maxOAS = 707; // Maximum OAS at age 65 (2024)
+    const baseAmount = maxOAS * (eligibilityPercent / 100);
+    
+    if (startAge < 65) {
+      return 0; // OAS cannot be taken before 65
+    } else if (startAge > 65) {
+      // Delayed credit: 0.6% per month after 65, max at 70
+      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
+      const bonus = monthsLate * 0.006;
+      return baseAmount * (1 + bonus);
+    }
+    return baseAmount;
+  };
+
   const generateYearlyData = (): YearlyData[] => {
     const data: YearlyData[] = [];
     let rrspBalance = futureRRSP;
     let tfsaBalance = futureTFSA;
     let nonRegBalance = futureNonReg;
     const annualRateOfReturn = retirementRateOfReturn[0] / 100;
+
+    // Calculate annual CPP and OAS amounts
+    const annualCPP = calculateCPP(cppStartAge, cppEligibilityPercent) * 12;
+    const annualOAS = calculateOAS(oasStartAge, oasEligibilityPercent) * 12;
 
     for (let year = 0; year <= 30; year++) {
       const age = retirementAge[0] + year;
@@ -185,6 +226,17 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         nonRegBalance = nonRegBalance * (1 + annualRateOfReturn);
       }
       
+      // Calculate government benefits for this year
+      const cppIncome = age >= cppStartAge ? annualCPP : 0;
+      const oasIncome = age >= oasStartAge ? annualOAS : 0;
+      const totalGovernmentBenefits = cppIncome + oasIncome;
+      
+      // Calculate net withdrawal needed after government benefits
+      const netWithdrawalNeeded = Math.max(0, annualIncomeNeeded - totalGovernmentBenefits);
+      
+      // Recalculate gross withdrawals based on reduced need
+      const adjustedGrossWithdrawals = calculateGrossWithdrawals(netWithdrawalNeeded);
+      
       let rrspWithdrawal = 0;
       let tfsaWithdrawal = 0;
       let nonRegWithdrawal = 0;
@@ -193,11 +245,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       if (withdrawalStrategy === "tax-free-first") {
         // Use TFSA first, then 50/50 RRSP/Non-Reg
         if (tfsaBalance > 0) {
-          tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.totalGross);
+          tfsaWithdrawal = Math.min(tfsaBalance, adjustedGrossWithdrawals.totalGross);
           tfsaBalance -= tfsaWithdrawal;
         } else {
           // TFSA depleted, use 50/50 split of remaining accounts
-          const remainingNeeded = grossWithdrawals.totalGross;
+          const remainingNeeded = adjustedGrossWithdrawals.totalGross;
           const halfNeeded = remainingNeeded / 2;
           
           if (rrspBalance > 0) {
@@ -213,11 +265,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       } else if (withdrawalStrategy === "rrsp-first") {
         // Use RRSP first, then 50/50 TFSA/Non-Reg
         if (rrspBalance > 0) {
-          rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.totalGross);
+          rrspWithdrawal = Math.min(rrspBalance, adjustedGrossWithdrawals.totalGross);
           rrspBalance -= rrspWithdrawal;
         } else {
           // RRSP depleted, use 50/50 split of remaining accounts
-          const remainingNeeded = grossWithdrawals.totalGross;
+          const remainingNeeded = adjustedGrossWithdrawals.totalGross;
           const halfNeeded = remainingNeeded / 2;
           
           if (tfsaBalance > 0) {
@@ -233,17 +285,17 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       } else {
         // Use regular allocation-based withdrawals for other strategies
         if (rrspBalance > 0) {
-          rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.rrspGross);
+          rrspWithdrawal = Math.min(rrspBalance, adjustedGrossWithdrawals.rrspGross);
           rrspBalance -= rrspWithdrawal;
         }
 
         if (tfsaBalance > 0) {
-          tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.tfsaGross);
+          tfsaWithdrawal = Math.min(tfsaBalance, adjustedGrossWithdrawals.tfsaGross);
           tfsaBalance -= tfsaWithdrawal;
         }
 
         if (nonRegBalance > 0) {
-          nonRegWithdrawal = Math.min(nonRegBalance, grossWithdrawals.nonRegGross);
+          nonRegWithdrawal = Math.min(nonRegBalance, adjustedGrossWithdrawals.nonRegGross);
           nonRegBalance -= nonRegWithdrawal;
         }
       }
@@ -263,7 +315,11 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         nonRegWithdrawal,
         totalAssets,
         totalWithdrawal,
-        taxesPaid
+        taxesPaid,
+        cppIncome,
+        oasIncome,
+        totalGovernmentBenefits,
+        netWithdrawalNeeded
       });
 
       if (totalAssets <= 0) break;
@@ -346,39 +402,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const formatCurrencyFull = (value: number) => {
     return `$${Math.round(value).toLocaleString()}`;
-  };
-
-  const calculateCPP = (startAge: number, eligibilityPercent: number) => {
-    const maxCPP = 1308; // Maximum CPP at age 65 (2024)
-    const baseAmount = maxCPP * (eligibilityPercent / 100);
-    
-    if (startAge < 65) {
-      // Early penalty: 0.6% per month before 65
-      const monthsEarly = (65 - startAge) * 12;
-      const penalty = monthsEarly * 0.006;
-      return baseAmount * (1 - penalty);
-    } else if (startAge > 65) {
-      // Delayed credit: 0.7% per month after 65, max at 70
-      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
-      const bonus = monthsLate * 0.007;
-      return baseAmount * (1 + bonus);
-    }
-    return baseAmount;
-  };
-
-  const calculateOAS = (startAge: number, eligibilityPercent: number) => {
-    const maxOAS = 707; // Maximum OAS at age 65 (2024)
-    const baseAmount = maxOAS * (eligibilityPercent / 100);
-    
-    if (startAge < 65) {
-      return 0; // OAS cannot be taken before 65
-    } else if (startAge > 65) {
-      // Delayed credit: 0.6% per month after 65, max at 70
-      const monthsLate = Math.min((startAge - 65) * 12, 60); // Max 60 months
-      const bonus = monthsLate * 0.006;
-      return baseAmount * (1 + bonus);
-    }
-    return baseAmount;
   };
 
   const cppAmount = calculateCPP(cppStartAge, cppEligibilityPercent);
@@ -1058,12 +1081,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </Card>
           </div>
 
-          {/* Year-by-Year Account Breakdown with Tax Column */}
+          {/* Year-by-Year Account Breakdown with CPP/OAS and Enhanced Columns */}
           <Card>
             <CardHeader>
               <CardTitle>Year-by-Year Account Breakdown</CardTitle>
               <p className="text-sm text-gray-600">
-                Detailed year-by-year breakdown showing investment growth and withdrawals
+                Detailed year-by-year breakdown showing investment growth, withdrawals, and government benefits
               </p>
             </CardHeader>
             <CardContent>
@@ -1073,6 +1096,10 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     <TableRow>
                       <TableHead>Age</TableHead>
                       <TableHead>Year</TableHead>
+                      <TableHead className="bg-blue-50">CPP Income</TableHead>
+                      <TableHead className="bg-green-50">OAS Income</TableHead>
+                      <TableHead className="bg-purple-50">Gov't Benefits</TableHead>
+                      <TableHead>Net Withdrawal Needed</TableHead>
                       <TableHead>RRSP Balance</TableHead>
                       <TableHead>RRSP Withdrawal</TableHead>
                       <TableHead>TFSA Balance</TableHead>
@@ -1086,9 +1113,21 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   </TableHeader>
                   <TableBody>
                     {yearlyData.map((year, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{year.age}</TableCell>
+                      <TableRow key={index} className={year.totalGovernmentBenefits > 0 ? "bg-green-25" : ""}>
+                        <TableCell className="font-medium">{year.age}</TableCell>
                         <TableCell>{year.year}</TableCell>
+                        <TableCell className="bg-blue-50 font-medium">
+                          {year.cppIncome > 0 ? formatCurrencyFull(year.cppIncome) : "-"}
+                        </TableCell>
+                        <TableCell className="bg-green-50 font-medium">
+                          {year.oasIncome > 0 ? formatCurrencyFull(year.oasIncome) : "-"}
+                        </TableCell>
+                        <TableCell className="bg-purple-50 font-bold text-purple-700">
+                          {year.totalGovernmentBenefits > 0 ? formatCurrencyFull(year.totalGovernmentBenefits) : "-"}
+                        </TableCell>
+                        <TableCell className="font-medium text-orange-700">
+                          {year.netWithdrawalNeeded > 0 ? formatCurrencyFull(year.netWithdrawalNeeded) : "-"}
+                        </TableCell>
                         <TableCell>{formatCurrencyFull(year.rrspBalance)}</TableCell>
                         <TableCell>{year.rrspWithdrawal > 0 ? formatCurrencyFull(year.rrspWithdrawal) : "-"}</TableCell>
                         <TableCell>{formatCurrencyFull(year.tfsaBalance)}</TableCell>
