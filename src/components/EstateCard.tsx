@@ -8,7 +8,6 @@ import { EstateDetailDialog } from "./EstateDetailDialog";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, ResponsiveContainer, Cell } from "recharts";
 import { SectionAIDialog } from "./SectionAIDialog";
-import { useFinancialData } from "@/contexts/FinancialDataContext";
 
 const EstateCard = () => {
   const [showDetailDialog, setShowDetailDialog] = useState(false);
@@ -16,8 +15,15 @@ const EstateCard = () => {
   const [timeHorizon, setTimeHorizon] = useState([15]);
   const [isAIDialogOpen, setAIDialogOpen] = useState(false);
 
-  const { getEstateAssets } = useFinancialData();
-  const estateAssets = getEstateAssets();
+  // Mock estate assets data
+  const mockEstateAssets = [
+    { name: "TFSA", value: 125000, taxType: "Tax-Free" },
+    { name: "RRSP", value: 280000, taxType: "Fully Taxable" },
+    { name: "Real Estate", value: 450000, taxType: "Capital Gains" },
+    { name: "Non-Registered", value: 180000, taxType: "Capital Gains" },
+    { name: "Life Insurance", value: 320000, taxType: "Tax-Free" },
+    { name: "Business Assets", value: 200000, taxType: "Capital Gains" }
+  ];
 
   // Calculate projected values based on time horizon
   const calculateEstateValues = () => {
@@ -25,16 +31,36 @@ const EstateCard = () => {
     const years = timeHorizon[0];
     
     // Calculate total estate value with growth
-    const totalEstateValue = estateAssets.reduce((total, asset) => {
+    const totalEstateValue = mockEstateAssets.reduce((total, asset) => {
       return total + (asset.value * Math.pow(1 + rate, years));
     }, 0);
     
-    // Calculate estimated final taxes based on sliders (simplified calculation)
-    // Higher rate of return and longer time horizon = higher taxes due to more growth
-    const baseTaxRate = 0.03; // 3% base rate
-    const rateMultiplier = 1 + (rateOfReturn[0] - 6) * 0.001; // Adjust based on rate
-    const timeMultiplier = 1 + (timeHorizon[0] - 15) * 0.002; // Adjust based on time
-    const estimatedTaxes = totalEstateValue * baseTaxRate * rateMultiplier * timeMultiplier;
+    // Calculate estimated final taxes based on sliders and asset types
+    let estimatedTaxes = 0;
+    
+    mockEstateAssets.forEach(asset => {
+      const projectedValue = asset.value * Math.pow(1 + rate, years);
+      
+      switch (asset.taxType) {
+        case "Tax-Free":
+          // No tax on TFSA and Life Insurance
+          estimatedTaxes += 0;
+          break;
+        case "Fully Taxable":
+          // RRSP fully taxable at marginal rate (assume 35%)
+          estimatedTaxes += projectedValue * 0.35;
+          break;
+        case "Capital Gains":
+          // Capital gains at 50% inclusion rate, then taxed at marginal rate
+          const capitalGain = projectedValue - asset.value;
+          estimatedTaxes += (capitalGain * 0.5) * 0.35;
+          break;
+      }
+    });
+    
+    // Add estate administration costs (approximately 3-5% of estate)
+    const administrationCosts = totalEstateValue * 0.04;
+    estimatedTaxes += administrationCosts;
     
     // Net to beneficiaries
     const netToBeneficiaries = totalEstateValue - estimatedTaxes;
@@ -90,12 +116,9 @@ const EstateCard = () => {
 
 Breakdown by asset type:
 `;
-    estateAssets.forEach(asset => {
+    mockEstateAssets.forEach(asset => {
       const projectedValue = asset.value * Math.pow(1 + (rateOfReturn[0]/100), timeHorizon[0]);
-      const taxStatus = asset.name === "TFSA" ? "Tax-Free" : 
-                       asset.name === "RRSP" ? "Fully Taxable" : 
-                       asset.name === "Real Estate" || asset.name === "Non-Registered" ? "Capital Gains" : "Taxable";
-      text += `  – ${asset.name}: ${formatCurrency(projectedValue)} (${taxStatus})\n`;
+      text += `  – ${asset.name}: ${formatCurrency(projectedValue)} (${asset.taxType})\n`;
     });
     text += `
 
@@ -180,6 +203,7 @@ Adjust the sliders to instantly see the implication of growth and time on your l
           <div className="p-6 bg-gradient-to-r from-purple-50 to-green-50 border border-purple-200 rounded-xl">
             <div className="mb-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-2">Final Tax Simulation ({timeHorizon[0]} years)</h3>
+              <p className="text-sm text-gray-600">Estate value: {formatCurrency(mockEstateAssets.reduce((sum, asset) => sum + asset.value, 0))} growing to {formatCurrency(estateValues.totalEstate)}</p>
             </div>
             
             <ChartContainer config={chartConfig} className="h-64 w-full">
@@ -227,6 +251,19 @@ Adjust the sliders to instantly see the implication of growth and time on your l
               <div className="text-center">
                 <p className="text-lg font-bold" style={{ color: '#10b981' }}>Net Amount</p>
                 <p className="text-2xl font-bold" style={{ color: '#10b981' }}>{formatCurrency(estateValues.netToBeneficiaries)}</p>
+              </div>
+            </div>
+
+            {/* Asset Breakdown */}
+            <div className="mt-6 p-4 bg-white/70 rounded-lg">
+              <h4 className="text-sm font-semibold text-gray-800 mb-3">Current Estate Assets</h4>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                {mockEstateAssets.map((asset, index) => (
+                  <div key={index} className="flex justify-between items-center py-1">
+                    <span className="text-gray-600">{asset.name}:</span>
+                    <span className="font-medium">{formatCurrency(asset.value)}</span>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
