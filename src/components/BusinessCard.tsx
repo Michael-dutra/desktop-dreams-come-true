@@ -5,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-import { BusinessDetailDialog } from "./BusinessDetailDialog";
+import BusinessDetailDialog from "./BusinessDetailDialog";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
 
@@ -79,21 +79,6 @@ const BusinessCard = () => {
     text += `- Review and revisit these estimates annually as your business evolves.\n\n`;
     text += `If you'd like, we can personalize further based on real data or other business strengths/challenges you share. Adjust the sliders above to see different scenarios and their impact.`;
     return text;
-  };
-
-  // Mock business data for the dialog
-  const mockBusiness = {
-    id: "1",
-    name: "Business",
-    industry: "Technology",
-    value: currentValuation,
-    ownership: 100,
-    revenue: grossRevenue,
-    netIncome: grossRevenue * 0.2,
-    employees: 25,
-    founded: 2020,
-    location: "Toronto, ON",
-    description: "Innovative technology company focused on growth and expansion"
   };
 
   return (
@@ -274,9 +259,8 @@ const BusinessCard = () => {
         </CardContent>
       </Card>
       <BusinessDetailDialog 
-        open={showDetailDialog} 
-        onOpenChange={setShowDetailDialog}
-        business={mockBusiness}
+        isOpen={showDetailDialog} 
+        onClose={() => setShowDetailDialog(false)} 
       />
       <SectionAIDialog
         isOpen={aiDialogOpen}
