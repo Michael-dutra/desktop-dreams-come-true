@@ -432,8 +432,14 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     };
   };
 
+  // Calculate company valuation percentage relative to LCGE limit
+  const calculateValuationPercentage = () => {
+    return (companyValuation[0] / totalLcgeLimit) * 100;
+  };
+
   const activeAssetData = calculateActiveAssetRatio();
   const lcgeAnalysisData = calculateLcgeAnalysis();
+  const valuationPercentage = calculateValuationPercentage();
 
   const calculateFutureValue = (currentValue: number, growthRate: number, years: number, monthlyContribution: number) => {
     const monthlyRate = (growthRate / 100) / 12;
@@ -709,17 +715,21 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                         </div>
                       </div>
 
-                      {/* Progress bar for LCGE utilization */}
+                      {/* Updated progress bar for company valuation relative to LCGE limit */}
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
-                          <span>LCGE Usage</span>
-                          <span>{lcgeAnalysisData.utilizationPercentage.toFixed(1)}%</span>
+                          <span>Company Valuation Progress to LCGE Limit</span>
+                          <span>{valuationPercentage.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div 
                             className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${Math.min(100, lcgeAnalysisData.utilizationPercentage)}%` }}
+                            style={{ width: `${Math.min(100, valuationPercentage)}%` }}
                           />
+                        </div>
+                        <div className="flex justify-between text-xs text-gray-500 mt-1">
+                          <span>$0</span>
+                          <span>$1,250,000 (LCGE Limit)</span>
                         </div>
                       </div>
 
