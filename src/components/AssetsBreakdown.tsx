@@ -124,7 +124,7 @@ const AssetsBreakdown = () => {
     );
   }
 
-  // Normal state when assets exist - show the actual assets
+  // Normal state when assets exist - show the actual assets from context
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -191,7 +191,7 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Assets Table - Shows actual assets from context */}
+            {/* Assets Table - Shows only assets from FinancialDataContext */}
             <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
               <Table className="h-full">
                 <TableHeader>
@@ -202,7 +202,7 @@ const AssetsBreakdown = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {projectedAssets.map((asset, index) => (
+                  {projectedAssets.map((asset) => (
                     <TableRow key={asset.id} className="hover:bg-gray-50 h-20">
                       <TableCell className="font-semibold text-xl py-6">
                         <div className="flex items-center space-x-3">
