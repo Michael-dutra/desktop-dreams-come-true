@@ -29,7 +29,7 @@ interface YearlyData {
   taxesPaid: number;
 }
 
-type WithdrawalStrategy = "balanced" | "tax-free-first" | "minimize-lifetime-tax" | "preserve-rrsp";
+type WithdrawalStrategy = "balanced" | "tax-free-first" | "minimize-lifetime-tax" | "preserve-rrsp" | "custom";
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const { assets } = useAssets();
@@ -77,6 +77,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         return { rrsp: 35, tfsa: 45, nonReg: 20 };
       case "preserve-rrsp":
         return { rrsp: 0, tfsa: 50, nonReg: 50 };
+      case "custom":
+        // For custom, return current allocations (don't change them)
+        return { rrsp: rrspAllocation[0], tfsa: tfsaAllocation[0], nonReg: nonRegAllocation[0] };
       case "balanced":
       default:
         return { rrsp: 34, tfsa: 33, nonReg: 33 };
@@ -84,6 +87,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   };
 
   const handleOptimizeAllocations = () => {
+    // Don't optimize if custom is selected - user wants manual control
+    if (withdrawalStrategy === "custom") return;
+    
     const optimal = getOptimalAllocations(withdrawalStrategy);
     setRrspAllocation([optimal.rrsp]);
     setTfsaAllocation([optimal.tfsa]);
@@ -93,7 +99,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   // Reset optimized flag when user manually adjusts allocations
   useEffect(() => {
-    if (isOptimized) {
+    if (isOptimized && withdrawalStrategy !== "custom") {
       const optimal = getOptimalAllocations(withdrawalStrategy);
       const isStillOptimal = 
         rrspAllocation[0] === optimal.rrsp &&
@@ -106,7 +112,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     }
   }, [rrspAllocation, tfsaAllocation, nonRegAllocation, withdrawalStrategy, isOptimized]);
 
-  // Calculate future values at retirement with proper compound growth
   const calculateFutureValue = (currentValue: number, allocation: number) => {
     let futureValue = currentValue;
     const monthlyContributionToAccount = (monthlyContribution * 12) * (allocation / 100);
@@ -147,7 +152,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return rrspTax + nonRegTax;
   };
 
-  // Generate year-by-year breakdown with tax calculations
   const generateYearlyData = (): YearlyData[] => {
     const data: YearlyData[] = [];
     let rrspBalance = futureRRSP;
@@ -202,7 +206,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   const yearlyData = generateYearlyData();
   
-  // Calculate actual asset duration based on when assets reach zero
   const calculateActualAssetDuration = (): number => {
     if (annualIncomeNeeded === 0) return Infinity;
     
@@ -238,7 +241,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   }, 0);
   const taxEfficiencyScore = Math.max(0, Math.min(100, (1 - totalLifetimeTaxes / worstCaseTaxes) * 100));
 
-  // Chart data for asset depletion visualization
   const assetDepletionData = yearlyData.slice(0, 10).map(year => ({
     age: year.age,
     year: `+${year.year}yr`,
@@ -278,7 +280,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     return `$${Math.round(value).toLocaleString()}`;
   };
 
-  // CPP/OAS Calculation Functions with eligibility percentage
   const calculateCPP = (startAge: number, eligibilityPercent: number) => {
     const maxCPP = 1308; // Maximum CPP at age 65 (2024)
     const baseAmount = maxCPP * (eligibilityPercent / 100);
@@ -325,6 +326,8 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
         return "Optimizes withdrawal order to minimize total lifetime taxes";
       case "preserve-rrsp":
         return "RRSP is preserved and only used as a last resort — or once mandatory withdrawals start at age 71.";
+      case "custom":
+        return "Use custom allocation percentages set manually with the sliders below.";
       case "balanced":
       default:
         return "Maintains steady withdrawal rates across all accounts";
@@ -385,6 +388,19 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             "Limited withdrawal flexibility"
           ]
         };
+      case "custom":
+        return {
+          pros: [
+            "Full control over allocation percentages",
+            "Tailored to your specific situation",
+            "Flexibility to adjust as needed"
+          ],
+          cons: [
+            "Requires manual optimization",
+            "May not be tax-optimal without analysis",
+            "More complex to manage"
+          ]
+        };
       default:
         return { pros: [], cons: [] };
     }
@@ -434,62 +450,65 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
               </div>
 
-              <div>
-                <h3 className="text-lg font-semibold mb-4">
-                  Allocate how your retirement income is sourced from each account (total must be 100%):
-                  {isOptimized && (
-                    <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
-                      Optimized
-                    </span>
-                  )}
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-medium">RRSP</label>
-                      <span className="text-sm font-bold">{rrspAllocation[0]}%</span>
+              {/* Show allocation sliders only for custom strategy */}
+              {withdrawalStrategy === "custom" && (
+                <div>
+                  <h3 className="text-lg font-semibold mb-4">
+                    Allocate how your retirement income is sourced from each account (total must be 100%):
+                    {isOptimized && (
+                      <span className="ml-2 px-2 py-1 text-xs bg-green-100 text-green-800 rounded-full">
+                        Optimized
+                      </span>
+                    )}
+                  </h3>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium">RRSP</label>
+                        <span className="text-sm font-bold">{rrspAllocation[0]}%</span>
+                      </div>
+                      <Slider
+                        value={rrspAllocation}
+                        onValueChange={setRrspAllocation}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
                     </div>
-                    <Slider
-                      value={rrspAllocation}
-                      onValueChange={setRrspAllocation}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium">TFSA</label>
+                        <span className="text-sm font-bold">{tfsaAllocation[0]}%</span>
+                      </div>
+                      <Slider
+                        value={tfsaAllocation}
+                        onValueChange={setTfsaAllocation}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex justify-between items-center mb-2">
+                        <label className="text-sm font-medium">Non-Registered</label>
+                        <span className="text-sm font-bold">{nonRegAllocation[0]}%</span>
+                      </div>
+                      <Slider
+                        value={nonRegAllocation}
+                        onValueChange={setNonRegAllocation}
+                        min={0}
+                        max={100}
+                        step={5}
+                      />
+                    </div>
+                    {totalAllocation !== 100 && (
+                      <div className="text-red-600 text-sm font-medium">
+                        Total allocation: {totalAllocation}% (must equal 100%)
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-medium">TFSA</label>
-                      <span className="text-sm font-bold">{tfsaAllocation[0]}%</span>
-                    </div>
-                    <Slider
-                      value={tfsaAllocation}
-                      onValueChange={setTfsaAllocation}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
-                  </div>
-                  <div>
-                    <div className="flex justify-between items-center mb-2">
-                      <label className="text-sm font-medium">Non-Registered</label>
-                      <span className="text-sm font-bold">{nonRegAllocation[0]}%</span>
-                    </div>
-                    <Slider
-                      value={nonRegAllocation}
-                      onValueChange={setNonRegAllocation}
-                      min={0}
-                      max={100}
-                      step={5}
-                    />
-                  </div>
-                  {totalAllocation !== 100 && (
-                    <div className="text-red-600 text-sm font-medium">
-                      Total allocation: {totalAllocation}% (must equal 100%)
-                    </div>
-                  )}
                 </div>
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -532,6 +551,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                       <SelectItem value="tax-free-first">Tax-Free First</SelectItem>
                       <SelectItem value="minimize-lifetime-tax">Minimize Lifetime Tax</SelectItem>
                       <SelectItem value="preserve-rrsp">Preserve RRSP</SelectItem>
+                      <SelectItem value="custom">Custom</SelectItem>
                     </SelectContent>
                   </Select>
                   <p className="text-xs text-gray-600 mt-1">
@@ -545,14 +565,21 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   onClick={handleOptimizeAllocations}
                   className="flex items-center gap-2"
                   variant={isOptimized ? "secondary" : "default"}
+                  disabled={withdrawalStrategy === "custom"}
                 >
                   <TrendingUp className="h-4 w-4" />
                   Optimize Allocations
                 </Button>
-                {isOptimized && (
+                {isOptimized && withdrawalStrategy !== "custom" && (
                   <div className="flex items-center gap-2 text-sm text-green-600">
                     <span className="w-2 h-2 bg-green-600 rounded-full"></span>
                     Using optimized allocation for {withdrawalStrategy.replace('-', ' ')} strategy
+                  </div>
+                )}
+                {withdrawalStrategy === "custom" && (
+                  <div className="flex items-center gap-2 text-sm text-blue-600">
+                    <span className="w-2 h-2 bg-blue-600 rounded-full"></span>
+                    Using custom allocations
                   </div>
                 )}
               </div>
@@ -594,7 +621,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
               </div>
 
-              {/* Real-time tax impact */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600">
@@ -955,29 +981,25 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           {/* Year-by-Year Account Breakdown with Tax Column */}
           <Card>
             <CardHeader>
-              <CardTitle>Year-by-Year Account Breakdown</CardTitle>
-              <p className="text-sm text-gray-600">
-                Detailed annual breakdown showing each account balance, withdrawals, and taxes paid until assets reach zero
-              </p>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Age</TableHead>
+                  <TableHead>Year</TableHead>
+                  <TableHead>RRSP Balance</TableHead>
+                  <TableHead>RRSP Withdrawal</TableHead>
+                  <TableHead>TFSA Balance</TableHead>
+                  <TableHead>TFSA Withdrawal</TableHead>
+                  <TableHead>Non-Reg Balance</TableHead>
+                  <TableHead>Non-Reg Withdrawal</TableHead>
+                  <TableHead>Taxes Paid</TableHead>
+                  <TableHead>Total Assets</TableHead>
+                  <TableHead>Total Withdrawal</TableHead>
+                </TableRow>
+              </TableHeader>
             </CardHeader>
             <CardContent>
               <div className="max-h-96 overflow-y-auto">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Age</TableHead>
-                      <TableHead>Year</TableHead>
-                      <TableHead>RRSP Balance</TableHead>
-                      <TableHead>RRSP Withdrawal</TableHead>
-                      <TableHead>TFSA Balance</TableHead>
-                      <TableHead>TFSA Withdrawal</TableHead>
-                      <TableHead>Non-Reg Balance</TableHead>
-                      <TableHead>Non-Reg Withdrawal</TableHead>
-                      <TableHead>Taxes Paid</TableHead>
-                      <TableHead>Total Assets</TableHead>
-                      <TableHead>Total Withdrawal</TableHead>
-                    </TableRow>
-                  </TableHeader>
                   <TableBody>
                     {yearlyData.map((year, index) => (
                       <TableRow key={index}>
