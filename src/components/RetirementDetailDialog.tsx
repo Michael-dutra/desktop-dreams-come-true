@@ -45,7 +45,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   
   const [retirementAge, setRetirementAge] = useState([65]);
   const [monthlyIncomeNeeded, setMonthlyIncomeNeeded] = useState([4500]);
-  const [rateOfReturn, setRateOfReturn] = useState([5]);
+  const [retirementRateOfReturn, setRetirementRateOfReturn] = useState([5]);
   const [rrspAllocation, setRrspAllocation] = useState([60]);
   const [tfsaAllocation, setTfsaAllocation] = useState([30]);
   const [nonRegAllocation, setNonRegAllocation] = useState([10]);
@@ -112,17 +112,39 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const totalFutureSavings = futureRRSP + futureTFSA + futureNonReg;
 
   const annualIncomeNeeded = monthlyIncomeNeeded[0] * 12;
-  const totalRetirementNeeded = annualIncomeNeeded * yearsInRetirement;
   
-  // Calculate withdrawals based on allocation
-  const annualRrspWithdrawal = annualIncomeNeeded * (rrspAllocation[0] / 100);
-  const annualTfsaWithdrawal = annualIncomeNeeded * (tfsaAllocation[0] / 100);
-  const annualNonRegWithdrawal = annualIncomeNeeded * (nonRegAllocation[0] / 100);
+  // Calculate gross withdrawals needed based on tax implications
+  const calculateGrossWithdrawals = (netIncomeNeeded: number) => {
+    const rrspPercent = rrspAllocation[0] / 100;
+    const tfsaPercent = tfsaAllocation[0] / 100;
+    const nonRegPercent = nonRegAllocation[0] / 100;
+    
+    // TFSA is tax-free, so gross = net
+    const tfsaGross = netIncomeNeeded * tfsaPercent;
+    
+    // For RRSP, need to gross up by full tax rate
+    const rrspNet = netIncomeNeeded * rrspPercent;
+    const rrspGross = rrspNet / (1 - (taxRate[0] / 100));
+    
+    // For Non-Reg, assume 50% capital gains inclusion rate
+    const nonRegNet = netIncomeNeeded * nonRegPercent;
+    const nonRegGross = nonRegNet / (1 - (taxRate[0] / 100 * 0.5));
+    
+    return {
+      rrspGross,
+      tfsaGross,
+      nonRegGross,
+      totalGross: rrspGross + tfsaGross + nonRegGross
+    };
+  };
 
-  // Calculate how long each account will last
-  const rrspDuration = annualRrspWithdrawal > 0 ? futureRRSP / annualRrspWithdrawal : Infinity;
-  const tfsaDuration = annualTfsaWithdrawal > 0 ? futureTFSA / annualTfsaWithdrawal : Infinity;
-  const nonRegDuration = annualNonRegWithdrawal > 0 ? futureNonReg / annualNonRegWithdrawal : Infinity;
+  const grossWithdrawals = calculateGrossWithdrawals(annualIncomeNeeded);
+  const totalRetirementNeeded = grossWithdrawals.totalGross * yearsInRetirement;
+  
+  // Calculate how long each account will last with gross withdrawals
+  const rrspDuration = grossWithdrawals.rrspGross > 0 ? futureRRSP / grossWithdrawals.rrspGross : Infinity;
+  const tfsaDuration = grossWithdrawals.tfsaGross > 0 ? futureTFSA / grossWithdrawals.tfsaGross : Infinity;
+  const nonRegDuration = grossWithdrawals.nonRegGross > 0 ? futureNonReg / grossWithdrawals.nonRegGross : Infinity;
 
   const fundingPercentage = Math.min(100, (totalFutureSavings / totalRetirementNeeded) * 100);
   const fundingStatus = fundingPercentage >= 100 ? "Fully Funded" : "Underfunded";
@@ -141,7 +163,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     let rrspBalance = futureRRSP;
     let tfsaBalance = futureTFSA;
     let nonRegBalance = futureNonReg;
-    const annualRateOfReturn = rateOfReturn[0] / 100;
+    const annualRateOfReturn = retirementRateOfReturn[0] / 100;
 
     for (let year = 0; year <= 30; year++) {
       const age = retirementAge[0] + year;
@@ -157,19 +179,19 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       let tfsaWithdrawal = 0;
       let nonRegWithdrawal = 0;
 
-      // Calculate withdrawals after growth
+      // Calculate withdrawals after growth using gross withdrawal amounts
       if (rrspBalance > 0) {
-        rrspWithdrawal = Math.min(rrspBalance, annualRrspWithdrawal);
+        rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.rrspGross);
         rrspBalance -= rrspWithdrawal;
       }
 
       if (tfsaBalance > 0) {
-        tfsaWithdrawal = Math.min(tfsaBalance, annualTfsaWithdrawal);
+        tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.tfsaGross);
         tfsaBalance -= tfsaWithdrawal;
       }
 
       if (nonRegBalance > 0) {
-        nonRegWithdrawal = Math.min(nonRegBalance, annualNonRegWithdrawal);
+        nonRegWithdrawal = Math.min(nonRegBalance, grossWithdrawals.nonRegGross);
         nonRegBalance -= nonRegWithdrawal;
       }
 
@@ -200,7 +222,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const yearlyData = generateYearlyData();
   
   const calculateActualAssetDuration = (): number => {
-    if (annualIncomeNeeded === 0) return Infinity;
+    if (grossWithdrawals.totalGross === 0) return Infinity;
     
     // Find the last year where total assets > 0
     let lastYearWithAssets = 0;
@@ -214,7 +236,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     const finalYear = yearlyData[lastYearWithAssets];
     if (finalYear && finalYear.totalWithdrawal > 0) {
       const remainingAssets = finalYear.totalAssets;
-      const partialYear = remainingAssets / annualIncomeNeeded;
+      const partialYear = remainingAssets / grossWithdrawals.totalGross;
       return lastYearWithAssets + partialYear;
     }
     
@@ -416,7 +438,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <CardTitle>Retirement Planning Controls</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Retirement Age: {retirementAge[0]}
@@ -443,15 +465,30 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Rate of Return (During Retirement): {rateOfReturn[0]}%
+                    Rate of Return (During Retirement): {retirementRateOfReturn[0]}%
                   </label>
                   <Slider
-                    value={rateOfReturn}
-                    onValueChange={setRateOfReturn}
+                    value={retirementRateOfReturn}
+                    onValueChange={setRetirementRateOfReturn}
                     min={0}
                     max={15}
                     step={0.5}
                   />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Tax Rate on Withdrawals: {taxRate[0]}%
+                  </label>
+                  <Slider
+                    value={taxRate}
+                    onValueChange={setTaxRate}
+                    min={15}
+                    max={55}
+                    step={1}
+                  />
+                  <p className="text-xs text-gray-600 mt-1">
+                    Applied to RRSP and 50% of Non-Registered withdrawals
+                  </p>
                 </div>
               </div>
 
@@ -523,22 +560,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             <CardContent className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="flex items-center gap-2 text-sm font-medium mb-2">
-                    Tax Rate on Withdrawals: {taxRate[0]}%
-                    <Info className="h-4 w-4 text-gray-400" />
-                  </label>
-                  <Slider
-                    value={taxRate}
-                    onValueChange={setTaxRate}
-                    min={15}
-                    max={55}
-                    step={1}
-                  />
-                  <p className="text-xs text-gray-600 mt-1">
-                    Applied to RRSP and 50% of Non-Registered withdrawals. TFSA is tax-free.
-                  </p>
-                </div>
-                <div>
                   <label className="block text-sm font-medium mb-2">
                     Withdrawal Strategy
                   </label>
@@ -557,6 +578,20 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   <p className="text-xs text-gray-600 mt-1">
                     {getStrategyDescription(withdrawalStrategy)}
                   </p>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span>Net Income Needed (Annual):</span>
+                    <span className="font-semibold">{formatCurrency(annualIncomeNeeded)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Gross Withdrawal Required:</span>
+                    <span className="font-semibold">{formatCurrency(grossWithdrawals.totalGross)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Additional Amount for Taxes:</span>
+                    <span className="font-semibold text-red-600">{formatCurrency(grossWithdrawals.totalGross - annualIncomeNeeded)}</span>
+                  </div>
                 </div>
               </div>
 
