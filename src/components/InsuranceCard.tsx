@@ -1,4 +1,3 @@
-
 import { Shield, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -78,9 +77,9 @@ const InsuranceCard = () => {
   };
 
   const needsConfig = {
-    incomeReplacement: { label: "Income Replacement (Years)", max: 30 }, // changed to multiplier config
-    debtCoverage: { label: "Debt Coverage", max: 5000000 },
-    finalExpenses: { label: "Final Expenses", max: 5000000 }
+    incomeReplacement: { label: "Income Replacement (Years)", max: 20 }, // changed from 30 to 20
+    debtCoverage: { label: "Debt Coverage", max: 3000000 }, // changed from 5000000 to 3000000
+    finalExpenses: { label: "Final Expenses", max: 3000000 } // changed from 5000000 to 3000000
   };
 
   const generateAIAnalysis = () => {
