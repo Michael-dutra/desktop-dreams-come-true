@@ -29,7 +29,7 @@ interface YearlyData {
   taxesPaid: number;
 }
 
-type WithdrawalStrategy = "balanced" | "tax-free-first" | "minimize-lifetime-tax" | "preserve-rrsp" | "custom";
+type WithdrawalStrategy = "balanced" | "tax-free-first" | "rrsp-first" | "minimize-lifetime-tax" | "preserve-rrsp" | "custom";
 
 export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDialogProps) => {
   const { assets } = useAssets();
@@ -72,6 +72,8 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
     switch (strategy) {
       case "tax-free-first":
         return { rrsp: 0, tfsa: 100, nonReg: 0 };
+      case "rrsp-first":
+        return { rrsp: 100, tfsa: 0, nonReg: 0 };
       case "minimize-lifetime-tax":
         // Favor TFSA and Non-Reg early to avoid high RRSP taxes later
         return { rrsp: 35, tfsa: 45, nonReg: 20 };
@@ -179,20 +181,63 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
       let tfsaWithdrawal = 0;
       let nonRegWithdrawal = 0;
 
-      // Calculate withdrawals after growth using gross withdrawal amounts
-      if (rrspBalance > 0) {
-        rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.rrspGross);
-        rrspBalance -= rrspWithdrawal;
-      }
+      // Handle sequential withdrawal strategies
+      if (withdrawalStrategy === "tax-free-first") {
+        // Use TFSA first, then 50/50 RRSP/Non-Reg
+        if (tfsaBalance > 0) {
+          tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.totalGross);
+          tfsaBalance -= tfsaWithdrawal;
+        } else {
+          // TFSA depleted, use 50/50 split of remaining accounts
+          const remainingNeeded = grossWithdrawals.totalGross;
+          const halfNeeded = remainingNeeded / 2;
+          
+          if (rrspBalance > 0) {
+            rrspWithdrawal = Math.min(rrspBalance, halfNeeded);
+            rrspBalance -= rrspWithdrawal;
+          }
+          
+          if (nonRegBalance > 0) {
+            nonRegWithdrawal = Math.min(nonRegBalance, halfNeeded);
+            nonRegBalance -= nonRegWithdrawal;
+          }
+        }
+      } else if (withdrawalStrategy === "rrsp-first") {
+        // Use RRSP first, then 50/50 TFSA/Non-Reg
+        if (rrspBalance > 0) {
+          rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.totalGross);
+          rrspBalance -= rrspWithdrawal;
+        } else {
+          // RRSP depleted, use 50/50 split of remaining accounts
+          const remainingNeeded = grossWithdrawals.totalGross;
+          const halfNeeded = remainingNeeded / 2;
+          
+          if (tfsaBalance > 0) {
+            tfsaWithdrawal = Math.min(tfsaBalance, halfNeeded);
+            tfsaBalance -= tfsaWithdrawal;
+          }
+          
+          if (nonRegBalance > 0) {
+            nonRegWithdrawal = Math.min(nonRegBalance, halfNeeded);
+            nonRegBalance -= nonRegWithdrawal;
+          }
+        }
+      } else {
+        // Use regular allocation-based withdrawals for other strategies
+        if (rrspBalance > 0) {
+          rrspWithdrawal = Math.min(rrspBalance, grossWithdrawals.rrspGross);
+          rrspBalance -= rrspWithdrawal;
+        }
 
-      if (tfsaBalance > 0) {
-        tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.tfsaGross);
-        tfsaBalance -= tfsaWithdrawal;
-      }
+        if (tfsaBalance > 0) {
+          tfsaWithdrawal = Math.min(tfsaBalance, grossWithdrawals.tfsaGross);
+          tfsaBalance -= tfsaWithdrawal;
+        }
 
-      if (nonRegBalance > 0) {
-        nonRegWithdrawal = Math.min(nonRegBalance, grossWithdrawals.nonRegGross);
-        nonRegBalance -= nonRegWithdrawal;
+        if (nonRegBalance > 0) {
+          nonRegWithdrawal = Math.min(nonRegBalance, grossWithdrawals.nonRegGross);
+          nonRegBalance -= nonRegWithdrawal;
+        }
       }
 
       const totalWithdrawal = rrspWithdrawal + tfsaWithdrawal + nonRegWithdrawal;
@@ -336,7 +381,9 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const getStrategyDescription = (strategy: WithdrawalStrategy) => {
     switch (strategy) {
       case "tax-free-first":
-        return "TFSA is used to fully fund retirement income until depleted. RRSP and Non-Registered assets will be drawn next.";
+        return "TFSA is used to fully fund retirement income until depleted, then uses a 50/50 split of RRSP and Non-Registered assets.";
+      case "rrsp-first":
+        return "RRSP is used to fully fund retirement income until depleted, then uses a 50/50 split of TFSA and Non-Registered assets.";
       case "minimize-lifetime-tax":
         return "Optimizes withdrawal order to minimize total lifetime taxes";
       case "preserve-rrsp":
@@ -375,6 +422,19 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             "Depletes tax-free savings quickly",
             "Higher tax burden in later years",
             "No tax diversification benefits"
+          ]
+        };
+      case "rrsp-first":
+        return {
+          pros: [
+            "Takes advantage of potentially lower tax rates early in retirement",
+            "Preserves tax-free TFSA growth longer",
+            "Avoids mandatory RRSP withdrawals at 71"
+          ],
+          cons: [
+            "Higher tax burden initially",
+            "Depletes tax-deferred savings quickly",
+            "May push you into higher tax brackets early"
           ]
         };
       case "minimize-lifetime-tax":
@@ -570,6 +630,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                     <SelectContent>
                       <SelectItem value="balanced">Balanced</SelectItem>
                       <SelectItem value="tax-free-first">Tax-Free First</SelectItem>
+                      <SelectItem value="rrsp-first">RRSP First</SelectItem>
                       <SelectItem value="minimize-lifetime-tax">Minimize Lifetime Tax</SelectItem>
                       <SelectItem value="preserve-rrsp">Preserve RRSP</SelectItem>
                       <SelectItem value="custom">Custom</SelectItem>
