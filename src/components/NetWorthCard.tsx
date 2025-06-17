@@ -1,3 +1,4 @@
+
 import { TrendingUp, DollarSign, Target, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -156,12 +157,12 @@ const NetWorthCard = () => {
               <AreaChart data={projectionData} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                 <XAxis 
                   dataKey="year" 
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                 />
                 <YAxis 
-                  tick={{ fontSize: 11, fill: '#9ca3af' }}
+                  tick={{ fontSize: 11, fill: 'white' }}
                   axisLine={{ stroke: 'white', strokeWidth: 1 }}
                   tickLine={{ stroke: 'white' }}
                   tickFormatter={(value) => formatCurrency(value)}
