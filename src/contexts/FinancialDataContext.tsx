@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 export interface Asset {
   id: string;
@@ -49,117 +49,104 @@ export const useFinancialData = () => {
   return context;
 };
 
-// Helper functions for localStorage
-const loadFromStorage = (key: string, defaultValue: any) => {
-  try {
-    const stored = localStorage.getItem(key);
-    return stored ? JSON.parse(stored) : defaultValue;
-  } catch (error) {
-    console.error(`Error loading ${key} from localStorage:`, error);
-    return defaultValue;
-  }
-};
-
-const saveToStorage = (key: string, value: any) => {
-  try {
-    localStorage.setItem(key, JSON.stringify(value));
-  } catch (error) {
-    console.error(`Error saving ${key} to localStorage:`, error);
-  }
-};
-
 export const FinancialDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Initialize with empty arrays, then load from localStorage
-  const [assets, setAssetsState] = useState<Asset[]>([]);
-  const [liabilities, setLiabilitiesState] = useState<Liability[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([
+    { 
+      id: "1", 
+      name: "Real Estate", 
+      amount: "$620,000", 
+      value: 620000, 
+      color: "#3b82f6", 
+      category: "real-estate",
+      isRetirementEligible: false
+    },
+    { 
+      id: "2", 
+      name: "RRSP", 
+      amount: "$52,000", 
+      value: 52000, 
+      color: "#10b981", 
+      category: "retirement",
+      isRetirementEligible: true
+    },
+    { 
+      id: "3", 
+      name: "TFSA", 
+      amount: "$38,000", 
+      value: 38000, 
+      color: "#8b5cf6", 
+      category: "retirement",
+      isRetirementEligible: true
+    },
+    { 
+      id: "4", 
+      name: "Non-Registered", 
+      amount: "$25,000", 
+      value: 25000, 
+      color: "#f59e0b", 
+      category: "investment",
+      isRetirementEligible: true
+    },
+    { 
+      id: "5", 
+      name: "Digital Asset", 
+      amount: "$15,000", 
+      value: 15000, 
+      color: "#ef4444", 
+      category: "investment",
+      isRetirementEligible: false
+    },
+  ]);
 
-  // Load data from localStorage on mount
-  useEffect(() => {
-    console.log('Loading financial data from localStorage...');
-    const storedAssets = loadFromStorage('financial-assets', []);
-    const storedLiabilities = loadFromStorage('financial-liabilities', [
-      { 
-        id: "1", 
-        name: "Mortgage", 
-        amount: "$420,000", 
-        value: 420000, 
-        color: "#dc2626", 
-        category: "mortgage"
-      },
-      { 
-        id: "2", 
-        name: "Credit Card", 
-        amount: "$27,500", 
-        value: 27500, 
-        color: "#f97316", 
-        category: "credit"
-      },
-    ]);
-    
-    console.log('Loaded assets from storage:', storedAssets);
-    console.log('Loaded liabilities from storage:', storedLiabilities);
-    
-    setAssetsState(storedAssets);
-    setLiabilitiesState(storedLiabilities);
-  }, []);
-
-  // Custom setters that also save to localStorage
-  const setAssets = (newAssets: Asset[]) => {
-    console.log('Setting assets:', newAssets);
-    setAssetsState(newAssets);
-    saveToStorage('financial-assets', newAssets);
-  };
-
-  const setLiabilities = (newLiabilities: Liability[]) => {
-    console.log('Setting liabilities:', newLiabilities);
-    setLiabilitiesState(newLiabilities);
-    saveToStorage('financial-liabilities', newLiabilities);
-  };
+  const [liabilities, setLiabilities] = useState<Liability[]>([
+    { 
+      id: "1", 
+      name: "Mortgage", 
+      amount: "$420,000", 
+      value: 420000, 
+      color: "#dc2626", 
+      category: "mortgage"
+    },
+    { 
+      id: "2", 
+      name: "Credit Card", 
+      amount: "$27,500", 
+      value: 27500, 
+      color: "#f97316", 
+      category: "credit"
+    },
+  ]);
 
   const addAsset = (asset: Asset) => {
-    console.log('Adding asset:', asset);
-    const newAssets = [...assets, asset];
-    setAssets(newAssets);
+    setAssets(prev => [...prev, asset]);
   };
 
   const updateAsset = (id: string, updates: Partial<Asset>) => {
-    console.log('Updating asset:', id, updates);
-    const newAssets = assets.map(asset => 
+    setAssets(prev => prev.map(asset => 
       asset.id === id ? { ...asset, ...updates } : asset
-    );
-    setAssets(newAssets);
+    ));
   };
 
   const removeAsset = (id: string) => {
-    console.log('Removing asset:', id);
-    const newAssets = assets.filter(asset => asset.id !== id);
-    setAssets(newAssets);
+    setAssets(prev => prev.filter(asset => asset.id !== id));
   };
 
   const addLiability = (liability: Liability) => {
-    console.log('Adding liability:', liability);
-    const newLiabilities = [...liabilities, liability];
-    setLiabilities(newLiabilities);
+    setLiabilities(prev => [...prev, liability]);
   };
 
   const updateLiability = (id: string, updates: Partial<Liability>) => {
-    console.log('Updating liability:', id, updates);
-    const newLiabilities = liabilities.map(liability => 
+    setLiabilities(prev => prev.map(liability => 
       liability.id === id ? { ...liability, ...updates } : liability
-    );
-    setLiabilities(newLiabilities);
+    ));
   };
 
   const removeLiability = (id: string) => {
-    console.log('Removing liability:', id);
-    const newLiabilities = liabilities.filter(liability => liability.id !== id);
-    setLiabilities(newLiabilities);
+    setLiabilities(prev => prev.filter(liability => liability.id !== id));
   };
 
   const getTotalAssets = () => {
-    const total = assets.reduce((sum, asset) => sum + asset.value, 0);
-    console.log('Total assets calculated:', total);
-    return total;
+    return assets.reduce((sum, asset) => sum + asset.value, 0);
   };
 
   const getTotalLiabilities = () => {
