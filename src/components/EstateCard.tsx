@@ -1,4 +1,3 @@
-
 import { Crown, Eye, Bot } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -251,19 +250,6 @@ Adjust the sliders to instantly see the implication of growth and time on your l
               <div className="text-center">
                 <p className="text-lg font-bold" style={{ color: '#10b981' }}>Net Amount</p>
                 <p className="text-2xl font-bold" style={{ color: '#10b981' }}>{formatCurrency(estateValues.netToBeneficiaries)}</p>
-              </div>
-            </div>
-
-            {/* Asset Breakdown */}
-            <div className="mt-6 p-4 bg-white/70 rounded-lg">
-              <h4 className="text-sm font-semibold text-gray-800 mb-3">Current Estate Assets</h4>
-              <div className="grid grid-cols-2 gap-2 text-xs">
-                {mockEstateAssets.map((asset, index) => (
-                  <div key={index} className="flex justify-between items-center py-1">
-                    <span className="text-gray-600">{asset.name}:</span>
-                    <span className="font-medium">{formatCurrency(asset.value)}</span>
-                  </div>
-                ))}
               </div>
             </div>
           </div>
