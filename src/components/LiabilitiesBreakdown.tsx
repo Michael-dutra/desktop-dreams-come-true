@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Eye, CreditCard } from "lucide-react";
@@ -102,36 +103,25 @@ const LiabilitiesBreakdown = () => {
     sum + liability.monthlyPayment + liability.extraPayment, 0
   );
 
-  // Timeline component for visualizing time saved
-  const TimelineSaved = ({ monthsSaved, color }: { monthsSaved: number, color: string }) => {
-    const progressWidth = Math.min((monthsSaved / 60) * 100, 100);
-    
+  // Combined Savings Display Component
+  const CombinedSavingsDisplay = ({ monthsSaved, interestSaved, color }: { 
+    monthsSaved: number, 
+    interestSaved: number, 
+    color: string 
+  }) => {
     return (
-      <div className="mt-3">
-        <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
-          <span>Time Saved:</span>
-          <span className={`font-bold ${monthsSaved > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+      <div className="grid grid-cols-2 gap-3 mt-3">
+        <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+          <p className="text-sm font-medium text-green-800">Time Saved</p>
+          <p className="text-lg font-bold text-green-600">
             {Math.round(monthsSaved)} months
-          </span>
+          </p>
         </div>
-        <div className="relative h-3 bg-gray-200 rounded-full overflow-hidden">
-          <div 
-            className="h-full rounded-full transition-all duration-500 ease-out"
-            style={{ 
-              width: `${progressWidth}%`,
-              backgroundColor: monthsSaved > 0 ? color : '#e5e7eb',
-              opacity: monthsSaved > 0 ? 0.7 : 0.3
-            }}
-          />
-          <div 
-            className="absolute top-0 h-full w-1 bg-white border-2 transition-all duration-500 ease-out"
-            style={{ 
-              left: `${progressWidth}%`,
-              borderColor: monthsSaved > 0 ? color : '#9ca3af',
-              transform: 'translateX(-50%)',
-              opacity: monthsSaved > 0 ? 1 : 0.5
-            }}
-          />
+        <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+          <p className="text-sm font-medium text-blue-800">Interest Saved</p>
+          <p className="text-lg font-bold text-blue-600">
+            ${Math.round(interestSaved).toLocaleString()}
+          </p>
         </div>
       </div>
     );
@@ -146,7 +136,11 @@ const LiabilitiesBreakdown = () => {
 
     liabilities.forEach(liab => {
       const original = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate);
+      const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment);
+      const monthsSaved = original.months - accelerated.months;
+      const interestSaved = original.totalInterest - accelerated.totalInterest;
       const origDate = formatMonthsToDate(original.months);
+      
       text += `\n• **${liab.name}:**\n`;
       text += `  - Balance: ${liab.amount}\n`;
       text += `  - Interest Rate: ${liab.rate.toFixed(1)}%\n`;
@@ -154,10 +148,8 @@ const LiabilitiesBreakdown = () => {
       text += `  - Estimated Payoff Date: ${origDate}\n`;
 
       if (liab.extraPayment > 0) {
-        const accelerated = calculatePayoffDetails(liab.value, liab.monthlyPayment, liab.rate, liab.extraPayment);
-        const saved = original.months - accelerated.months;
         const accDate = formatMonthsToDate(accelerated.months);
-        text += `  - **Accelerated Payments:** Paying an extra $${liab.extraPayment}/mo reduces your payoff to ${accDate}, saving approximately ${Math.round(saved)} months of payments and interest.\n`;
+        text += `  - **Accelerated Payments:** Paying an extra $${liab.extraPayment}/mo reduces your payoff to ${accDate}, saving approximately ${Math.round(monthsSaved)} months and $${Math.round(interestSaved).toLocaleString()} in interest.\n`;
       }
 
       text += `  - Estimated Total Interest: $${(original.totalInterest).toLocaleString(undefined, { maximumFractionDigits: 0 })}\n`;
@@ -216,6 +208,7 @@ const LiabilitiesBreakdown = () => {
               const originalPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate);
               const newPayoff = calculatePayoffDetails(liability.value, liability.monthlyPayment, liability.rate, liability.extraPayment);
               const monthsSaved = originalPayoff.months - newPayoff.months;
+              const interestSaved = originalPayoff.totalInterest - newPayoff.totalInterest;
               
               return (
                 <div key={index} className="p-4 rounded-lg border-2 space-y-3 flex-1" style={{ borderColor: liability.color }}>
@@ -230,6 +223,13 @@ const LiabilitiesBreakdown = () => {
                       <span className="text-gray-600">${liability.monthlyPayment}/mo</span>
                     </div>
                   </div>
+                  
+                  {/* Combined Savings Display */}
+                  <CombinedSavingsDisplay 
+                    monthsSaved={monthsSaved} 
+                    interestSaved={interestSaved} 
+                    color={liability.color} 
+                  />
                   
                   {/* Sliders */}
                   <div className="grid grid-cols-2 gap-4">
@@ -272,9 +272,6 @@ const LiabilitiesBreakdown = () => {
                       <span className="font-bold text-green-600">{formatMonthsToDate(newPayoff.months)}</span>
                     </div>
                   </div>
-
-                  {/* Visual Timeline for Time Saved */}
-                  <TimelineSaved monthsSaved={monthsSaved} color={liability.color} />
                 </div>
               );
             })}
