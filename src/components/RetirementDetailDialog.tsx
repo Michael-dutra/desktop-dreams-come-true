@@ -67,6 +67,14 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
   const lifeExpectancy = 95;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
 
+  // Helper function to format monthly income in K format with one decimal
+  const formatMonthlyIncomeK = (value: number) => {
+    if (value >= 1000) {
+      return `${(value / 1000).toFixed(1)}K`;
+    }
+    return `$${value}`;
+  };
+
   // Strategy optimization functions
   const getOptimalAllocations = (strategy: WithdrawalStrategy) => {
     switch (strategy) {
@@ -513,7 +521,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-2">
-                    Net Monthly Income Needed: {formatCurrency(monthlyIncomeNeeded[0])}
+                    Net Monthly Income Needed: ${formatMonthlyIncomeK(monthlyIncomeNeeded[0])}
                   </label>
                   <Slider
                     value={monthlyIncomeNeeded}
@@ -552,7 +560,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
               </div>
 
-              {/* Show allocation sliders only for custom strategy */}
+              {/* Allocation sliders section for custom strategy */}
               {withdrawalStrategy === "custom" && (
                 <div>
                   <h3 className="text-lg font-semibold mb-4">
