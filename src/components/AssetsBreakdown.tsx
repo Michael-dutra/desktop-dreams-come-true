@@ -124,7 +124,7 @@ const AssetsBreakdown = () => {
     );
   }
 
-  // Normal state when assets exist
+  // Normal state when assets exist - show the actual assets
   return (
     <>
       <Card className="h-full flex flex-col">
@@ -191,26 +191,47 @@ const AssetsBreakdown = () => {
               </div>
             </div>
             
-            {/* Assets Table - Takes up remaining space */}
-            <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4 p-6">
-              <div className="flex-1 flex flex-col items-center justify-center">
-                <div className="text-center space-y-4">
-                  <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
-                    <TrendingUp className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <div className="space-y-2">
-                    <h3 className="text-lg font-semibold text-gray-900">No Assets to Display</h3>
-                    <p className="text-gray-600 text-sm">Add your first asset to see it here</p>
-                  </div>
-                  <Button 
-                    onClick={() => setIsDialogOpen(true)}
-                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2"
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    Add Asset Here
-                  </Button>
-                </div>
-              </div>
+            {/* Assets Table - Shows actual assets from context */}
+            <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
+              <Table className="h-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-bold text-gray-900 text-xl h-16">Asset</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Current</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Projected</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {projectedAssets.map((asset, index) => (
+                    <TableRow key={asset.id} className="hover:bg-gray-50 h-20">
+                      <TableCell className="font-semibold text-xl py-6">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="w-5 h-5 rounded-full" 
+                            style={{ backgroundColor: asset.color }}
+                          />
+                          <span>{asset.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-xl py-6">
+                        {formatCurrency(asset.currentValue)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-blue-600 text-xl py-6">
+                        {formatCurrency(asset.projectedValue)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  <TableRow className="border-t-2 bg-gray-50 font-bold h-20">
+                    <TableCell className="font-bold text-gray-900 text-2xl py-6">Total</TableCell>
+                    <TableCell className="text-right font-bold text-gray-900 text-2xl py-6">
+                      {formatCurrency(totalCurrentValue)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-blue-600 text-2xl py-6">
+                      {formatCurrency(totalProjectedValue)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
 
             {/* Growth Summary */}
