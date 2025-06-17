@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+
+import React, { createContext, useContext, useState } from 'react';
 
 export interface Asset {
   id: string;
@@ -8,10 +9,6 @@ export interface Asset {
   color: string;
   category: 'retirement' | 'investment' | 'real-estate' | 'business' | 'other';
   isRetirementEligible: boolean;
-  acquisitionCost?: number;
-  taxableStatus?: 'Fully Taxable' | 'Capital Gains' | 'Tax-Free';
-  rateOfReturn?: number;
-  timeHorizon?: number;
 }
 
 export interface Liability {
@@ -53,50 +50,75 @@ export const useFinancialData = () => {
 };
 
 export const FinancialDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [assets, setAssets] = useState<Asset[]>([]);
-  const [liabilities, setLiabilities] = useState<Liability[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([
+    { 
+      id: "1", 
+      name: "Real Estate", 
+      amount: "$620,000", 
+      value: 620000, 
+      color: "#3b82f6", 
+      category: "real-estate",
+      isRetirementEligible: false
+    },
+    { 
+      id: "2", 
+      name: "RRSP", 
+      amount: "$52,000", 
+      value: 52000, 
+      color: "#10b981", 
+      category: "retirement",
+      isRetirementEligible: true
+    },
+    { 
+      id: "3", 
+      name: "TFSA", 
+      amount: "$38,000", 
+      value: 38000, 
+      color: "#8b5cf6", 
+      category: "retirement",
+      isRetirementEligible: true
+    },
+    { 
+      id: "4", 
+      name: "Non-Registered", 
+      amount: "$25,000", 
+      value: 25000, 
+      color: "#f59e0b", 
+      category: "investment",
+      isRetirementEligible: true
+    },
+    { 
+      id: "5", 
+      name: "Digital Asset", 
+      amount: "$15,000", 
+      value: 15000, 
+      color: "#ef4444", 
+      category: "investment",
+      isRetirementEligible: false
+    },
+  ]);
 
-  // Load data from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedAssets = localStorage.getItem('financialData_assets');
-      const savedLiabilities = localStorage.getItem('financialData_liabilities');
-      
-      if (savedAssets) {
-        setAssets(JSON.parse(savedAssets));
-      }
-      if (savedLiabilities) {
-        setLiabilities(JSON.parse(savedLiabilities));
-      }
-    } catch (error) {
-      console.error('Error loading financial data from localStorage:', error);
-    }
-  }, []);
-
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    try {
-      localStorage.setItem('financialData_assets', JSON.stringify(assets));
-    } catch (error) {
-      console.error('Error saving assets to localStorage:', error);
-    }
-  }, [assets]);
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('financialData_liabilities', JSON.stringify(liabilities));
-    } catch (error) {
-      console.error('Error saving liabilities to localStorage:', error);
-    }
-  }, [liabilities]);
+  const [liabilities, setLiabilities] = useState<Liability[]>([
+    { 
+      id: "1", 
+      name: "Mortgage", 
+      amount: "$420,000", 
+      value: 420000, 
+      color: "#dc2626", 
+      category: "mortgage"
+    },
+    { 
+      id: "2", 
+      name: "Credit Card", 
+      amount: "$27,500", 
+      value: 27500, 
+      color: "#f97316", 
+      category: "credit"
+    },
+  ]);
 
   const addAsset = (asset: Asset) => {
-    console.log('Adding asset:', asset);
-    setAssets(prev => {
-      const updated = [...prev, asset];
-      console.log('Updated assets:', updated);
-      return updated;
-    });
+    setAssets(prev => [...prev, asset]);
   };
 
   const updateAsset = (id: string, updates: Partial<Asset>) => {

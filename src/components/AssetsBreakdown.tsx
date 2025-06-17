@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import { AssetsDetailDialog } from "./AssetsDetailDialog";
 import { Button } from "@/components/ui/button";
-import { Eye, TrendingUp, Plus } from "lucide-react";
+import { Eye, TrendingUp } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Bot } from "lucide-react";
@@ -17,8 +17,6 @@ const AssetsBreakdown = () => {
   const [aiDialogOpen, setAIDialogOpen] = useState(false);
 
   const { assets, getTotalAssets } = useFinancialData();
-
-  const hasAssets = assets.length > 0;
 
   // Calculate projected values
   const projectedAssets = assets.map(asset => {
@@ -45,10 +43,6 @@ const AssetsBreakdown = () => {
 
   // Generate AI write-up based on live section data
   const generateAIAnalysis = () => {
-    if (!hasAssets) {
-      return `Your Assets Overview:\n\nYou haven't added any assets yet. Start building your financial picture by adding your assets like:\n\n• Real estate properties\n• Investment accounts (RRSP, TFSA, Non-registered)\n• Business interests\n• Digital assets\n• Other valuable assets\n\nOnce you add assets, you'll be able to:\n- See projected growth over time\n- Analyze your asset allocation\n- Plan for retirement and other goals\n- Track your net worth progress\n\nClick "Add Asset" to get started with building your financial profile.`;
-    }
-
     let text = `Your Personalized Asset Overview:\n\n`;
     text += `Hello! Here's a breakdown of your current and projected net worth:\n\n`;
     text += `- Current total assets: ${formatCurrency(totalCurrentValue)}\n`;
@@ -82,17 +76,8 @@ const AssetsBreakdown = () => {
               onClick={() => setIsDialogOpen(true)}
               className="flex items-center gap-2 border-blue-600 text-blue-600 hover:bg-blue-50"
             >
-              {hasAssets ? (
-                <>
-                  <Eye className="w-4 h-4" />
-                  Details
-                </>
-              ) : (
-                <>
-                  <Plus className="w-4 h-4" />
-                  Add Asset
-                </>
-              )}
+              <Eye className="w-4 h-4" />
+              Details
             </Button>
             <Button
               size="sm"
@@ -107,114 +92,94 @@ const AssetsBreakdown = () => {
           </div>
         </CardHeader>
         <CardContent className="flex-1 flex flex-col p-6 pt-0">
-          {hasAssets ? (
-            <div className="flex-1 flex flex-col">
-              {/* Interactive Controls */}
-              <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 mb-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-orange-700">
-                      Rate of Return: {rateOfReturn[0]}%
-                    </label>
-                    <Slider
-                      value={rateOfReturn}
-                      onValueChange={setRateOfReturn}
-                      min={1}
-                      max={15}
-                      step={0.5}
-                      className="w-full"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium text-purple-700">
-                      Time Horizon: {timeHorizon[0]} years
-                    </label>
-                    <Slider
-                      value={timeHorizon}
-                      onValueChange={setTimeHorizon}
-                      min={1}
-                      max={30}
-                      step={1}
-                      className="w-full"
-                    />
-                  </div>
+          <div className="flex-1 flex flex-col">
+            {/* Interactive Controls */}
+            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 mb-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-orange-700">
+                    Rate of Return: {rateOfReturn[0]}%
+                  </label>
+                  <Slider
+                    value={rateOfReturn}
+                    onValueChange={setRateOfReturn}
+                    min={1}
+                    max={15}
+                    step={0.5}
+                    className="w-full"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-purple-700">
+                    Time Horizon: {timeHorizon[0]} years
+                  </label>
+                  <Slider
+                    value={timeHorizon}
+                    onValueChange={setTimeHorizon}
+                    min={1}
+                    max={30}
+                    step={1}
+                    className="w-full"
+                  />
                 </div>
               </div>
-              
-              {/* Assets Table - Takes up remaining space */}
-              <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
-                <Table className="h-full">
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="font-bold text-gray-900 text-xl h-16">Asset</TableHead>
-                      <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Current</TableHead>
-                      <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Projected</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {projectedAssets.map((asset, index) => (
-                      <TableRow key={index} className="hover:bg-gray-50 h-20">
-                        <TableCell className="font-semibold text-xl py-6">
-                          <div className="flex items-center space-x-3">
-                            <div 
-                              className="w-5 h-5 rounded-full" 
-                              style={{ backgroundColor: asset.color }}
-                            />
-                            <span>{asset.name}</span>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-xl py-6">
-                          {formatCurrency(asset.currentValue)}
-                        </TableCell>
-                        <TableCell className="text-right font-bold text-blue-600 text-xl py-6">
-                          {formatCurrency(asset.projectedValue)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                    <TableRow className="border-t-2 bg-gray-50 font-bold h-20">
-                      <TableCell className="font-bold text-gray-900 text-2xl py-6">Total</TableCell>
-                      <TableCell className="text-right font-bold text-gray-900 text-2xl py-6">
-                        {formatCurrency(totalCurrentValue)}
+            </div>
+            
+            {/* Assets Table - Takes up remaining space */}
+            <div className="rounded-lg border flex-1 flex flex-col min-h-0 mb-4">
+              <Table className="h-full">
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="font-bold text-gray-900 text-xl h-16">Asset</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Current</TableHead>
+                    <TableHead className="font-bold text-gray-900 text-xl text-right h-16">Projected</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {projectedAssets.map((asset, index) => (
+                    <TableRow key={index} className="hover:bg-gray-50 h-20">
+                      <TableCell className="font-semibold text-xl py-6">
+                        <div className="flex items-center space-x-3">
+                          <div 
+                            className="w-5 h-5 rounded-full" 
+                            style={{ backgroundColor: asset.color }}
+                          />
+                          <span>{asset.name}</span>
+                        </div>
                       </TableCell>
-                      <TableCell className="text-right font-bold text-blue-600 text-2xl py-6">
-                        {formatCurrency(totalProjectedValue)}
+                      <TableCell className="text-right font-bold text-xl py-6">
+                        {formatCurrency(asset.currentValue)}
+                      </TableCell>
+                      <TableCell className="text-right font-bold text-blue-600 text-xl py-6">
+                        {formatCurrency(asset.projectedValue)}
                       </TableCell>
                     </TableRow>
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                  <TableRow className="border-t-2 bg-gray-50 font-bold h-20">
+                    <TableCell className="font-bold text-gray-900 text-2xl py-6">Total</TableCell>
+                    <TableCell className="text-right font-bold text-gray-900 text-2xl py-6">
+                      {formatCurrency(totalCurrentValue)}
+                    </TableCell>
+                    <TableCell className="text-right font-bold text-blue-600 text-2xl py-6">
+                      {formatCurrency(totalProjectedValue)}
+                    </TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </div>
 
-              {/* Growth Summary */}
-              <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
-                <div className="text-center">
-                  <p className="text-sm text-gray-600 font-medium">Total Growth</p>
-                  <p className="text-xl font-bold text-green-600">+{formatCurrency(totalGrowth)}</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-sm text-blue-600 font-medium">Projection Period</p>
-                  <p className="text-xl font-bold text-blue-800">{timeHorizon[0]} years at {rateOfReturn[0]}%</p>
-                </div>
+            {/* Growth Summary */}
+            <div className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-blue-50 rounded-lg border border-gray-200">
+              <div className="text-center">
+                <p className="text-sm text-gray-600 font-medium">Total Growth</p>
+                <p className="text-xl font-bold text-green-600">+{formatCurrency(totalGrowth)}</p>
+              </div>
+              <div className="text-center">
+                <p className="text-sm text-blue-600 font-medium">Projection Period</p>
+                <p className="text-xl font-bold text-blue-800">{timeHorizon[0]} years at {rateOfReturn[0]}%</p>
               </div>
             </div>
-          ) : (
-            // Empty state
-            <div className="flex-1 flex flex-col items-center justify-center text-center py-12">
-              <div className="p-6 bg-blue-50 rounded-full mb-6">
-                <TrendingUp className="h-12 w-12 text-blue-600" />
-              </div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">No Assets Added Yet</h3>
-              <p className="text-gray-600 mb-6 max-w-md">
-                Start building your financial picture by adding your assets like real estate, investments, and other valuable holdings.
-              </p>
-              <Button 
-                onClick={() => setIsDialogOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Asset
-              </Button>
-            </div>
-          )}
+          </div>
         </CardContent>
       </Card>
       <AssetsDetailDialog 
