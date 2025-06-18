@@ -217,6 +217,13 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
   ]);
 
   const [isEditingShareholders, setIsEditingShareholders] = useState(false);
+  const [isAddingShareholder, setIsAddingShareholder] = useState(false);
+  const [newShareholder, setNewShareholder] = useState({
+    name: "",
+    shareClass: "",
+    shares: 0,
+    percentage: 0
+  });
 
   const [shareClasses, setShareClasses] = useState<ShareClass[]>([
     { id: "1", name: "Class A Common", description: "Voting common shares", outstanding: 167, votingRights: true, dividendRights: "Yes" },
@@ -499,6 +506,27 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     profit: { label: "Profit", color: "#10b981" },
     expenses: { label: "Expenses", color: "#ef4444" },
   } satisfies Record<string, { label: string; color: string }>;
+
+  const addShareholder = () => {
+    if (newShareholder.name && newShareholder.shareClass && newShareholder.shares > 0) {
+      const shareholder: Shareholder = {
+        id: Date.now().toString(),
+        ...newShareholder
+      };
+      setShareholders([...shareholders, shareholder]);
+      setNewShareholder({
+        name: "",
+        shareClass: "",
+        shares: 0,
+        percentage: 0
+      });
+      setIsAddingShareholder(false);
+    }
+  };
+
+  const deleteShareholder = (id: string) => {
+    setShareholders(shareholders.filter(shareholder => shareholder.id !== id));
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -1510,9 +1538,15 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
             {/* Shareholders */}
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Users className="h-5 w-5" />
-                  <span>Shareholders</span>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Users className="h-5 w-5" />
+                    <span>Shareholders</span>
+                  </div>
+                  <Button onClick={() => setIsAddingShareholder(true)}>
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add Shareholder
+                  </Button>
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -1523,15 +1557,71 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                         <h4 className="font-medium">{shareholder.name}</h4>
                         <p className="text-sm text-muted-foreground">{shareholder.shareClass}</p>
                       </div>
-                      <div className="text-right">
-                        <p className="font-bold">{shareholder.percentage}%</p>
-                        <p className="text-sm text-muted-foreground">{shareholder.shares} shares</p>
+                      <div className="flex items-center space-x-4">
+                        <div className="text-right">
+                          <p className="font-bold">{shareholder.percentage}%</p>
+                          <p className="text-sm text-muted-foreground">{shareholder.shares} shares</p>
+                        </div>
+                        <Button variant="ghost" size="sm" onClick={() => deleteShareholder(shareholder.id)}>
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Add Shareholder Dialog */}
+            {isAddingShareholder && (
+              <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                <Card className="w-full max-w-md m-4">
+                  <CardHeader>
+                    <CardTitle>Add Shareholder</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        value={newShareholder.name}
+                        onChange={(e) => setNewShareholder({ ...newShareholder, name: e.target.value })}
+                        placeholder="Shareholder name"
+                      />
+                    </div>
+                    <div>
+                      <Label>Share Class</Label>
+                      <Input
+                        value={newShareholder.shareClass}
+                        onChange={(e) => setNewShareholder({ ...newShareholder, shareClass: e.target.value })}
+                        placeholder="e.g., Class A Common"
+                      />
+                    </div>
+                    <div>
+                      <Label>Number of Shares</Label>
+                      <Input
+                        type="number"
+                        value={newShareholder.shares}
+                        onChange={(e) => setNewShareholder({ ...newShareholder, shares: Number(e.target.value) })}
+                        placeholder="Number of shares"
+                      />
+                    </div>
+                    <div>
+                      <Label>Percentage</Label>
+                      <Input
+                        type="number"
+                        value={newShareholder.percentage}
+                        onChange={(e) => setNewShareholder({ ...newShareholder, percentage: Number(e.target.value) })}
+                        placeholder="Ownership percentage"
+                      />
+                    </div>
+                    <div className="flex space-x-2">
+                      <Button variant="outline" onClick={() => setIsAddingShareholder(false)}>Cancel</Button>
+                      <Button onClick={addShareholder}>Add Shareholder</Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             {/* Share Classes */}
             <Card>
