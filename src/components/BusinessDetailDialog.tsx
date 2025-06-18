@@ -586,186 +586,219 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     </div>
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-4">
-                    {/* Input Controls */}
-                    <div className="grid grid-cols-1 gap-4">
-                      <div>
-                        <Label className="text-sm font-medium">Total Corporate Assets</Label>
-                        <div className="mt-1">
-                          <Slider
-                            value={totalCorporateAssets}
-                            onValueChange={setTotalCorporateAssets}
-                            min={50000}
-                            max={20000000}
-                            step={10000}
-                            className="mt-2"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                            <span>$50K</span>
-                            <span className="font-medium">${totalCorporateAssets[0].toLocaleString()}</span>
-                            <span>$20M</span>
+                <CardContent className="space-y-6">
+                  <div className="space-y-6">
+                    {/* Enhanced Input Controls */}
+                    <div className="grid grid-cols-1 gap-6">
+                      <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg">
+                        <Label className="text-lg font-semibold text-blue-800 mb-3 block">Corporate Assets Analysis</Label>
+                        
+                        <div className="space-y-4">
+                          <div>
+                            <Label className="text-sm font-medium">Total Corporate Assets</Label>
+                            <div className="mt-2">
+                              <Slider
+                                value={totalCorporateAssets}
+                                onValueChange={setTotalCorporateAssets}
+                                min={50000}
+                                max={20000000}
+                                step={10000}
+                                className="mt-2"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                <span>$50K</span>
+                                <span className="font-bold text-lg text-purple-600">${totalCorporateAssets[0].toLocaleString()}</span>
+                                <span>$20M</span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div>
+                            <Label className="text-sm font-medium">Active Business Assets</Label>
+                            <div className="mt-2">
+                              <Slider
+                                value={activeBusinessAssets}
+                                onValueChange={setActiveBusinessAssets}
+                                min={0}
+                                max={20000000}
+                                step={10000}
+                                className="mt-2"
+                              />
+                              <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                                <span>$0</span>
+                                <span className="font-bold text-lg text-blue-600">${activeBusinessAssets[0].toLocaleString()}</span>
+                                <span>$20M</span>
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="grid grid-cols-2 gap-4">
+                            <div>
+                              <Label className="text-sm font-medium">Company Valuation</Label>
+                              <div className="mt-2">
+                                <Slider
+                                  value={companyValuation}
+                                  onValueChange={setCompanyValuation}
+                                  min={100000}
+                                  max={5000000}
+                                  step={25000}
+                                  className="mt-2"
+                                />
+                                <div className="text-center mt-1">
+                                  <span className="font-bold text-lg text-green-600">${companyValuation[0].toLocaleString()}</span>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <Label className="text-sm font-medium">LCGE Already Used</Label>
+                              <Input
+                                type="number"
+                                value={lcgeUsed}
+                                onChange={(e) => setLcgeUsed(Number(e.target.value))}
+                                placeholder="Amount of LCGE used to date"
+                                className="mt-2"
+                              />
+                            </div>
                           </div>
                         </div>
                       </div>
 
-                      <div>
-                        <Label className="text-sm font-medium">Active Business Assets</Label>
-                        <div className="mt-1">
-                          <Slider
-                            value={activeBusinessAssets}
-                            onValueChange={setActiveBusinessAssets}
-                            min={0}
-                            max={20000000}
-                            step={10000}
-                            className="mt-2"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                            <span>$0</span>
-                            <span className="font-medium">${activeBusinessAssets[0].toLocaleString()}</span>
-                            <span>$20M</span>
+                      {/* Enhanced Active Business Assets Analysis */}
+                      <div className={`p-6 border-2 rounded-lg ${activeAssetData.bgColor}`}>
+                        <h4 className="font-bold text-lg mb-4 flex items-center">
+                          <Building2 className="h-5 w-5 mr-2" />
+                          QSBC Qualification Test
+                        </h4>
+                        
+                        <div className="grid grid-cols-3 gap-6 mb-6">
+                          <div className="text-center p-4 bg-white bg-opacity-70 rounded-lg">
+                            <p className="text-sm text-gray-600">Active Business Assets</p>
+                            <p className="text-2xl font-bold text-blue-600">${activeBusinessAssets[0].toLocaleString()}</p>
+                          </div>
+                          <div className="text-center p-4 bg-white bg-opacity-70 rounded-lg">
+                            <p className="text-sm text-gray-600">Total Corporate Assets</p>
+                            <p className="text-2xl font-bold text-purple-600">${totalCorporateAssets[0].toLocaleString()}</p>
+                          </div>
+                          <div className="text-center p-4 bg-white bg-opacity-70 rounded-lg">
+                            <p className="text-sm text-gray-600">Active Asset Ratio</p>
+                            <p className="text-2xl font-bold text-green-600">{activeAssetData.ratio.toFixed(1)}%</p>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div>
-                        <Label className="text-sm font-medium">LCGE Already Used</Label>
-                        <Input
-                          type="number"
-                          value={lcgeUsed}
-                          onChange={(e) => setLcgeUsed(Number(e.target.value))}
-                          placeholder="Amount of LCGE used to date"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Active Business Assets Analysis */}
-                    <div className={`p-4 border rounded-lg ${activeAssetData.bgColor}`}>
-                      <h4 className="font-semibold mb-3 flex items-center">
-                        <Building2 className="h-4 w-4 mr-2" />
-                        Active Business Assets Analysis
-                      </h4>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">Active Business Assets</p>
-                          <p className="text-lg font-bold text-blue-600">${activeBusinessAssets[0].toLocaleString()}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">Total Corporate Assets</p>
-                          <p className="text-lg font-bold text-purple-600">${totalCorporateAssets[0].toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Active Asset Ratio:</span>
-                          <span className="font-medium">{activeAssetData.ratio.toFixed(1)}%</span>
-                        </div>
-
-                        {/* Progress bar for active assets ratio */}
-                        <div className="mt-4">
-                          <div className="w-full bg-gray-200 rounded-full h-3">
+                        {/* Enhanced Progress bar for active assets ratio */}
+                        <div className="mb-4">
+                          <div className="flex justify-between text-sm text-gray-700 mb-2">
+                            <span>QSBC Test Progress</span>
+                            <span>{activeAssetData.ratio.toFixed(1)}% of 90% required</span>
+                          </div>
+                          <div className="w-full bg-gray-300 rounded-full h-4 shadow-inner">
                             <div 
-                              className={`h-3 rounded-full transition-all duration-300 ${
+                              className={`h-4 rounded-full transition-all duration-500 ${
                                 activeAssetData.ratio >= 90 
-                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500' 
+                                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 shadow-md' 
                                   : activeAssetData.ratio >= 50
-                                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500'
-                                  : 'bg-gradient-to-r from-red-500 to-red-600'
+                                  ? 'bg-gradient-to-r from-yellow-500 to-orange-500 shadow-md'
+                                  : 'bg-gradient-to-r from-red-500 to-red-600 shadow-md'
                               }`}
                               style={{ width: `${Math.min(100, activeAssetData.ratio)}%` }}
                             />
                           </div>
-                        </div>
-
-                        <div className={`mt-3 p-3 border rounded text-sm font-medium ${activeAssetData.statusColor} ${activeAssetData.bgColor}`}>
-                          {activeAssetData.status}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* LCGE Analysis */}
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-semibold text-blue-800 mb-3">LCGE Analysis</h4>
-                      
-                      {/* Company Valuation Slider moved here */}
-                      <div className="mb-4">
-                        <Label className="text-sm font-medium">Company Valuation</Label>
-                        <div className="mt-1">
-                          <Slider
-                            value={companyValuation}
-                            onValueChange={setCompanyValuation}
-                            min={100000}
-                            max={5000000}
-                            step={25000}
-                            className="mt-2"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                            <span>$100K</span>
-                            <span>$25M</span>
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>0%</span>
+                            <span className="text-yellow-600 font-medium">50% Warning</span>
+                            <span className="text-green-600 font-medium">90% QSBC</span>
+                            <span>100%</span>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">Company Valuation</p>
-                          <p className="text-lg font-bold text-blue-600">${companyValuation[0].toLocaleString()}</p>
+
+                        <div className={`p-4 border-2 rounded-lg text-center font-bold text-lg ${activeAssetData.statusColor} ${activeAssetData.bgColor}`}>
+                          {activeAssetData.status}
                         </div>
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">Potential Capital Gain</p>
-                          <p className="text-lg font-bold text-purple-600">${lcgeAnalysisData.potentialGain.toLocaleString()}</p>
-                        </div>
+
+                        {activeAssetData.ratio < 90 && (
+                          <div className="mt-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-sm text-yellow-800">
+                            <AlertTriangle className="h-4 w-4 inline mr-1" />
+                            <strong>Recommendation:</strong> Consider purifying the corporation by disposing of passive investments to improve the active asset ratio.
+                          </div>
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-4 mb-4">
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">LCGE Remaining</p>
-                          <p className="text-lg font-bold text-green-600">${lcgeAnalysisData.remainingLcge.toLocaleString()}</p>
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm text-gray-600">LCGE Used</p>
-                          <p className="text-lg font-bold text-orange-600">${lcgeUsed.toLocaleString()}</p>
-                        </div>
-                      </div>
-
-                      <div className="space-y-3">
-                        <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">LCGE Utilization:</span>
-                          <span className="font-medium">{lcgeAnalysisData.utilizationPercentage.toFixed(1)}%</span>
-                        </div>
+                      {/* Enhanced LCGE Analysis */}
+                      <div className="p-6 bg-gradient-to-br from-blue-50 via-green-50 to-purple-50 border-2 border-blue-200 rounded-xl shadow-lg">
+                        <h4 className="font-bold text-xl text-blue-800 mb-6 flex items-center">
+                          <Target className="h-6 w-6 mr-2" />
+                          Comprehensive LCGE Analysis
+                        </h4>
                         
-                        <div className="flex justify-between items-center p-2 bg-green-100 rounded">
-                          <span className="text-sm font-medium text-green-700">Estimated Tax Savings:</span>
-                          <span className="font-bold text-green-700">${lcgeAnalysisData.taxSavings.toLocaleString()}</span>
+                        <div className="grid grid-cols-2 gap-6 mb-6">
+                          <div className="text-center p-4 bg-white bg-opacity-80 rounded-lg shadow-sm">
+                            <p className="text-sm text-blue-600 font-medium">Company Valuation</p>
+                            <p className="text-3xl font-bold text-blue-800">${companyValuation[0].toLocaleString()}</p>
+                          </div>
+                          <div className="text-center p-4 bg-white bg-opacity-80 rounded-lg shadow-sm">
+                            <p className="text-sm text-purple-600 font-medium">Potential Capital Gain</p>
+                            <p className="text-3xl font-bold text-purple-800">${lcgeAnalysisData.potentialGain.toLocaleString()}</p>
+                          </div>
                         </div>
-                      </div>
 
-                      {/* Updated progress bar for company valuation relative to LCGE limit */}
-                      <div className="mt-4">
-                        <div className="flex justify-between text-xs text-gray-600 mb-1">
-                          <span>Company Valuation Progress to LCGE Limit</span>
-                          <span>{Math.min(100, valuationPercentage).toFixed(1)}%</span>
+                        <div className="grid grid-cols-2 gap-6 mb-6">
+                          <div className="text-center p-4 bg-white bg-opacity-80 rounded-lg shadow-sm">
+                            <p className="text-sm text-green-600 font-medium">LCGE Remaining</p>
+                            <p className="text-3xl font-bold text-green-800">${lcgeAnalysisData.remainingLcge.toLocaleString()}</p>
+                          </div>
+                          <div className="text-center p-4 bg-white bg-opacity-80 rounded-lg shadow-sm">
+                            <p className="text-sm text-orange-600 font-medium">LCGE Used to Date</p>
+                            <p className="text-3xl font-bold text-orange-800">${lcgeUsed.toLocaleString()}</p>
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-gradient-to-r from-blue-500 to-green-500 h-2 rounded-full transition-all duration-300" 
-                            style={{ width: `${Math.min(100, valuationPercentage)}%` }}
-                          />
-                        </div>
-                        <div className="flex justify-between text-xs text-gray-500 mt-1">
-                          <span>$0</span>
-                          <span>$1,250,000 (LCGE Limit)</span>
-                        </div>
-                      </div>
 
-                      {lcgeAnalysisData.potentialGain > lcgeAnalysisData.remainingLcge && (
-                        <div className="mt-3 p-2 bg-yellow-100 border border-yellow-300 rounded text-xs text-yellow-800">
-                          <AlertTriangle className="h-4 w-4 inline mr-1" />
-                          Capital gain exceeds remaining LCGE. Consider tax planning strategies.
+                        <div className="space-y-4">
+                          <div className="flex justify-between items-center p-3 bg-white bg-opacity-60 rounded-lg">
+                            <span className="text-sm font-medium text-gray-700">LCGE Utilization:</span>
+                            <span className="font-bold text-lg">{lcgeAnalysisData.utilizationPercentage.toFixed(1)}%</span>
+                          </div>
+                          
+                          <div className="p-4 bg-gradient-to-r from-green-100 to-emerald-100 border border-green-300 rounded-lg">
+                            <div className="flex justify-between items-center">
+                              <span className="text-lg font-bold text-green-700">Estimated Tax Savings:</span>
+                              <span className="text-2xl font-bold text-green-800">${lcgeAnalysisData.taxSavings.toLocaleString()}</span>
+                            </div>
+                            <p className="text-sm text-green-600 mt-2">Based on 26.5% capital gains inclusion rate</p>
+                          </div>
                         </div>
-                      )}
+
+                        {/* Enhanced progress bar for company valuation relative to LCGE limit */}
+                        <div className="mt-6">
+                          <div className="flex justify-between text-sm text-gray-600 mb-2">
+                            <span className="font-medium">Company Valuation vs. LCGE Limit</span>
+                            <span className="font-bold">{Math.min(100, valuationPercentage).toFixed(1)}%</span>
+                          </div>
+                          <div className="w-full bg-gray-300 rounded-full h-3 shadow-inner">
+                            <div 
+                              className="bg-gradient-to-r from-blue-500 via-purple-500 to-green-500 h-3 rounded-full transition-all duration-500 shadow-md" 
+                              style={{ width: `${Math.min(100, valuationPercentage)}%` }}
+                            />
+                          </div>
+                          <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>$0</span>
+                            <span className="font-medium text-blue-600">${companyValuation[0].toLocaleString()}</span>
+                            <span>$1,250,000 (LCGE Limit)</span>
+                          </div>
+                        </div>
+
+                        {lcgeAnalysisData.potentialGain > lcgeAnalysisData.remainingLcge && (
+                          <div className="mt-4 p-4 bg-yellow-100 border-2 border-yellow-300 rounded-lg">
+                            <div className="flex items-center">
+                              <AlertTriangle className="h-5 w-5 text-yellow-800 mr-2" />
+                              <span className="font-bold text-yellow-800">Tax Planning Alert</span>
+                            </div>
+                            <p className="text-sm text-yellow-700 mt-1">
+                              Capital gain exceeds remaining LCGE. Consider implementing tax planning strategies such as family trust distributions or share reorganization.
+                            </p>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
