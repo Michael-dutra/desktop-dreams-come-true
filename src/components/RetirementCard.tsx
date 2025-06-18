@@ -19,7 +19,7 @@ const RetirementCard = () => {
   
   const { getTotalAssets, getRetirementAssets } = useFinancialData();
   
-  const totalAssets = getTotalAssets();
+  const totalAssets = 330000; // Fixed value to show $330K
   const retirementAssets = getRetirementAssets();
   const projectedMonthlyIncome = 3200; // From CPP, OAS, and savings
   const lifeExpectancy = 90;
@@ -97,7 +97,7 @@ const RetirementCard = () => {
         <CardContent className="flex-1 flex flex-col space-y-6">
           {/* Total Assets */}
           <div className="text-center p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-            <p className="text-4xl font-bold text-purple-600 mb-2">{formatCurrency(totalAssets)}</p>
+            <p className="text-4xl font-bold text-purple-600 mb-2">$330K</p>
             <p className="text-base text-purple-700 font-medium">Total Assets Available</p>
           </div>
 
