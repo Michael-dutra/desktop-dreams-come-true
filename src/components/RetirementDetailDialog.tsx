@@ -514,7 +514,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <PiggyBank className="h-5 w-5" />
@@ -529,7 +529,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <CardTitle>Retirement Planning Controls</CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Retirement Age: {retirementAge[0]}
@@ -589,7 +589,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                   <h3 className="text-lg font-semibold mb-4">
                     Allocate how your retirement income is sourced from each account (total must be 100%):
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="space-y-4">
                     <div>
                       <div className="flex justify-between items-center mb-2">
                         <label className="text-sm font-medium">RRSP</label>
@@ -629,12 +629,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                         step={5}
                       />
                     </div>
+                    {totalAllocation !== 100 && (
+                      <div className="text-red-600 text-sm font-medium">
+                        Total allocation: {totalAllocation}% (must equal 100%)
+                      </div>
+                    )}
                   </div>
-                  {totalAllocation !== 100 && (
-                    <div className="text-red-600 text-sm font-medium mt-2">
-                      Total allocation: {totalAllocation}% (must equal 100%)
-                    </div>
-                  )}
                 </div>
               )}
             </CardContent>
@@ -649,7 +649,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     Withdrawal Strategy
@@ -692,7 +692,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 <h3 className="text-lg font-semibold mb-4 text-center">
                   {withdrawalStrategy.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())} Strategy
                 </h3>
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <h4 className="font-medium text-green-800 mb-3 flex items-center gap-2">
                       <Check className="h-4 w-4" />
@@ -724,7 +724,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-4 bg-gray-50 rounded-lg">
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600">
                     {averageAnnualTaxRate.toFixed(1)}%
@@ -754,22 +754,22 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           </Card>
 
           {/* Enhanced Retirement Duration & Account Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Enhanced Retirement Duration */}
-            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 p-6 rounded-xl border text-white shadow-lg">
+            <div className="bg-gradient-to-br from-purple-600 via-purple-700 to-purple-800 p-8 rounded-xl border text-white shadow-lg">
               <div className="text-center">
-                <h4 className="text-2xl font-bold mb-4 text-purple-100">Retirement</h4>
-                <div className="space-y-4">
-                  <div className="text-6xl font-bold leading-none">
+                <h4 className="text-4xl font-bold mb-8 text-purple-100">Retirement</h4>
+                <div className="space-y-6">
+                  <div className="text-9xl font-bold leading-none">
                     {actualAssetDuration === Infinity ? "∞" : actualAssetDuration.toFixed(1)}
                   </div>
-                  <div className="text-2xl font-semibold text-purple-100">Years</div>
-                  <div className="text-xl text-purple-200">Assets Will Last</div>
+                  <div className="text-4xl font-semibold text-purple-100">Years</div>
+                  <div className="text-3xl text-purple-200 mt-8">Assets Will Last</div>
                 </div>
-                <div className="mt-6 pt-6 border-t border-purple-400">
-                  <div className="text-4xl font-bold text-green-300 mb-2">{fundingPercentage.toFixed(0)}%</div>
-                  <div className="text-xl text-purple-200 mb-3">of Retirement Goal</div>
-                  <div className="text-lg text-purple-300">
+                <div className="mt-10 pt-10 border-t border-purple-400">
+                  <div className="text-7xl font-bold text-green-300 mb-4">{fundingPercentage.toFixed(0)}%</div>
+                  <div className="text-3xl text-purple-200 mb-6">of Retirement Goal</div>
+                  <div className="text-xl text-purple-300">
                     <div>Funding Status: {fundingStatus}</div>
                   </div>
                 </div>
@@ -820,27 +820,27 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           </div>
 
           {/* Retirement Readiness Metrics */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="text-center p-4 bg-blue-50 border border-blue-200 rounded-lg">
-              <div className="text-xl font-bold text-blue-600">
+              <div className="text-2xl font-bold text-blue-600">
                 {formatCurrency(totalFutureSavings)}
               </div>
               <p className="text-sm text-blue-600">Projected Savings</p>
             </div>
             <div className="text-center p-4 bg-green-50 border border-green-200 rounded-lg">
-              <div className="text-xl font-bold text-green-600">
+              <div className="text-2xl font-bold text-green-600">
                 {formatCurrency(annualIncomeNeeded)}
               </div>
               <p className="text-sm text-green-600">Annual Income</p>
             </div>
             <div className="text-center p-4 bg-orange-50 border border-orange-200 rounded-lg">
-              <div className="text-xl font-bold text-orange-600">
+              <div className="text-2xl font-bold text-orange-600">
                 {formatCurrency(Math.max(0, totalRetirementNeeded - totalFutureSavings))}
               </div>
               <p className="text-sm text-orange-600">Income Gap</p>
             </div>
             <div className="text-center p-4 bg-purple-50 border border-purple-200 rounded-lg">
-              <div className="text-xl font-bold text-purple-600">
+              <div className="text-2xl font-bold text-purple-600">
                 {fundingPercentage.toFixed(0)}%
               </div>
               <p className="text-sm text-purple-600">Funded</p>
@@ -853,12 +853,12 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               <CardTitle>Tax Optimization Analysis</CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="text-center">
                   <h3 className="text-lg font-semibold mb-2">
                     Strategy: {withdrawalStrategy.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}
                   </h3>
-                  <div className="text-3xl font-bold text-red-600 mb-2">
+                  <div className="text-4xl font-bold text-red-600 mb-2">
                     {formatCurrencyFull(totalLifetimeTaxes)}
                   </div>
                   <p className="text-gray-600">Total Lifetime Taxes</p>
@@ -915,7 +915,7 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
           </Card>
 
           {/* CPP/OAS Calculators */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* CPP Calculator */}
             <Card>
               <CardHeader>
@@ -1090,25 +1090,25 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </p>
             </CardHeader>
             <CardContent>
-              <div className="max-h-96 overflow-x-auto overflow-y-auto">
+              <div className="max-h-96 overflow-y-auto">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="min-w-[60px]">Age</TableHead>
-                      <TableHead className="min-w-[60px]">Year</TableHead>
-                      <TableHead className="bg-blue-50 min-w-[100px]">CPP Income</TableHead>
-                      <TableHead className="bg-green-50 min-w-[100px]">OAS Income</TableHead>
-                      <TableHead className="bg-purple-50 min-w-[120px]">Gov't Benefits</TableHead>
-                      <TableHead className="min-w-[140px]">Net Withdrawal Needed</TableHead>
-                      <TableHead className="min-w-[120px]">RRSP Balance</TableHead>
-                      <TableHead className="min-w-[120px]">RRSP Withdrawal</TableHead>
-                      <TableHead className="min-w-[120px]">TFSA Balance</TableHead>
-                      <TableHead className="min-w-[120px]">TFSA Withdrawal</TableHead>
-                      <TableHead className="min-w-[120px]">Non-Reg Balance</TableHead>
-                      <TableHead className="min-w-[120px]">Non-Reg Withdrawal</TableHead>
-                      <TableHead className="min-w-[100px]">Taxes Paid</TableHead>
-                      <TableHead className="min-w-[120px]">Total Assets</TableHead>
-                      <TableHead className="min-w-[120px]">Total Withdrawal</TableHead>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Year</TableHead>
+                      <TableHead className="bg-blue-50">CPP Income</TableHead>
+                      <TableHead className="bg-green-50">OAS Income</TableHead>
+                      <TableHead className="bg-purple-50">Gov't Benefits</TableHead>
+                      <TableHead>Net Withdrawal Needed</TableHead>
+                      <TableHead>RRSP Balance</TableHead>
+                      <TableHead>RRSP Withdrawal</TableHead>
+                      <TableHead>TFSA Balance</TableHead>
+                      <TableHead>TFSA Withdrawal</TableHead>
+                      <TableHead>Non-Reg Balance</TableHead>
+                      <TableHead>Non-Reg Withdrawal</TableHead>
+                      <TableHead>Taxes Paid</TableHead>
+                      <TableHead>Total Assets</TableHead>
+                      <TableHead>Total Withdrawal</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
