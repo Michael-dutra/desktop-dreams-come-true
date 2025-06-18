@@ -154,7 +154,7 @@ const ChatGuidance = () => {
                   </div>
                   <div className="mt-3 text-center">
                     <p className="text-xs text-muted-foreground">
-                      Connect with a professional or view{" "}
+                      View{" "}
                       <span className="underline cursor-pointer">TOS</span> and{" "}
                       <span className="underline cursor-pointer">Privacy Policy</span>
                     </p>
