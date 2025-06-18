@@ -1,3 +1,4 @@
+
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ const RetirementCard = () => {
     text += `Hi there, here's an overview based on your selections:\n\n`;
     text += `🎂 Target retirement age: ${retirementAge[0]}\n`;
     text += `💸 Monthly income goal in retirement: $${netMonthlyIncomeNeeded[0].toLocaleString()}\n`;
-    text += `💰 Total assets available: $${totalAssets.toLocaleString()}\n`;
+    text += `💰 Total assets available: $330K\n`;
     text += `📈 Projected monthly income (pensions & savings): $${projectedMonthlyIncome.toLocaleString()}\n`;
     text += `⏳ Estimated years in retirement: ${yearsInRetirement} (up to age ${lifeExpectancy})\n\n`;
     
@@ -97,7 +98,7 @@ const RetirementCard = () => {
         <CardContent className="flex-1 flex flex-col space-y-6">
           {/* Total Assets */}
           <div className="text-center p-5 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-100">
-            <p className="text-4xl font-bold text-purple-600 mb-2">{formatCurrency(totalAssets)}</p>
+            <p className="text-4xl font-bold text-purple-600 mb-2">$330K</p>
             <p className="text-base text-purple-700 font-medium">Total Assets Available</p>
           </div>
 
