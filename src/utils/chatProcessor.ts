@@ -12,13 +12,13 @@ export const processChatMessage = (message: string): AssetMatch | null => {
   
   // Asset type patterns
   const assetPatterns = [
-    { pattern: /tfsa|tax.free|tax free/i, type: 'TFSA', category: 'retirement' as const, isRetirementEligible: true, taxStatus: 'tax-free' as const },
-    { pattern: /rrsp|registered retirement/i, type: 'RRSP', category: 'retirement' as const, isRetirementEligible: true, taxStatus: 'fully-taxable' as const },
-    { pattern: /non.registered|investment account|trading account/i, type: 'Investment Account', category: 'investment' as const, isRetirementEligible: false, taxStatus: 'capital-gains' as const },
-    { pattern: /house|home|primary residence|residence/i, type: 'Primary Residence', category: 'real-estate' as const, isRetirementEligible: false, taxStatus: 'capital-gains' as const },
-    { pattern: /cottage|cabin|vacation home|second home/i, type: 'Cottage', category: 'real-estate' as const, isRetirementEligible: false, taxStatus: 'capital-gains' as const },
-    { pattern: /stocks?|equities/i, type: 'Stock Portfolio', category: 'investment' as const, isRetirementEligible: false, taxStatus: 'capital-gains' as const },
-    { pattern: /bonds?/i, type: 'Bond Portfolio', category: 'investment' as const, isRetirementEligible: false, taxStatus: 'capital-gains' as const },
+    { pattern: /tfsa|tax.free|tax free/i, type: 'TFSA' },
+    { pattern: /rrsp|registered retirement/i, type: 'RRSP' },
+    { pattern: /non.registered|investment account|trading account/i, type: 'Non-Registered' },
+    { pattern: /house|home|primary residence|residence/i, type: 'Primary Residence' },
+    { pattern: /cottage|cabin|vacation home|second home/i, type: 'Cottage' },
+    { pattern: /stocks?|equities/i, type: 'Stock Portfolio' },
+    { pattern: /bonds?/i, type: 'Bond Portfolio' },
   ];
 
   // Amount patterns - handle various formats
@@ -70,19 +70,16 @@ export const processChatMessage = (message: string): AssetMatch | null => {
   return {
     type: assetInfo.type,
     amount,
-    action: 'add',
-    category: assetInfo.category,
-    isRetirementEligible: assetInfo.isRetirementEligible,
-    taxStatus: assetInfo.taxStatus
+    action: 'add'
   };
 };
 
-export const createAssetFromMatch = (match: AssetMatch & { category: string; isRetirementEligible: boolean; taxStatus: string }): Omit<Asset, 'id'> => {
+export const createAssetFromMatch = (match: AssetMatch): Omit<Asset, 'id'> => {
   const colors = {
-    'TFSA': '#10b981',
-    'RRSP': '#3b82f6', 
-    'Investment Account': '#8b5cf6',
-    'Primary Residence': '#f59e0b',
+    'TFSA': '#f59e0b',
+    'RRSP': '#10b981', 
+    'Non-Registered': '#ef4444',
+    'Primary Residence': '#3b82f6',
     'Cottage': '#f97316',
     'Stock Portfolio': '#ef4444',
     'Bond Portfolio': '#06b6d4'
@@ -90,11 +87,7 @@ export const createAssetFromMatch = (match: AssetMatch & { category: string; isR
 
   return {
     name: match.type,
-    amount: `$${match.amount.toLocaleString()}`,
     value: match.amount,
-    color: colors[match.type as keyof typeof colors] || '#6b7280',
-    category: match.category as any,
-    isRetirementEligible: match.isRetirementEligible,
-    taxStatus: match.taxStatus as any
+    color: colors[match.type as keyof typeof colors] || '#6b7280'
   };
 };

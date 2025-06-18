@@ -36,20 +36,15 @@ const ChatGuidance = () => {
       const assetMatch = processChatMessage(message);
       if (assetMatch) {
         try {
-          const newAsset = createAssetFromMatch(assetMatch as any);
-          const assetWithId = {
-            ...newAsset,
-            id: Date.now().toString()
-          };
-          
-          addAsset(assetWithId);
+          const newAsset = createAssetFromMatch(assetMatch);
+          addAsset(newAsset);
           
           toast({
             title: "Asset Added Successfully! 🎉",
             description: `Added ${assetMatch.type} with $${assetMatch.amount.toLocaleString()}`,
           });
           
-          console.log("Created asset:", assetWithId);
+          console.log("Created asset:", newAsset);
         } catch (error) {
           console.error("Error creating asset:", error);
           toast({
@@ -133,7 +128,7 @@ const ChatGuidance = () => {
                     <div className="flex items-center space-x-2 flex-1">
                       <MessageSquare className="h-5 w-5 text-primary" />
                       <Input
-                        placeholder="Ask FriedmannAI anything... (Try: 'My TFSA has 50k in it')"
+                        placeholder="Ask FriedmannAI anything..."
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
