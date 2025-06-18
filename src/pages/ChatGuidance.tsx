@@ -1,12 +1,17 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, Send, Paperclip, Eye, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useAssets } from "@/contexts/AssetsContext";
+import { toast } from "@/hooks/use-toast";
+import { processChatMessage, createAssetFromMatch } from "@/utils/chatProcessor";
 
 const ChatGuidance = () => {
   const [message, setMessage] = useState("");
+  const { addAsset } = useAssets();
 
   const quickQuestions = [
     {
@@ -26,6 +31,35 @@ const ChatGuidance = () => {
   const handleSendMessage = () => {
     if (message.trim()) {
       console.log("Sending message:", message);
+      
+      // Process message for asset creation
+      const assetMatch = processChatMessage(message);
+      if (assetMatch) {
+        try {
+          const newAsset = createAssetFromMatch(assetMatch as any);
+          const assetWithId = {
+            ...newAsset,
+            id: Date.now().toString()
+          };
+          
+          addAsset(assetWithId);
+          
+          toast({
+            title: "Asset Added Successfully! 🎉",
+            description: `Added ${assetMatch.type} with $${assetMatch.amount.toLocaleString()}`,
+          });
+          
+          console.log("Created asset:", assetWithId);
+        } catch (error) {
+          console.error("Error creating asset:", error);
+          toast({
+            title: "Error Creating Asset",
+            description: "There was an issue adding your asset. Please try again.",
+            variant: "destructive"
+          });
+        }
+      }
+      
       setMessage("");
     }
   };
@@ -99,7 +133,7 @@ const ChatGuidance = () => {
                     <div className="flex items-center space-x-2 flex-1">
                       <MessageSquare className="h-5 w-5 text-primary" />
                       <Input
-                        placeholder="Ask FriedmannAI anything..."
+                        placeholder="Ask FriedmannAI anything... (Try: 'My TFSA has 50k in it')"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyPress={handleKeyPress}
