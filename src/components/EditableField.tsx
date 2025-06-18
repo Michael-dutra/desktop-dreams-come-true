@@ -23,9 +23,9 @@ export const EditableField: React.FC<EditableFieldProps> = ({
   tip
 }) => {
   return (
-    <div className="flex justify-between items-center py-2">
-      <span className="text-sm text-gray-600">{label}</span>
-      <span className="font-medium">
+    <div className="py-2">
+      <span className="text-sm text-gray-600 block mb-1">{label}</span>
+      <span className="font-medium text-left">
         {prefix}{value.toLocaleString()}{suffix}
       </span>
     </div>
