@@ -57,33 +57,31 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
             </div>
           </div>
 
-          {/* Year by Year Breakdown - with horizontal scroll container */}
+          {/* Year by Year Breakdown */}
           <div className="space-y-4">
             <h3 className="text-xl font-semibold">Year-by-Year Account Breakdown</h3>
-            <div className="overflow-x-auto border rounded-lg">
-              <Table className="min-w-[600px]">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="whitespace-nowrap min-w-[80px]">Year</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[80px]">Age</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[120px]">Total Assets</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[140px]">Monthly Income</TableHead>
-                    <TableHead className="whitespace-nowrap min-w-[140px]">Annual Withdrawal</TableHead>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Year</TableHead>
+                  <TableHead>Age</TableHead>
+                  <TableHead>Total Assets</TableHead>
+                  <TableHead>Monthly Income</TableHead>
+                  <TableHead>Annual Withdrawal</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {retirementData.map((row, index) => (
+                  <TableRow key={index}>
+                    <TableCell>{row.year}</TableCell>
+                    <TableCell>{row.age}</TableCell>
+                    <TableCell>${row.assets}</TableCell>
+                    <TableCell>${row.income}</TableCell>
+                    <TableCell>${row.withdrawal}</TableCell>
                   </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {retirementData.map((row, index) => (
-                    <TableRow key={index}>
-                      <TableCell className="whitespace-nowrap">{row.year}</TableCell>
-                      <TableCell className="whitespace-nowrap">{row.age}</TableCell>
-                      <TableCell className="whitespace-nowrap">${row.assets}</TableCell>
-                      <TableCell className="whitespace-nowrap">${row.income}</TableCell>
-                      <TableCell className="whitespace-nowrap">${row.withdrawal}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+                ))}
+              </TableBody>
+            </Table>
           </div>
 
           {/* Additional Information */}
