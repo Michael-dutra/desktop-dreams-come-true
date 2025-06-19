@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +39,7 @@ const FloatingChatBar = () => {
           <div className="flex items-center space-x-2 flex-1">
             <MessageSquare className="h-5 w-5 text-primary" />
             <Input
-              placeholder="Ask FriedmannAI anything or say 'I have 50k in my TFSA'..."
+              placeholder="Ask FriedmannAI anything..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
