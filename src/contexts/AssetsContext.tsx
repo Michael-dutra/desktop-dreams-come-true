@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface Asset {
@@ -21,7 +20,6 @@ const AssetsContext = createContext<AssetsContextType | undefined>(undefined);
 const initialAssets: Asset[] = [
   { id: '1', name: 'Primary Residence', value: 620000, color: '#3b82f6' },
   { id: '2', name: 'RRSP', value: 52000, color: '#10b981' },
-  { id: '3', name: 'TFSA', value: 38000, color: '#f59e0b' },
   { id: '4', name: 'Non-Registered', value: 25000, color: '#ef4444' },
 ];
 
