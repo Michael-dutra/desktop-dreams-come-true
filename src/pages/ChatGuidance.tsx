@@ -1,12 +1,15 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, Send, Paperclip, Eye, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useChatAssetProcessor } from "@/hooks/useChatAssetProcessor";
 
 const ChatGuidance = () => {
   const [message, setMessage] = useState("");
+  const { processMessage } = useChatAssetProcessor();
 
   const quickQuestions = [
     {
@@ -26,6 +29,17 @@ const ChatGuidance = () => {
   const handleSendMessage = () => {
     if (message.trim()) {
       console.log("Sending message:", message);
+      
+      // Try to process as asset message first
+      const wasProcessed = processMessage(message);
+      
+      if (wasProcessed) {
+        console.log("Message processed as asset entry");
+      } else {
+        console.log("Message sent as regular chat");
+        // Here you would handle regular chat functionality
+      }
+      
       setMessage("");
     }
   };
@@ -99,7 +113,7 @@ const ChatGuidance = () => {
                     <div className="flex items-center space-x-2 flex-1">
                       <MessageSquare className="h-5 w-5 text-primary" />
                       <Input
-                        placeholder="Ask FriedmannAI anything..."
+                        placeholder="Ask FriedmannAI anything or say 'I have 50k in my TFSA'..."
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         onKeyPress={handleKeyPress}

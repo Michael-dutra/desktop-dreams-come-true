@@ -3,13 +3,26 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MessageSquare, Send, Paperclip, Eye } from "lucide-react";
+import { useChatAssetProcessor } from "@/hooks/useChatAssetProcessor";
 
 const FloatingChatBar = () => {
   const [message, setMessage] = useState("");
+  const { processMessage } = useChatAssetProcessor();
 
   const handleSendMessage = () => {
     if (message.trim()) {
       console.log("Sending message:", message);
+      
+      // Try to process as asset message first
+      const wasProcessed = processMessage(message);
+      
+      if (wasProcessed) {
+        console.log("Message processed as asset entry");
+      } else {
+        console.log("Message sent as regular chat");
+        // Here you would handle regular chat functionality
+      }
+      
       setMessage("");
     }
   };
@@ -27,7 +40,7 @@ const FloatingChatBar = () => {
           <div className="flex items-center space-x-2 flex-1">
             <MessageSquare className="h-5 w-5 text-primary" />
             <Input
-              placeholder="Ask FriedmannAI anything..."
+              placeholder="Ask FriedmannAI anything or say 'I have 50k in my TFSA'..."
               value={message}
               onChange={(e) => setMessage(e.target.value)}
               onKeyPress={handleKeyPress}
