@@ -419,7 +419,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
     const costBase = 100000; // Assuming $100K cost base
     const potentialGain = Math.max(0, companyValuation[0] - costBase);
     const remainingLcge = calculateRemainingLcge();
-    const utilizationPercentage = totalLcgeLimit > 0 ? (lcgeUsed / totalLcgeLimit) * 100 : 0;
+    const utilizationPercentage = (companyValuation[0] / totalLcgeLimit) * 100; // Changed to be based on company valuation
     const taxableGain = Math.max(0, potentialGain - remainingLcge);
     const taxSavings = Math.min(potentialGain, remainingLcge) * 0.265; // 26.5% capital gains tax rate
     
@@ -711,7 +711,7 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                       {/* Progress bar for LCGE utilization */}
                       <div className="mt-4">
                         <div className="flex justify-between text-xs text-gray-600 mb-1">
-                          <span>LCGE Usage</span>
+                          <span>Business Value vs LCGE Limit</span>
                           <span>{lcgeAnalysisData.utilizationPercentage.toFixed(1)}%</span>
                         </div>
                         <div className="w-full bg-gray-200 rounded-full h-2">
