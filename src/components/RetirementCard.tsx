@@ -25,9 +25,14 @@ const RetirementCard = () => {
   const lifeExpectancy = 90;
   const yearsInRetirement = lifeExpectancy - retirementAge[0];
   
-  // Calculate total retirement needs and percentage saved
+  // Calculate total retirement needs and mock percentage for illustration
   const totalRetirementNeeded = netMonthlyIncomeNeeded[0] * 12 * yearsInRetirement;
-  const savingsPercentage = Math.min(100, (totalAssets / totalRetirementNeeded) * 100);
+  
+  // Mock savings percentage calculation based on sliders for illustration
+  const ageFactor = (retirementAge[0] - 55) / 15 * 30; // 0-30% based on age 55-70
+  const incomeFactor = (8000 - netMonthlyIncomeNeeded[0]) / 6000 * 40; // 0-40% based on income $2k-$8k
+  const baseSavingsPercentage = 20; // Base starting point
+  const savingsPercentage = Math.max(5, Math.min(95, baseSavingsPercentage + ageFactor + incomeFactor));
 
   const generateAIAnalysis = () => {
     let text = `Personalized Retirement Analysis:\n\n`;
