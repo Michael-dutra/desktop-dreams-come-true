@@ -5,9 +5,8 @@ import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis } from "recharts";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PiggyBank, Plus, Minus, Calculator, Info, Check, X } from "lucide-react";
+import { PiggyBank, Plus, Minus, Calculator, Check, X } from "lucide-react";
 import { useAssets } from "@/contexts/AssetsContext";
 
 interface RetirementDetailDialogProps {
@@ -1080,70 +1079,6 @@ export const RetirementDetailDialog = ({ isOpen, onClose }: RetirementDetailDial
               </CardContent>
             </Card>
           </div>
-
-          {/* Year-by-Year Account Breakdown with CPP/OAS and Enhanced Columns */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Year-by-Year Account Breakdown</CardTitle>
-              <p className="text-sm text-gray-600">
-                Detailed year-by-year breakdown showing investment growth, withdrawals, and government benefits
-              </p>
-            </CardHeader>
-            <CardContent>
-              <div className="max-h-96 overflow-y-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Age</TableHead>
-                      <TableHead>Year</TableHead>
-                      <TableHead className="bg-blue-50">CPP Income</TableHead>
-                      <TableHead className="bg-green-50">OAS Income</TableHead>
-                      <TableHead className="bg-purple-50">Gov't Benefits</TableHead>
-                      <TableHead>Net Withdrawal Needed</TableHead>
-                      <TableHead>RRSP Balance</TableHead>
-                      <TableHead>RRSP Withdrawal</TableHead>
-                      <TableHead>TFSA Balance</TableHead>
-                      <TableHead>TFSA Withdrawal</TableHead>
-                      <TableHead>Non-Reg Balance</TableHead>
-                      <TableHead>Non-Reg Withdrawal</TableHead>
-                      <TableHead>Taxes Paid</TableHead>
-                      <TableHead>Total Assets</TableHead>
-                      <TableHead>Total Withdrawal</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {yearlyData.map((year, index) => (
-                      <TableRow key={index} className={year.totalGovernmentBenefits > 0 ? "bg-green-25" : ""}>
-                        <TableCell className="font-medium">{year.age}</TableCell>
-                        <TableCell>{year.year}</TableCell>
-                        <TableCell className="bg-blue-50 font-medium">
-                          {year.cppIncome > 0 ? formatCurrencyFull(year.cppIncome) : "-"}
-                        </TableCell>
-                        <TableCell className="bg-green-50 font-medium">
-                          {year.oasIncome > 0 ? formatCurrencyFull(year.oasIncome) : "-"}
-                        </TableCell>
-                        <TableCell className="bg-purple-50 font-bold text-purple-700">
-                          {year.totalGovernmentBenefits > 0 ? formatCurrencyFull(year.totalGovernmentBenefits) : "-"}
-                        </TableCell>
-                        <TableCell className="font-medium text-orange-700">
-                          {year.netWithdrawalNeeded > 0 ? formatCurrencyFull(year.netWithdrawalNeeded) : "-"}
-                        </TableCell>
-                        <TableCell>{formatCurrencyFull(year.rrspBalance)}</TableCell>
-                        <TableCell>{year.rrspWithdrawal > 0 ? formatCurrencyFull(year.rrspWithdrawal) : "-"}</TableCell>
-                        <TableCell>{formatCurrencyFull(year.tfsaBalance)}</TableCell>
-                        <TableCell>{year.tfsaWithdrawal > 0 ? formatCurrencyFull(year.tfsaWithdrawal) : "-"}</TableCell>
-                        <TableCell>{formatCurrencyFull(year.nonRegBalance)}</TableCell>
-                        <TableCell>{year.nonRegWithdrawal > 0 ? formatCurrencyFull(year.nonRegWithdrawal) : "-"}</TableCell>
-                        <TableCell className="font-medium text-red-600">{year.taxesPaid > 0 ? formatCurrencyFull(year.taxesPaid) : "-"}</TableCell>
-                        <TableCell className="font-bold">{formatCurrencyFull(year.totalAssets)}</TableCell>
-                        <TableCell className="font-bold">{formatCurrencyFull(year.totalWithdrawal)}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            </CardContent>
-          </Card>
 
           {/* Growth and Withdrawal Phase Indicators */}
           <div className="grid grid-cols-2 gap-4">
