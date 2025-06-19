@@ -1,4 +1,3 @@
-
 import { PiggyBank, TrendingUp, Eye } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -155,7 +154,7 @@ const RetirementCard = () => {
               <div className="flex justify-between text-base text-indigo-700 font-medium">
                 <span>$0</span>
                 <span className="font-semibold">{savingsPercentage.toFixed(1)}% of goal</span>
-                <span>${(totalRetirementNeeded / 1000).toFixed(0)}K needed</span>
+                <span>{formatCurrency(totalRetirementNeeded)} needed</span>
               </div>
             </div>
             <div className="flex items-center space-x-3 mt-5 p-4 bg-green-100 rounded-lg border border-green-200">
