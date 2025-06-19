@@ -557,25 +557,6 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     {/* Input Controls */}
                     <div className="grid grid-cols-1 gap-4">
                       <div>
-                        <Label className="text-sm font-medium">Company Valuation</Label>
-                        <div className="mt-1">
-                          <Slider
-                            value={companyValuation}
-                            onValueChange={setCompanyValuation}
-                            min={100000}
-                            max={5000000}
-                            step={25000}
-                            className="mt-2"
-                          />
-                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
-                            <span>$100K</span>
-                            <span className="font-medium">${companyValuation[0].toLocaleString()}</span>
-                            <span>$5M</span>
-                          </div>
-                        </div>
-                      </div>
-
-                      <div>
                         <Label className="text-sm font-medium">Total Corporate Assets</Label>
                         <div className="mt-1">
                           <Slider
@@ -674,7 +655,26 @@ const BusinessDetailDialog = ({ isOpen, onClose }: BusinessDetailDialogProps) =>
                     <div className="p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg">
                       <h4 className="font-semibold text-blue-800 mb-3">LCGE Analysis</h4>
                       
-                      <div className="grid grid-cols-2 gap-4 mb-4">
+                      <div>
+                        <Label className="text-sm font-medium">Company Valuation</Label>
+                        <div className="mt-1">
+                          <Slider
+                            value={companyValuation}
+                            onValueChange={setCompanyValuation}
+                            min={100000}
+                            max={5000000}
+                            step={25000}
+                            className="mt-2"
+                          />
+                          <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                            <span>$100K</span>
+                            <span className="font-medium">${companyValuation[0].toLocaleString()}</span>
+                            <span>$5M</span>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 gap-4 mb-4 mt-4">
                         <div className="text-center">
                           <p className="text-sm text-gray-600">Company Valuation</p>
                           <p className="text-lg font-bold text-blue-600">${companyValuation[0].toLocaleString()}</p>
