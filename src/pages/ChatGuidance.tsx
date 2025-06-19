@@ -1,17 +1,12 @@
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { MessageSquare, Send, Paperclip, Eye, ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useAssets } from "@/contexts/AssetsContext";
-import { toast } from "@/hooks/use-toast";
-import { processChatMessage, createAssetFromMatch } from "@/utils/chatProcessor";
 
 const ChatGuidance = () => {
   const [message, setMessage] = useState("");
-  const { addAsset } = useAssets();
 
   const quickQuestions = [
     {
@@ -31,30 +26,6 @@ const ChatGuidance = () => {
   const handleSendMessage = () => {
     if (message.trim()) {
       console.log("Sending message:", message);
-      
-      // Process message for asset creation
-      const assetMatch = processChatMessage(message);
-      if (assetMatch) {
-        try {
-          const newAsset = createAssetFromMatch(assetMatch);
-          addAsset(newAsset);
-          
-          toast({
-            title: "Asset Added Successfully! 🎉",
-            description: `Added ${assetMatch.type} with $${assetMatch.amount.toLocaleString()}`,
-          });
-          
-          console.log("Created asset:", newAsset);
-        } catch (error) {
-          console.error("Error creating asset:", error);
-          toast({
-            title: "Error Creating Asset",
-            description: "There was an issue adding your asset. Please try again.",
-            variant: "destructive"
-          });
-        }
-      }
-      
       setMessage("");
     }
   };
@@ -154,7 +125,7 @@ const ChatGuidance = () => {
                   </div>
                   <div className="mt-3 text-center">
                     <p className="text-xs text-muted-foreground">
-                      View{" "}
+                      Connect with a professional or view{" "}
                       <span className="underline cursor-pointer">TOS</span> and{" "}
                       <span className="underline cursor-pointer">Privacy Policy</span>
                     </p>

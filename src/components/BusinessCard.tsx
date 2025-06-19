@@ -1,4 +1,3 @@
-
 import { Building2, Eye, TrendingUp } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,7 @@ import { Slider } from "@/components/ui/slider";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { AreaChart, Area, XAxis, YAxis, ResponsiveContainer } from "recharts";
 import { useState } from "react";
-import { BusinessDetailDialog } from "./BusinessDetailDialog";
+import BusinessDetailDialog from "./BusinessDetailDialog";
 import { Bot } from "lucide-react";
 import { SectionAIDialog } from "./SectionAIDialog";
 
