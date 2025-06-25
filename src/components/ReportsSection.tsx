@@ -1,6 +1,6 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, TrendingUp, PieChart, BarChart3, User } from "lucide-react";
+import { FileText, TrendingUp, PieChart, BarChart3, User, Crown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
@@ -13,6 +13,7 @@ const ReportsSection = () => {
     cashFlow: false,
     insurance: false,
     retirement: false,
+    estatePlanning: false,
     aiGuidance: false,
     goals: false,
     actionItems: false,
@@ -26,6 +27,7 @@ const ReportsSection = () => {
     { key: "cashFlow", label: "Cash Flow", icon: <FileText className="h-4 w-4" /> },
     { key: "insurance", label: "Insurance", icon: <FileText className="h-4 w-4" /> },
     { key: "retirement", label: "Retirement", icon: <FileText className="h-4 w-4" /> },
+    { key: "estatePlanning", label: "Estate Planning", icon: <Crown className="h-4 w-4" /> },
     { key: "aiGuidance", label: "Recent AI Guidance", icon: <FileText className="h-4 w-4" /> },
     { key: "goals", label: "Goals", icon: <FileText className="h-4 w-4" /> },
     { key: "actionItems", label: "Action Items", icon: <FileText className="h-4 w-4" /> },
@@ -76,9 +78,9 @@ const ReportsSection = () => {
           </div>
           
           <div className="grid grid-cols-2 gap-6">
-            {/* First column - 5 items */}
+            {/* First column - 6 items */}
             <div className="space-y-3">
-              {reportSections.slice(0, 5).map((section) => (
+              {reportSections.slice(0, 6).map((section) => (
                 <div key={section.key} className="flex items-center space-x-3">
                   <Checkbox 
                     id={section.key}
@@ -99,7 +101,7 @@ const ReportsSection = () => {
             
             {/* Second column - 5 items */}
             <div className="space-y-3">
-              {reportSections.slice(5, 10).map((section) => (
+              {reportSections.slice(6, 11).map((section) => (
                 <div key={section.key} className="flex items-center space-x-3">
                   <Checkbox 
                     id={section.key}
